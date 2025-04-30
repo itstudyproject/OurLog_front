@@ -1,10 +1,42 @@
-import React from "react";
-import "../index.css";
+import React, { useEffect, useState } from "react";
 
 const Header: React.FC = () => {
+  const [scrollWidth, setScrollWidth] = useState(0);
+
+  useEffect(() => {
+    // 스크롤바 너비 계산
+    const calculateScrollbarWidth = () => {
+      const outer = document.createElement('div');
+      outer.style.visibility = 'hidden';
+      outer.style.overflow = 'scroll';
+      document.body.appendChild(outer);
+
+      const inner = document.createElement('div');
+      outer.appendChild(inner);
+
+      const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+      document.body.removeChild(outer);
+
+      setScrollWidth(scrollbarWidth);
+    };
+
+    calculateScrollbarWidth();
+    window.addEventListener('resize', calculateScrollbarWidth);
+
+    return () => {
+      window.removeEventListener('resize', calculateScrollbarWidth);
+    };
+  }, []);
+
   return (
-    <header className="w-full bg-black   fixed top-0 z-50">
-      <div className="max-w 5xl mx-auto flex flex-col items-center relative">
+    <header 
+      className="w-full bg-black fixed top-0 z-50" 
+      style={{ 
+        width: `calc(100% - ${scrollWidth}px)`,
+        right: `${scrollWidth}px` 
+      }}
+    >
+      <div className="w-full mx-auto flex flex-col items-center relative">
         {/* 우측 버튼 + 검색창 */}
         <div className="absolute right-8 top-4 flex flex-col items-end gap-3 ">
           <div className="flex gap-3 pb-5">
@@ -40,15 +72,24 @@ const Header: React.FC = () => {
         </div>
 
         {/* 중앙 로고 */}
-        <div
+        {/* <div
           className="text-4xl font-bold text-white"
           style={{ fontFamily: "'Kolker Brush', cursive", fontSize: "90px" }}
         >
-          OurLog
-        </div>
+          OurLog */}
+          {/* 이미지로 교체하려면: */}
+          <div className="py-4">
+            <img 
+              src="/images/OurLog.png"
+              alt="OurLog"
+              className="h-[160px] object-contain"
+            />
+          </div>
+         
+        {/* </div> */}
 
         {/* 메뉴 */}
-        <nav
+        {/* <nav
           className="flex gap-16 text-white font-light tracking-wide"
           style={{
             fontSize: "17px",
@@ -64,7 +105,7 @@ const Header: React.FC = () => {
           <div className="relative cursor-pointer hover:opacity-80 after:block after:h-1 after:rounded-full after:mt-1 after:bg-yellow-200">
             랭킹
           </div>
-        </nav>
+        </nav> */}
       </div>
     </header>
   );

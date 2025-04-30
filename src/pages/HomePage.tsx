@@ -39,7 +39,7 @@ export default function HomePage() {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center">
+      <section className="relative h-[60vh] flex items-center">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl space-y-4">
             <h1 className="text-5xl font-semibold leading-tight">
