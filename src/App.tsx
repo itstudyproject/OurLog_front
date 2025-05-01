@@ -1,18 +1,19 @@
-import "./App.css";
-import Navbar from "./components/Navbar";
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import CustomerCenter from "./pages/CustomerCenter";
+import HomePage from "./pages/HomePage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
   return (
-    <>
-      {" "}
-      <div className="App">
-        <Navbar />{" "}
-        <div style={{ paddingTop: "100px", textAlign: "center" }}>
-          <h1>테스트용 본문입니다</h1>
-          <p>메뉴 위에 마우스를 올려보세요!</p>{" "}
-        </div>{" "}
-      </div>
-    </>
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="customer-support" element={<CustomerCenter />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+      </Route>
+    </Routes>
+
   );
 }
 
