@@ -1,21 +1,19 @@
-import React from 'react'
-import { Routes, Route, Router } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import HomePage from './pages/HomePage'
-// import Header from './layouts/Header';
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+import CustomerCenter from "./pages/CustomerCenter";
+import HomePage from "./pages/HomePage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
   return (
-    // <div className="flex flex-col min-h-screen w-full">
-        // <Header />
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="customer-support" element={<CustomerCenter />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
       </Route>
     </Routes>
-    // </div>
-  )
+  );
 }
 
-
-export default App 
+export default App;
