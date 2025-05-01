@@ -13,6 +13,7 @@ function App() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
       </Route>
     </Routes>
+
   );
 }
 
