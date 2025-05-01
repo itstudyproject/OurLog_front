@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import sidebaImg from "../../public/images/side";
-import closeImg from "../assets/img/close.png";
-import mypageImg from "../assets/img/mypage.png";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -12,7 +9,7 @@ const Navbar: React.FC = () => {
         {/* 왼쪽: 햄버거 이미지 버튼 */}
         <div className="flex-1 flex justify-start">
           <img
-            src={sidebaImg}
+            src="/images/sideba.png" // ✅ public 폴더 경로
             alt="메뉴"
             className="w-8 h-8 cursor-pointer"
             onClick={() => setIsSidebarOpen(true)}
@@ -20,7 +17,6 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* 가운데: 로고 */}
-        {/* 로고 중앙 - 웹사이트 기준 중앙 정렬 */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div
             className="text-white text-4xl font-bold"
@@ -32,26 +28,11 @@ const Navbar: React.FC = () => {
             OurLog
           </div>
         </div>
-        {/* 로고 중앙 - 웹사이트 기준 중앙 정렬 */}
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
-          <div
-            className="text-white text-4xl font-bold"
-            style={{
-              fontFamily: "'Kolker Brush', cursive",
-              fontSize: "50px",
-            }}
-          >
-            OurLog
-          </div>
-        </div>
 
-        {/* 오른쪽: 검색 + 버튼 */}
         {/* 오른쪽: 검색창 + 마이페이지/로그아웃 */}
         <div className="flex items-center gap-6 text-white">
-          {/* SEARCH 텍스트 */}
           <div className="text-xs font-bold tracking-wide">SEARCH</div>
 
-          {/* 검색창 - 언더라인 스타일 */}
           <div className="border-b border-white flex items-center gap-2 pb-[2px]">
             <input
               type="text"
@@ -61,19 +42,16 @@ const Navbar: React.FC = () => {
             <span className="text-white text-sm">🔍</span>
           </div>
 
-          {/* 마이페이지 / 로그아웃 버튼 */}
           <div className="flex items-center gap-4 text-sm font-semibold">
-            {/* 마이페이지 이미지 */}
+            {/* ✅ 마이페이지 이미지 - public 사용 */}
             <img
-              src={mypageImg}
+              src="/images/mypage.png"
               alt="마이페이지"
               className="w-6 h-6 cursor-pointer hover:opacity-80"
               onClick={() => {
                 console.log("마이페이지 클릭");
-                // 여기서 라우팅 또는 이동 처리 가능
               }}
             />
-            {/* 로그아웃 버튼 */}
             <button className="hover:text-gray-300 transition">로그아웃</button>
           </div>
         </div>
@@ -84,8 +62,9 @@ const Navbar: React.FC = () => {
         <div className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-6 z-50 shadow-lg transition-transform">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-bold">메뉴</h2>
+            {/* ✅ 닫기 이미지 - public 사용 */}
             <img
-              src={closeImg}
+              src="/images/close.png"
               alt="닫기"
               className="w-6 h-6 cursor-pointer"
               onClick={() => setIsSidebarOpen(false)}
