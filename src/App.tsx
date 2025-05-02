@@ -3,6 +3,7 @@ import MainLayout from "./layouts/MainLayout";
 import CustomerCenter from "./pages/CustomerCenter";
 import HomePage from "./pages/HomePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import MyPage from "./lib/MyPage";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="customer-support" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="mypage" element={<MyPage />} />
       </Route>
     </Routes>
   );

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"
 
 const Header: React.FC = () => {
+
+  const navigate = useNavigate();
   const [scrollWidth, setScrollWidth] = useState(0);
 
   useEffect(() => {
@@ -50,14 +53,15 @@ const Header: React.FC = () => {
               로그아웃
             </button>
             <button
-              className="bg-gray-200 text-gray-800 text-xs font-medium rounded-md shadow-sm border border-gray-300 hover:bg-gray-300 hover:shadow-md transition-all duration-200 min-w-[80px] h-[36px]"
-              style={{
-                fontSize: "12px",
-                fontFamily: "'Noto Sans KR', 'Roboto', sans-serif",
-              }}
-            >
-              마이페이지
-            </button>
+      onClick={() => navigate("/mypage")}
+      className="bg-gray-200 text-gray-800 text-xs font-medium rounded-md shadow-sm border border-gray-300 hover:bg-gray-300 hover:shadow-md transition-all duration-200 min-w-[80px] h-[36px]"
+      style={{
+        fontSize: "12px",
+        fontFamily: "'Noto Sans KR', 'Roboto', sans-serif",
+      }}
+    >
+      마이페이지
+    </button>
           </div>
 
           {/* 검색창은 아래에 */}
