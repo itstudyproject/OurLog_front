@@ -21,7 +21,6 @@ const Navbar: React.FC = () => {
               onClick={() => setIsSidebarOpen(true)}
             />
           </div>
-
           {/* 가운데: 로고 */}
           <div className="logo-container">
             <img
