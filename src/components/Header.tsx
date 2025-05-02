@@ -65,7 +65,15 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
           </div>
           <nav className="sidebar-nav">
             <a href="#">아트</a>
-            <a href="#">커뮤니티</a>
+            <a 
+            onClick={() => {
+                navigate("/PostList");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-300"
+            >
+              커뮤니티
+            </a>
             <a href="#">랭킹</a>
           </nav>
         </div>
