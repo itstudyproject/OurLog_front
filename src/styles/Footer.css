@@ -1,0 +1,33 @@
+/* src/components/Footer.css */
+
+.footer {
+  @apply bg-gray-900 text-gray-200 py-12;
+}
+
+.footer-container {
+  @apply max-w-screen-lg mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8;
+}
+
+.footer-heading {
+  @apply text-xl font-semibold mb-3;
+}
+
+.footer-subheading {
+  @apply font-medium mb-2;
+}
+
+.footer-links {
+  @apply space-y-1 text-sm;
+}
+
+.footer-link {
+  @apply hover:text-white;
+}
+
+.footer-text {
+  @apply text-sm;
+}
+
+.footer-bottom {
+  @apply mt-10 border-t border-gray-800 text-center text-xs text-gray-500;
+}

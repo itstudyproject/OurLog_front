@@ -10,6 +10,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
+  const navigate = useNavigate(); // ✅ 추가
 
   return (
     <>
@@ -24,7 +26,6 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
               onClick={() => setIsSidebarOpen(true)}
             />
           </div>
-
           {/* 가운데: 로고 */}
           <div className="logo-container">
             <img
@@ -42,12 +43,29 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
               <span className="search-icon">🔍</span>
             </div>
             <div className="user-menu">
-              <img
-                src="/images/mypage.png"
-                alt="마이페이지"
-                className="mypage-icon"
-              />
-              <div className="logout">LOGOUT</div>
+              {isLoggedIn ? (
+                <>
+                  <img
+                    src="/images/mypage.png"
+                    alt="마이페이지"
+                    className="mypage-icon"
+                  />
+                  <div
+                    className="logout"
+                    onClick={() => {
+                      localStorage.removeItem("token"); // ✅ 토큰 삭제
+                      setIsLoggedIn(false); // ✅ 상태 변경
+                      navigate("/"); // ✅ 메인으로 이동
+                    }}
+                  >
+                    LOGOUT
+                  </div>
+                </>
+              ) : (
+                <Link to="/login" className="logout">
+                  LOGIN
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -83,6 +101,4 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
     </>
   );
 };
-
 export default Header;
-

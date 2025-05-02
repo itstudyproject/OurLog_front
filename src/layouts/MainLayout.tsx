@@ -38,7 +38,7 @@ export default function MainLayout() {
       <main className="pt-[160px]">
         <Outlet />
       </main>
-      <Footer /> {/* ✅ 기존 <footer> 삭제하고 이걸로 교체 */}
+      <Footer />
     </div>
   );
 }
