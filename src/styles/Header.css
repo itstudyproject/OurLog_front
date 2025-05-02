@@ -1,0 +1,169 @@
+/* 전체 헤더 영역 */
+.header {
+  width: 100%;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  z-index: 50;
+  height: 130px;
+  padding: 0 50px;
+  opacity: 0.9;
+}
+
+/* 내부 레이아웃 */
+.header-inner {
+  max-width: 1700px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* 햄버거 버튼 영역 */
+.sidebar-button {
+  display: flex;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.menu-icon {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* 로고 중앙 정렬 */
+.logo-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.logo-image {
+  height: 80px;
+}
+
+/* 오른쪽: 검색 및 사용자 메뉴 */
+.right-section {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
+  color: white;
+  flex: 1;
+}
+
+.search-label {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid white;
+  padding-bottom: 2px;
+  gap: 8px;
+}
+
+.search-input {
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: white;
+  width: 160px;
+  border: none;
+}
+
+.search-input::placeholder {
+  color: white;
+}
+
+.search-icon {
+  font-size: 14px;
+}
+
+/* 마이페이지 + 로그아웃 */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mypage-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.mypage-icon:hover {
+  opacity: 0.8;
+}
+
+.logout {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+
+.logout:hover {
+  color: #ccc;
+}
+
+/* 사이드바 */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 256px;
+  background-color: black;
+  color: white;
+  padding: 24px;
+  z-index: 50;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.sidebar-close {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 18px;
+}
+
+.sidebar-nav a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.sidebar-nav a:hover {
+  color: #ff69b4;
+}
