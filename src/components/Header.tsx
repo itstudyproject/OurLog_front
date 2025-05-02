@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
@@ -11,7 +11,6 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
-  const navigate = useNavigate(); // ✅ 추가
 
   return (
     <>
