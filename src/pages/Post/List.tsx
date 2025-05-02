@@ -168,10 +168,6 @@ const PostList = () => {
 
   return (
     <div className="container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
-
       <div className="tab-menu">
         <div>새소식</div>
         <div className="active">자유게시판</div>

@@ -112,9 +112,6 @@ const PostDetail = () => {
 
   return (
     <div className="detail-container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
 
       <div className="tab-menu">
         <div>새소식</div>

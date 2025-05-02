@@ -238,9 +238,6 @@ const ArtList = () => {
 
   return (
     <div className="art-list-container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
 
       <div className="section-title">
         <h2>인기 작품</h2>

@@ -151,9 +151,6 @@ const ArtDetail = () => {
 
   return (
     <div className="art-detail-container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
 
       <div className="art-detail-content">
         <div className="art-image-container">
