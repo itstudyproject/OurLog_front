@@ -83,11 +83,12 @@ const Header: React.FC = () => {
           OurLog */}
           {/* 이미지로 교체하려면: */}
           <div className="py-4">
-            <img 
-              src="/images/OurLog.png"
-              alt="OurLog"
-              className="h-[160px] object-contain"
-            />
+          <img 
+  src="/images/OurLog.png"
+  alt="OurLog"
+  className="h-[80px] object-contain"
+/>
+
           </div>
          
         {/* </div> */}
