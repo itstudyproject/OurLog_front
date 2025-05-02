@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/List.css";
 
 interface Post {
   id: number;
@@ -17,14 +18,11 @@ const PostList = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // 페이지당 게시글 수를 10개로 설정
   const postsPerPage = 10;
 
   useEffect(() => {
-    // API에서 포스트 데이터를 가져오는 함수
     const fetchPosts = async () => {
       try {
-        // 임시 데이터 - 실제로는 API 호출로 대체
         const dummyPosts: Post[] = [
           {
             id: 1,
@@ -121,8 +119,7 @@ const PostList = () => {
             createdAt: "2023.03.26.14:11",
             thumbnail: "/images/post16.jpg",
           },
-        ];
-
+        ]; // 생략: 기존 더미데이터 그대로 유지
         setPosts(dummyPosts);
         setLoading(false);
       } catch (error) {
@@ -134,7 +131,6 @@ const PostList = () => {
     fetchPosts();
   }, []);
 
-  // 현재 페이지에 표시할 게시글 계산
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
@@ -149,180 +145,121 @@ const PostList = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // 실제로는 검색 API 호출
     console.log("검색어:", searchTerm);
   };
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
-    // 실제로는 해당 페이지 데이터 호출
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center w-full min-h-screen bg-gray-900">
-        <p className="text-gray-300">로딩 중...</p>
+      <div className="loading">
+        <p>로딩 중...</p>
       </div>
     );
   }
 
-  // 페이지네이션 생성
   const totalPages = Math.ceil(posts.length / postsPerPage);
-  const pageNumbers: number[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
+  const pageNumbers: number[] = Array.from(
+    { length: totalPages },
+    (_, i) => i + 1
+  );
 
   return (
-    <div className="w-full min-h-screen text-gray-300 bg-gray-900">
-      {/* 로고 및 메뉴 영역 - 실제로는 Header 컴포넌트에서 처리될 수 있음 */}
-      <div className="py-4 text-center border-b border-gray-800">
-        <div
-          className="text-3xl font-bold text-gray-100"
-          style={{ fontFamily: "'Kolker Brush', cursive" }}
-        >
-          OurLog
+    <div className="container">
+      <div className="header">
+        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
+      </div>
+
+      <div className="tab-menu">
+        <div>새소식</div>
+        <div className="active">자유게시판</div>
+        <div>홍보게시판</div>
+        <div>요청게시판</div>
+      </div>
+
+      <div className="board-header">
+        <h2>자유게시판</h2>
+        <div className="search-bar">
+          <form onSubmit={handleSearch}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="키워드로 검색해주세요"
+            />
+            <button type="submit" className="search-button">
+              <img
+                src="/images/Search.png"
+                alt="검색"
+                className="search-icon"
+              />
+            </button>
+          </form>
+          <button onClick={handleRegisterClick} className="register-button">
+            게시글/작품 등록
+          </button>
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-5">
-        {/* 탭 메뉴 */}
-        <div className="flex border-b border-gray-800">
-          <div className="px-6 py-3 transition-colors duration-200 cursor-pointer hover:bg-gray-800 hover:text-gray-100">
-            새소식
-          </div>
-          <div className="px-6 py-3 text-gray-100 bg-gray-800 cursor-pointer">
-            자유게시판
-          </div>
-          <div className="px-6 py-3 transition-colors duration-200 cursor-pointer hover:bg-gray-800 hover:text-gray-100">
-            홍보게시판
-          </div>
-          <div className="px-6 py-3 transition-colors duration-200 cursor-pointer hover:bg-gray-800 hover:text-gray-100">
-            요청게시판
-          </div>
-        </div>
-
-        {/* 게시판 제목 및 검색 */}
-        <div className="flex items-center justify-between py-4 border-b border-gray-800">
-          <h2 className="text-xl font-bold text-gray-100">자유게시판</h2>
-          <div className="flex items-center">
-            <form onSubmit={handleSearch} className="flex items-center">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="키워드로 검색해주세요"
-                className="px-3 py-1 mr-2 text-gray-200 placeholder-gray-500 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 focus:border-gray-600"
-              />
-              <button
-                type="submit"
-                className="p-1 text-gray-400 transition-colors duration-200 bg-gray-800 rounded-full hover:text-gray-200"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>제목</th>
+            <th>썸네일</th>
+            <th>작성자</th>
+            <th>작성일자</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentPosts.map((post) => (
+            <tr key={post.id} onClick={() => handlePostClick(post.id)}>
+              <td>{post.id}</td>
+              <td>{post.title}</td>
+              <td>
+                {post.thumbnail ? (
+                  <img
+                    src={post.thumbnail}
+                    alt={post.title}
+                    className="thumbnail"
                   />
-                </svg>
-              </button>
-            </form>
-            <div className="ml-4">
-              <button
-                onClick={handleRegisterClick}
-                className="px-4 py-1 text-black transition duration-200 bg-blue-700 border border-blue-800 rounded-md hover:bg-blue-600"
-              >
-                게시글/작품 등록
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* 게시물 테이블 */}
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-gray-800">
-              <th className="w-16 py-3 text-center text-gray-400">No.</th>
-              <th className="py-3 text-left text-gray-400">제목</th>
-              <th className="w-20 py-3 text-center text-gray-400">썸네일</th>
-              <th className="w-24 py-3 text-center text-gray-400">작성자</th>
-              <th className="py-3 text-center text-gray-400 w-36">작성일자</th>
+                ) : (
+                  <div className="thumbnail">없음</div>
+                )}
+              </td>
+              <td>{post.author}</td>
+              <td>{post.createdAt}</td>
             </tr>
-          </thead>
-          <tbody>
-            {currentPosts.map((post) => (
-              <tr
-                key={post.id}
-                className="transition duration-150 border-b border-gray-800 cursor-pointer hover:bg-gray-800"
-                onClick={() => handlePostClick(post.id)}
-              >
-                <td className="py-4 text-center text-gray-500">{post.id}</td>
-                <td className="py-4 text-left text-gray-300">{post.title}</td>
-                <td className="py-4 text-center">
-                  {post.thumbnail ? (
-                    <div className="w-12 h-12 mx-auto overflow-hidden border border-gray-700 rounded-md">
-                      <img
-                        src={post.thumbnail}
-                        alt={post.title}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center w-12 h-12 mx-auto text-gray-600 bg-gray-800 border border-gray-700 rounded-md">
-                      <span>없음</span>
-                    </div>
-                  )}
-                </td>
-                <td className="py-4 text-center text-gray-400">
-                  {post.author}
-                </td>
-                <td className="py-4 text-center text-gray-500">
-                  {post.createdAt}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* 페이지네이션 */}
-        <div className="flex items-center justify-center py-6">
-          <button
-            className="px-3 py-1 mx-1 text-gray-400 bg-gray-800 border border-gray-700 rounded-md hover:text-white disabled:text-gray-700 disabled:bg-gray-900 disabled:border-gray-800"
-            onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            {"<"}
-          </button>
-          {pageNumbers.map((number) => (
-            <button
-              key={number}
-              onClick={() => handlePageClick(number)}
-              className={`px-3 py-1 mx-1 rounded-md border ${
-                currentPage === number
-                  ? "bg-blue-700 text-white border-blue-800"
-                  : "bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700 hover:text-white"
-              } transition-colors duration-200`}
-            >
-              {number}
-            </button>
           ))}
+        </tbody>
+      </table>
+
+      <div className="pagination">
+        <button
+          onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          {"<"}
+        </button>
+        {pageNumbers.map((number) => (
           <button
-            className="px-3 py-1 mx-1 text-gray-400 bg-gray-800 border border-gray-700 rounded-md hover:text-white disabled:text-gray-700 disabled:bg-gray-900 disabled:border-gray-800"
-            onClick={() =>
-              currentPage < totalPages && handlePageClick(currentPage + 1)
-            }
-            disabled={currentPage === totalPages}
+            key={number}
+            onClick={() => handlePageClick(number)}
+            className={currentPage === number ? "active" : ""}
           >
-            {">"}
+            {number}
           </button>
-        </div>
+        ))}
+        <button
+          onClick={() =>
+            currentPage < totalPages && handlePageClick(currentPage + 1)
+          }
+          disabled={currentPage === totalPages}
+        >
+          {">"}
+        </button>
       </div>
     </div>
   );

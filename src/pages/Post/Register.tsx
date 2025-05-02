@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../styles/Register.css";
 
 interface FormData {
   title: string;
@@ -105,11 +106,10 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full min-h-screen pb-20 text-gray-300 bg-gray-900">
-      {/* 카테고리 선택 */}
-      <div className="max-w-[1200px] mx-auto px-5 mt-4">
-        <div className="flex items-center mb-3 space-x-4">
-          <label className="text-gray-400">게시판:</label>
+    <div className="register-wrapper">
+      <div className="register-container">
+        <div className="category-select">
+          <label>게시판:</label>
           <select
             value={formData.categoryType}
             onChange={(e) =>
@@ -117,7 +117,6 @@ const Register = () => {
                 e.target.value as "그림 게시판" | "글 게시판"
               )
             }
-            className="px-2 py-1 text-gray-200 bg-gray-800 border border-gray-700 rounded"
           >
             <option value="그림 게시판">그림 게시판</option>
             <option value="글 게시판">글 게시판</option>
@@ -125,11 +124,10 @@ const Register = () => {
 
           {formData.categoryType === "글 게시판" && (
             <>
-              <label className="text-gray-400">카테고리:</label>
+              <label>카테고리:</label>
               <select
                 value={formData.category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="px-2 py-1 text-gray-200 bg-gray-800 border border-gray-700 rounded"
               >
                 <option value="자유게시판">자유게시판</option>
                 <option value="요청게시판">요청게시판</option>
@@ -140,79 +138,53 @@ const Register = () => {
         </div>
       </div>
 
-      {/* 제목 입력 */}
-      <div className="max-w-[1200px] mx-auto px-5">
-        <div className="py-2 border-b border-gray-800">
+      <div className="register-container">
+        <div className="title-input">
           <input
             type="text"
             name="title"
             value={formData.title}
             onChange={handleInputChange}
             placeholder="제목"
-            className="w-full py-2 text-lg text-gray-200 placeholder-gray-500 bg-transparent outline-none"
           />
         </div>
       </div>
 
-      {/* 내용 입력 */}
-      <div className="max-w-[1200px] mx-auto px-5 mt-4">
-        <div className="p-4 bg-gray-800 border border-gray-700 rounded-md">
-          <div className="mb-4">
-            <button
-              onClick={handleFileButtonClick}
-              className="flex items-center px-4 py-2 mb-2 text-white bg-gray-700 border border-gray-600 rounded hover:bg-gray-600"
-            >
-              이미지 업로드
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-            </button>
+      <div className="register-container">
+        <div className="content-box">
+          <div className="file-upload">
+            <button onClick={handleFileButtonClick}>이미지 업로드</button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+              accept="image/*"
+            />
             {previewUrl && (
-              <div className="max-w-sm">
-                <img src={previewUrl} alt="미리보기" className="rounded-md" />
+              <div className="preview-img">
+                <img src={previewUrl} alt="미리보기" />
               </div>
             )}
-            <p className="mt-2 text-sm text-gray-500">
-              썸네일로 사용됩니다. (최대 10MB)
-            </p>
+            <p className="file-guide">썸네일로 사용됩니다. (최대 10MB)</p>
           </div>
+
           <textarea
             name="content"
             value={formData.content}
             onChange={handleInputChange}
             placeholder="내용을 입력하세요"
-            className="w-full p-3 text-gray-300 bg-gray-900 rounded outline-none h-[450px] resize-none"
           />
-          <div className="mt-1 text-sm text-right text-gray-500">
-            {characterCount}자
-          </div>
+          <div className="char-count">{characterCount}자</div>
         </div>
       </div>
 
-      {/* 하단 고정 버튼 */}
-      <div className="flex justify-center mt-6 space-x-4">
-        <button
-          onClick={handleCancel}
-          className="px-4 py-2 text-sm bg-gray-800 border border-gray-700 rounded-full hover:bg-gray-700"
-        >
-          뒤로 가기
-        </button>
-        <button
-          onClick={handleTemporarySave}
-          disabled={isSubmitting}
-          className="px-4 py-2 text-sm bg-indigo-800 border border-indigo-900 rounded-full hover:bg-indigo-700"
-        >
+      <div className="button-group">
+        <button onClick={handleCancel}>뒤로 가기</button>
+        <button onClick={handleTemporarySave} disabled={isSubmitting}>
           임시저장
         </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="px-4 py-2 text-sm bg-blue-700 border border-blue-800 rounded-full hover:bg-blue-600"
-        >
+        <button onClick={handleSubmit} disabled={isSubmitting}>
           등록
         </button>
       </div>

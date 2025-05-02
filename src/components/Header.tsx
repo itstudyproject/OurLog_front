@@ -73,7 +73,13 @@ const Navbar: React.FC = () => {
             />
           </div>
           <nav className="flex flex-col gap-4 text-lg">
-            <a href="#" className="hover:text-pink-400">
+            <a 
+            onClick={() => {
+                navigate("/Art");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-pink-400 cursor-pointer"
+            >
               아트
             </a>
             <a
@@ -81,11 +87,11 @@ const Navbar: React.FC = () => {
                 navigate("/Post");
                 setIsSidebarOpen(false);
               }}
-              className="hover:text-blue-300"
+              className="hover:text-blue-300 cursor-pointer"
             >
               커뮤니티
             </a>
-            <a href="#" className="hover:text-yellow-200">
+            <a href="#" className="hover:text-yellow-200 cursor-pointer">
               랭킹
             </a>
           </nav>
