@@ -5,8 +5,10 @@ import HomePage from "./pages/HomePage";
 import PostList from "./pages/Post/List";
 import PostDetail from "./pages/Post/PostDetail";
 import PostRegister from "./pages/Post/Register";
+import ArtList from "./pages/Art/ArtList";
 import ArtDetail from "./pages/Art/ArtDetail";
-import ArtList from "./pages/Art/ArtList"; // 추가
+import Payment from "./pages/Art/Payment";
+import BidHistory from "./pages/Art/BidHistory"; // 추가
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function App() {
@@ -17,10 +19,12 @@ function App() {
         <Route path="customer-support" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/board/:boardId" element={<PostList />} />
-        {/* 아트 페이지 경로 추가 */}
+        {/* 아트 페이지 경로 */}
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
+          <Route path="payment/:id" element={<Payment />} />
+          <Route path="bids" element={<BidHistory />} /> {/* 추가 */}
         </Route>
         <Route path="post">
           <Route index element={<PostList />} />

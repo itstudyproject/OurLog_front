@@ -107,9 +107,7 @@ const ArtDetail = () => {
   };
   
   const handleBuyNow = () => {
-    if (post) {
-      alert(`${post.buyNowPrice.toLocaleString()}원에 즉시 구매가 진행됩니다.`);
-    }
+    navigate(`/Art/payment/${post.id}`);
   };
   
   const handleChat = () => {

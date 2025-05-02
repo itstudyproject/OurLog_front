@@ -37,12 +37,12 @@ const ArtList = () => {
           },
           {
             id: 2,
-            title: "작품 제목 2",
+            title: "낙엽 전경",
             author: "작가2",
             price: 45000,
             likes: 97,
             createdAt: "2023.06.20",
-            imageSrc: "/images/post2.jpg",
+            imageSrc: "/images/낙엽사진.jpeg",
           },
           {
             id: 3,
