@@ -1,7 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Kolker+Brush&display=swap");
 @import "tailwindcss";
 
-html, body, #root {
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #444 transparent;
+}
+
+body,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -13,8 +25,9 @@ body {
   min-height: 100vh;
   min-width: 100vw;
   background-color: #1a1a1a;
-  color: #E7DED9;
-  font-family: 'Inter', sans-serif;
+  color: #e7ded9;
+  font-family: "Inter", sans-serif;
+  padding-right: calc(100vw - 100%);
 }
 
 #root {
@@ -82,9 +95,9 @@ button:focus-visible {
 }
 
 .btn-orange {
-  background-color: #FE9860;
+  background-color: #fe9860;
   color: white;
-  border: 1px solid #D7A666;
+  border: 1px solid #d7a666;
 }
 
 .btn-orange:hover {
@@ -92,9 +105,9 @@ button:focus-visible {
 }
 
 .btn-purple {
-  background-color: #7064B9;
+  background-color: #7064b9;
   color: white;
-  border: 1px solid #7B6AC5;
+  border: 1px solid #7b6ac5;
 }
 
 .btn-purple:hover {
@@ -102,9 +115,9 @@ button:focus-visible {
 }
 
 .btn-mint {
-  background-color: #64C7B7;
+  background-color: #64c7b7;
   color: white;
-  border: 1px solid #6FCCC5;
+  border: 1px solid #6fccc5;
 }
 
 .btn-mint:hover {
@@ -112,9 +125,9 @@ button:focus-visible {
 }
 
 .btn-blue {
-  background-color: #4F68A2;
+  background-color: #4f68a2;
   color: white;
-  border: 1px solid #576EB3;
+  border: 1px solid #576eb3;
 }
 
 .btn-blue:hover {
@@ -127,12 +140,31 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
-  
+
   a:hover {
     color: #747bff;
   }
-  
+
   button {
     background-color: #f9f9f9;
   }
-} 
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 10px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
