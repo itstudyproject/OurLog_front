@@ -10,6 +10,9 @@ import WorkerPage from './pages/WorkerPage'
 import MyPage from './pages/MyPage'
 import PostList from './pages/Post/PostList'
 import PostRegister from './pages/Post/PostRegister'
+import TermsCondition from './pages/TermsCondition'
+import CustomerCenter from './pages/CustomerCenter'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 // import Header from './layouts/Header';
 
 
@@ -27,8 +30,10 @@ function App() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/profile/edit" element={<ProfileEditPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
-      <Route path="mypage" element={<MyPage />} />
-      <Route path="worker" element={<WorkerPage />} />
+      <Route path="/mypage" element={<MyPage />} />
+      <Route path="/worker" element={<WorkerPage />} />
+      {/* <Route path="/terms-condition" element={<TermsCondition />} />
+      <Route path="/customer-center" element={<CustomerCenter />} /> */}
       <Route path="/PostList">
           <Route index element={<PostList />} />
           <Route path="register" element={<PostRegister />} />
