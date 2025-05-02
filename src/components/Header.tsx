@@ -75,3 +75,4 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
 };
 
 export default Header;
+
