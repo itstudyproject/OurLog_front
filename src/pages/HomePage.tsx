@@ -80,7 +80,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex gap-2">
                   <button
-                    className={utils(
+                    className={cn(
                       "btn",
                       auction.id === "1" && "btn-orange",
                       auction.id === "2" && "btn-mint",
