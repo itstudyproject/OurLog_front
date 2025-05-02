@@ -1,17 +1,16 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
 // @ts-ignore
 import "../styles/header.css";
 
-interface HeaderProps {
-  scrollWidth?: number;
-}
-
-const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
+const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
+  const navigate = useNavigate(); // ✅ 추가
 
   return (
     <>
-      <header className="header" style={{ width: `calc(100% - ${scrollWidth}px)` }}>
+      <header className="header">
         <div className="header-inner">
           {/* 왼쪽: 햄버거 버튼 */}
           <div className="sidebar-button">
@@ -40,12 +39,29 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
               <span className="search-icon">🔍</span>
             </div>
             <div className="user-menu">
-              <img
-                src="/images/mypage.png"
-                alt="마이페이지"
-                className="mypage-icon"
-              />
-              <div className="logout">LOGOUT</div>
+              {isLoggedIn ? (
+                <>
+                  <img
+                    src="/images/mypage.png"
+                    alt="마이페이지"
+                    className="mypage-icon"
+                  />
+                  <div
+                    className="logout"
+                    onClick={() => {
+                      localStorage.removeItem("token"); // ✅ 토큰 삭제
+                      setIsLoggedIn(false); // ✅ 상태 변경
+                      navigate("/"); // ✅ 메인으로 이동
+                    }}
+                  >
+                    LOGOUT
+                  </div>
+                </>
+              ) : (
+                <Link to="/login" className="logout">
+                  LOGIN
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -64,9 +80,9 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
             />
           </div>
           <nav className="sidebar-nav">
-            <a href="#">아트</a>
-            <a href="#">커뮤니티</a>
-            <a href="#">랭킹</a>
+            <Link to="/art">아트</Link>
+            <Link to="/community">커뮤니티</Link>
+            <Link to="/ranking">랭킹</Link>
           </nav>
         </div>
       )}
@@ -74,4 +90,4 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
   );
 };
 
-export default Header;
+export default Navbar;
