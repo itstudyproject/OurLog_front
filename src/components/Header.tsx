@@ -1,13 +1,15 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <header className="w-full bg-gray-900 fixed top-0 z-50 py-4 px-50">
+    <header className="fixed top-0 z-50 w-full py-4 bg-gray-900 px-50">
       <div className="max-w-[1700px] mx-auto w-full flex items-center justify-between">
         {/* 왼쪽: 햄버거 이미지 버튼 */}
-        <div className="flex-1 flex justify-start">
+        <div className="flex justify-start flex-1">
           <img
             src="/images/sideba.png" // ✅ public 폴더 경로
             alt="메뉴"
@@ -17,9 +19,9 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* 가운데: 로고 */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
           <div
-            className="text-white text-4xl font-bold"
+            className="text-4xl font-bold text-white"
             style={{
               fontFamily: "'Kolker Brush', cursive",
               fontSize: "50px",
@@ -39,7 +41,7 @@ const Navbar: React.FC = () => {
               placeholder="검색"
               className="bg-transparent outline-none text-sm placeholder-white text-white w-[160px]"
             />
-            <span className="text-white text-sm">🔍</span>
+            <span className="text-sm text-white">🔍</span>
           </div>
 
           <div className="flex items-center gap-4 text-sm font-semibold">
@@ -52,15 +54,15 @@ const Navbar: React.FC = () => {
                 console.log("마이페이지 클릭");
               }}
             />
-            <button className="hover:text-gray-300 transition">로그아웃</button>
+            <button className="transition hover:text-gray-300">로그아웃</button>
           </div>
         </div>
       </div>
 
       {/* 👉 사이드바 메뉴 */}
       {isSidebarOpen && (
-        <div className="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-6 z-50 shadow-lg transition-transform">
-          <div className="flex justify-between items-center mb-6">
+        <div className="fixed top-0 left-0 z-50 w-64 h-full p-6 text-white transition-transform bg-gray-800 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold">메뉴</h2>
             {/* ✅ 닫기 이미지 - public 사용 */}
             <img
@@ -74,7 +76,13 @@ const Navbar: React.FC = () => {
             <a href="#" className="hover:text-pink-400">
               아트
             </a>
-            <a href="#" className="hover:text-blue-300">
+            <a
+              onClick={() => {
+                navigate("/Post");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-300"
+            >
               커뮤니티
             </a>
             <a href="#" className="hover:text-yellow-200">

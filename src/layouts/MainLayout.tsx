@@ -40,7 +40,7 @@ export default function MainLayout() {
           right: `${scrollWidth}px`
         }}
       >
-        <div className="container mx-auto px-4 py-6">
+        <div className="container px-4 py-6 mx-auto">
           <nav className="flex items-center justify-between">
             <div className="text-3xl font-semibold text-text-light">OurLog</div>
             <div className="flex items-center gap-8 text-text-medium">
