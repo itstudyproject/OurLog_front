@@ -41,7 +41,7 @@ const ArtDetail = () => {
           buyNowPrice: 50000,
           endTime: "2023-12-31T23:59:59",
           createdAt: "2023.05.15",
-          imageSrc: "/images/post1.jpg",
+          imageSrc: "/images/파스타.jpg",
           likes: 128,
           artistProfileImg: "/images/avatar.png",
           isFollowing: false

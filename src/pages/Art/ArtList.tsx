@@ -33,7 +33,7 @@ const ArtList = () => {
             price: 30000,
             likes: 128,
             createdAt: "2023.05.15",
-            imageSrc: "/images/post1.jpg",
+            imageSrc: "/images/파스타.jpg",
           },
           {
             id: 2,
