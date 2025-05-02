@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
 // @ts-ignore
 import "../styles/header.css";
 
-const Navbar: React.FC = () => {
+const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
   const navigate = useNavigate(); // ✅ 추가

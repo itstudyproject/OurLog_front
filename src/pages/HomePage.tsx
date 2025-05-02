@@ -1,16 +1,15 @@
-import React from 'react'
-import { cn } from '../utils/utils'
-import type { AuctionItem } from '../types'
-
+import React from "react";
+import { cn } from "../utils/utils";
+import type { AuctionItem } from "../types";
 
 const SAMPLE_AUCTIONS: AuctionItem[] = [
   {
     id: "1",
     title: "Abstract Forms",
     price: 300000,
-    imageUrl: '/images/11.jpg',
-    artist: '김민수',
-    endTime: new Date('2024-05-01'),
+    imageUrl: "/images/11.jpg",
+    artist: "김민수",
+    endTime: new Date("2024-05-01"),
     currentBid: 300000,
     bidCount: 5,
   },
@@ -18,9 +17,9 @@ const SAMPLE_AUCTIONS: AuctionItem[] = [
     id: "2",
     title: "Blue Landscape",
     price: 1200000,
-    imageUrl: '/images/22.jpg',
-    artist: '이지원',
-    endTime: new Date('2024-05-02'),
+    imageUrl: "/images/22.jpg",
+    artist: "이지원",
+    endTime: new Date("2024-05-02"),
     currentBid: 1200000,
     bidCount: 3,
   },
@@ -28,9 +27,9 @@ const SAMPLE_AUCTIONS: AuctionItem[] = [
     id: "3",
     title: "Colorful Composition",
     price: 900000,
-    imageUrl: '/images/33.jpg',
-    artist: '박서연',
-    endTime: new Date('2024-05-03'),
+    imageUrl: "/images/33.jpg",
+    artist: "박서연",
+    endTime: new Date("2024-05-03"),
     currentBid: 900000,
     bidCount: 7,
   },
@@ -80,7 +79,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex gap-2">
                   <button
-                    className={utils(
+                    className={cn(
                       "btn",
                       auction.id === "1" && "btn-orange",
                       auction.id === "2" && "btn-mint",
