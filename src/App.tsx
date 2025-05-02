@@ -29,7 +29,7 @@ function App() {
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="mypage" element={<MyPage />} />
       <Route path="worker" element={<WorkerPage />} />
-      <Route path="post">
+      <Route path="/PostList">
           <Route index element={<PostList />} />
           <Route path="register" element={<PostRegister />} />
         </Route>

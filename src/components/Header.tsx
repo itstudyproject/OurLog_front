@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
@@ -7,11 +8,12 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <>
-      <header className="header" style={{ width: `calc(100% - ${scrollWidth}px)` }}>
+      <header className="header" style={{ marginRight: `${scrollWidth}px` }}>
         <div className="header-inner">
           {/* 왼쪽: 햄버거 버튼 */}
           <div className="sidebar-button">
