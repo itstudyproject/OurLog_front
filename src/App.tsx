@@ -3,7 +3,7 @@ import MainLayout from "./layouts/MainLayout";
 import CustomerCenter from "./pages/CustomerCenter";
 import HomePage from "./pages/HomePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import MyPage from "./pages/MyPage";
+import MyPage from "./lib/MyPage";
 
 function App() {
   return (
