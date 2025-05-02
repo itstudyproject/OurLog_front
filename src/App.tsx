@@ -34,6 +34,7 @@ function App() {
           <Route path="register" element={<PostRegister />} />
         </Route>
     </Routes>
+
   );
 }
 export default App
