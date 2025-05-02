@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '../utils/cn'
+import { cn } from '../utils/utils'
 import type { AuctionItem } from '../types'
 
 const SAMPLE_AUCTIONS: AuctionItem[] = [
