@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Header from '../components/Header'
 import '../styles/Header.css'
+import Footer from '../components/Footer';
 
 export default function MainLayout() {
   const [scrollWidth, setScrollWidth] = useState(0);
