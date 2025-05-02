@@ -24,6 +24,15 @@ npm i -D @reduxjs/toolkit react-redux
 echo "Installing react-router-dom"
 npm i react-router-dom
 
+echo "Installing styled-components"
+npm i styled-components
+
+echo "Installing --save-dev @types/styled-components"
+npm i --save-dev @types/styled-components
+
+echo "Installing lucide-react"
+npm i lucide-react
+
 echo "Installation complete!"
 read -p "Press Enter to exit..."
 
