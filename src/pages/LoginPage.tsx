@@ -158,9 +158,9 @@ const LoginPage: React.FC = () => {
           </div>
           
           {/* 회원가입 링크 */}
-          <div className="signup-link-wrapper">
-            <span className="signup-text">계정이 없나요?</span>{' '}
-            <Link to="/signup" className="signup-link">
+          <div className="register-link-wrapper">
+            <span className="register-text">계정이 없나요?</span>{' '}
+            <Link to="/register" className="register-link">
               OurLog에 가입하기
             </Link>
           </div>
