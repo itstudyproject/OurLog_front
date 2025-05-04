@@ -4,6 +4,7 @@ import CustomerCenter from "./pages/CustomerCenter";
 import HomePage from "./pages/HomePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ArtList from "./pages/Art/ArtList";
+import RankingPage from "./pages/Ranking/RankingPage";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="art">
           <Route index element={<ArtList />} />
         </Route>
+        <Route path="ranking" element={<RankingPage />} />
       </Route>
     </Routes>
   );
