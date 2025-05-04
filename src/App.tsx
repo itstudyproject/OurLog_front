@@ -9,6 +9,9 @@ import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
 import PostRegister from "./pages/Post/PostRegister";
+import ArtList from "./pages/Art/ArtList";
+import ArtDetail from "./pages/Art/ArtDetail";
+import ChatPage from "./pages/ChatPage";
 // import Header from './layouts/Header';
 
 function App() {
@@ -25,11 +28,14 @@ function App() {
       <Route path="/profile/edit" element={<ProfileEditPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="mypage" element={<MyPage />} />
-      {/* <Route path="worker" element={<WorkerPage />} />   */}
+      {/* <Route path="worker" element={<WorkerPage />} /> */}
+      <Route path="/chat" element={<ChatPage />} /> {/* 👈 등록 */}
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
+
       </Route>
+      <Route path="/Art/:id" element={<ArtDetail />} />
     </Routes>
   );
 }

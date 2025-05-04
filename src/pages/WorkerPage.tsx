@@ -1,24 +1,24 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/WorkerPage.css";
 
 const cardData = [
-  {
-    id: 1,
-    image: "/images/11.jpg",
-    //badgeColor: "#000000",
-    title: "작품 1",
-  },
-  { id: 2, image: "", badgeColor: "#3a00e5", title: "작품 2" },
-  { id: 3, image: "", badgeColor: "#00000080", title: "작품 3" },
-  { id: 4, image: "", badgeColor: "#00000080", title: "작품 4" },
-  { id: 5, image: "", badgeColor: "#00000080", title: "작품 5" },
-  { id: 6, image: "", badgeColor: "#00000080", title: "작품 6" },
+  { id: 1, image: "/images/파스타.jpg", title: "작품 제목 1" },
+  { id: 2, image: "/images/22.jpg", title: "작품 제목 2" },
+  { id: 3, image: "/images/33.jpg", title: "작품 제목 3" },
+  { id: 4, image: "/images/44.jpg", title: "작품 제목 4" },
+  { id: 5, image: "/images/55.jpg", title: "작품 제목 5" },
+  { id: 6, image: "/images/66.jpg", title: "작품 제목 6" },
+  { id: 7, image: "/images/77.jpg", title: "작품 제목 7" },
+  { id: 8, image: "/images/88.jpg", title: "작품 제목 8" },
+  { id: 9, image: "/images/99.jpg", title: "작품 제목 9" },
 ];
 
 const WorkerPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [followCount, setFollowCount] = useState(120);
   const [isFollowing, setIsFollowing] = useState(false);
+  const navigate = useNavigate();
 
   const cardsPerPage = 6;
   const totalPages = Math.ceil(cardData.length / cardsPerPage);
@@ -31,18 +31,20 @@ const WorkerPage: React.FC = () => {
   const handleFollowToggle = () => {
     const newFollowing = !isFollowing;
     setIsFollowing(newFollowing);
-    setFollowCount((prevCount) =>
-      newFollowing ? prevCount + 1 : prevCount - 1
-    );
+    setFollowCount((prev) => (newFollowing ? prev + 1 : prev - 1));
   };
 
-  // ✅ 새 창으로 채팅 페이지 열기
   const handleOpenChat = () => {
     window.open("/chat", "_blank", "width=600,height=800");
   };
 
+  const handleCardClick = (id: number) => {
+    navigate(`/Art/${id}`);
+  };
+
   return (
     <div className="worker-container">
+      {/* 프로필 영역 */}
       <div className="worker-header">
         <img
           src="/path/to/your/image.png"
@@ -74,18 +76,20 @@ const WorkerPage: React.FC = () => {
         </div>
       </div>
 
+      {/* 작품 갤러리 */}
       <section className="worker-gallery">
         {currentCards.map((card) => (
-          <div key={card.id} className="worker-card">
+          <div
+            key={card.id}
+            className="worker-card"
+            onClick={() => handleCardClick(card.id)}
+            style={{ cursor: "pointer" }}
+          >
             <figure className="card-image-wrapper">
               <img
                 src={card.image || "/default-image.png"}
                 alt={`작품 ${card.id}`}
                 className="card-image"
-              />
-              <div
-                className="badge"
-                style={{ backgroundColor: card.badgeColor }}
               />
             </figure>
             <div className="card-body">
@@ -95,6 +99,7 @@ const WorkerPage: React.FC = () => {
         ))}
       </section>
 
+      {/* 페이지네이션 */}
       <div className="pagination">
         <nav aria-label="페이지네이션">
           <button
