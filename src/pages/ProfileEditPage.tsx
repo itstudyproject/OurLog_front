@@ -17,9 +17,13 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
-const ProfileEditPage: React.FC = () => {
+interface ProfileEditPageProps {
+  onBack: () => void;
+}
+
+const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   const navigate = useNavigate();
-  
+
   // 사용자 정보 상태
   const [profileData, setProfileData] = useState({
     username: 'art_lover',
@@ -31,7 +35,7 @@ const ProfileEditPage: React.FC = () => {
     profilePicture: '/images/Logo.png',
     isSpotifyConnected: false
   });
-  
+
   // 입력 필드 변경 핸들러
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -40,7 +44,7 @@ const ProfileEditPage: React.FC = () => {
       [name]: value
     }));
   };
-  
+
   // 프로필 이미지 변경 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -56,7 +60,7 @@ const ProfileEditPage: React.FC = () => {
       reader.readAsDataURL(e.target.files[0]);
     }
   };
-  
+
   // Spotify 연결 토글
   const toggleSpotifyConnection = () => {
     setProfileData(prev => ({
@@ -64,35 +68,36 @@ const ProfileEditPage: React.FC = () => {
       isSpotifyConnected: !prev.isSpotifyConnected
     }));
   };
-  
+
   // 폼 제출 핸들러
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 실제 애플리케이션에서는 API로 데이터 전송
     console.log('프로필 데이터 저장:', profileData);
-    
+
     // 성공 메시지와 함께 프로필 페이지로 리디렉션
     alert('프로필이 성공적으로 업데이트되었습니다.');
     navigate('/profile');
   };
-  
+
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1 className="header-title">회원정보 수정</h1>
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <h1 className="header-title">회원정보수정</h1>
+        <button className="back-button" onClick={onBack}>
           <ArrowLeftIcon /> 돌아가기
         </button>
+
       </div>
-      
+
       <form onSubmit={handleSubmit} className="profile-content">
         <div className="profile-sidebar">
           <div className="profile-photo-container">
-            <img 
-              src={profileData.profilePicture} 
-              alt="프로필 사진" 
-              className="profile-photo" 
+            <img
+              src={profileData.profilePicture}
+              alt="프로필 사진"
+              className="profile-photo"
             />
             <div className="photo-overlay">
               <label htmlFor="profile-photo-input" className="change-photo-button">
@@ -108,11 +113,11 @@ const ProfileEditPage: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="profile-main">
           <div className="form-section">
             <h2 className="section-title">기본 정보</h2>
-            
+
             <div className="form-group">
               <label htmlFor="username" className="form-label">사용자 이름</label>
               <input
@@ -124,7 +129,7 @@ const ProfileEditPage: React.FC = () => {
                 className="form-input"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="email" className="form-label">이메일</label>
               <input
@@ -136,7 +141,7 @@ const ProfileEditPage: React.FC = () => {
                 className="form-input"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="fullName" className="form-label">실명</label>
               <input
@@ -148,7 +153,7 @@ const ProfileEditPage: React.FC = () => {
                 className="form-input"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="bio" className="form-label">소개</label>
               <textarea
@@ -161,10 +166,10 @@ const ProfileEditPage: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="form-section">
             <h2 className="section-title">추가 정보</h2>
-            
+
             <div className="form-group">
               <label htmlFor="location" className="form-label">위치</label>
               <input
@@ -176,7 +181,7 @@ const ProfileEditPage: React.FC = () => {
                 className="form-input"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="website" className="form-label">웹사이트</label>
               <input
@@ -189,15 +194,16 @@ const ProfileEditPage: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="action-buttons">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="cancel-button"
-              onClick={() => navigate(-1)}
+              onClick={onBack}
             >
               취소
             </button>
+
             <button type="submit" className="save-button">
               변경사항 저장
             </button>

@@ -1,0 +1,68 @@
+.purchase-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .filter-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .purchase-item {
+    display: flex;
+    background-color: #1a1a1a;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    align-items: center;
+  }
+  
+  .item-image {
+    width: 267px;
+    height: 163px;
+    object-fit: cover;
+    margin-right: 1rem;
+    border-radius: 4px;
+  }
+  
+  .item-info {
+    flex: 1;
+  }
+  
+  .item-info p {
+    margin: 0.25rem 0;
+  }
+  
+  .title {
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  
+  .artist {
+    color: #aaa;
+  }
+  
+  .date-filter {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .pagination {
+    text-align: center;
+    margin-top: 2rem;
+    color: white;
+  }
+  
