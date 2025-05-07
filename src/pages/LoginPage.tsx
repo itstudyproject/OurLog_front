@@ -9,7 +9,6 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // 자동 로그인 체크 - 페이지 로드 시 실행
   useEffect(() => {
     const savedUser = localStorage.getItem("autoLoginUser");
     if (savedUser) {
@@ -25,21 +24,27 @@ const LoginPage: React.FC = () => {
     }
   }, []);
 
-  // 로그인 성공 처리
   const handleLoginSuccess = (userData: any, shouldSave: boolean) => {
     if (shouldSave) {
       localStorage.setItem("autoLoginUser", JSON.stringify(userData));
     }
+
     localStorage.setItem("token", userData.token);
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: userData.email,
+        profileImage: "/images/default-profile.png", // 실제 API 응답에서 받아오면 수정 가능
+      })
+    );
+    window.dispatchEvent(new Event("login"));
     navigate("/");
   };
 
-  // 로그인 처리
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // 입력 검증
     if (!email || !password) {
       setError("이메일과 비밀번호를 모두 입력해주세요.");
       return;
@@ -47,7 +52,6 @@ const LoginPage: React.FC = () => {
 
     try {
       new Promise((resolve, reject) => {
-        // prettier ignore
         fetch(
           "http://localhost:8080/ourlog/auth/login?email=" +
             email +
@@ -62,9 +66,11 @@ const LoginPage: React.FC = () => {
             if (token.startsWith('{"code"')) {
               navigate("/login");
             } else {
-              sessionStorage.setItem("token", token);
-              sessionStorage.setItem("email", email);
-              navigate("/");
+              const userData = {
+                email,
+                token,
+              };
+              handleLoginSuccess(userData, autoLogin);
             }
           })
           .catch((err) => console.log("Error:", err));
@@ -74,9 +80,7 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  // 소셜 로그인 처리
   const handleSocialLogin = (provider: "google" | "naver" | "kakao") => {
-    // 실제 애플리케이션에서는 OAuth 인증을 위한 리디렉션이나 팝업 창을 열어야 합니다.
     alert(`${provider} 로그인은 아직 구현되지 않았습니다.`);
   };
 
@@ -88,7 +92,6 @@ const LoginPage: React.FC = () => {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleLogin} className="form-divider">
-          {/* 이메일 입력 필드 */}
           <div className="form-group">
             <label htmlFor="email" className="form-label">
               이메일
@@ -104,7 +107,6 @@ const LoginPage: React.FC = () => {
             />
           </div>
 
-          {/* 비밀번호 입력 필드 */}
           <div className="form-group">
             <label htmlFor="password" className="form-label">
               비밀번호
@@ -120,7 +122,6 @@ const LoginPage: React.FC = () => {
             />
           </div>
 
-          {/* 자동 로그인 체크박스 */}
           <div className="checkbox-container">
             <input
               type="checkbox"
@@ -136,14 +137,12 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div className="social-buttons-container">
-            {/* 계속하기 버튼 */}
             <div className="continue-button-wrapper">
               <button type="submit" className="continue-button">
                 계속하기
               </button>
             </div>
 
-            {/* 소셜 로그인 버튼 */}
             <button
               type="button"
               className="social-login-button"
@@ -184,7 +183,6 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 회원가입 링크 */}
           <div className="register-link-wrapper">
             <span className="register-text">계정이 없나요?</span>{" "}
             <Link to="/register" className="register-link">
