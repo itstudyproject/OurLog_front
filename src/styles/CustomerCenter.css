@@ -4,7 +4,7 @@ body {
   background-color: #000000;
 }
 
-.container {
+.cc-container {
   display: flex;
   gap: 2rem;
   padding: 2rem;
@@ -17,7 +17,27 @@ body {
   scroll-margin-top: 0;
 }
 
-.nav-item {
+.cc-sidebar {
+  width: 240px;
+  background: #111111;
+  border-radius: 8px;
+  padding: 1rem;
+  position: sticky;
+  top: 120px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  margin-top: 150px;
+}
+
+.cc-sidebar-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #ffffff;
+}
+
+.cc-nav-item {
   padding: 1rem 1.5rem;
   cursor: pointer;
   border-radius: 6px;
@@ -27,20 +47,20 @@ body {
   color: #cccccc;
 }
 
-.nav-item:hover {
+.cc-nav-item:hover {
   background-color: #222222;
 }
 
-.nav-item.active {
+.cc-nav-item.active {
   background-color: #4a90e2;
   color: #ffffff;
 }
 
-.nav-item.active:hover {
+.cc-nav-item.active:hover {
   background-color: #357abd;
 }
 
-.content {
+.cc-content {
   flex: 1;
   background: #111111;
   border-radius: 8px;
@@ -48,10 +68,42 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.styled-h1 {
+.cc-styled-h1 {
   text-align: center;
   margin-bottom: 1.5rem;
   color: #ffffff;
+}
+
+.cc-section-title {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #333;
+  padding-top: 2rem;
+}
+
+.cc-search-wrapper {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.cc-search-input {
+  width: 100%;
+  padding: 1rem 3rem 1rem 1rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background-color: #222222;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.cc-search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
 }
 
 .faq-list {
@@ -194,7 +246,6 @@ body {
 }
 
 .overlay {
-  position: fixed;
   top: 0;
   left: 0;
   right: 0;
