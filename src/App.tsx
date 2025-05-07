@@ -13,6 +13,8 @@ import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
+import ArtList from "./pages/Art/ArtList";
+import RankingPage from "./pages/Ranking/RankingPage";
 // import Header from './layouts/Header';
 function App() {
   return (

@@ -13,20 +13,6 @@ body {
   margin: 0 auto;
   padding: 20px;
 }
-
-/* 헤더 */
-.header {
-  text-align: center;
-  padding: 20px 0;
-  border-bottom: 1px solid #333;
-}
-
-.header h1 {
-  font-size: 32px;
-  font-weight: bold;
-  color: #fff;
-}
-
 /* 탭 메뉴 */
 .tab-menu {
   display: flex;
@@ -64,51 +50,6 @@ body {
   font-size: 20px;
   font-weight: bold;
   color: #fff;
-}
-
-/* 검색 영역 */
-.search-bar {
-  display: flex;
-  align-items: center;
-}
-
-.search-bar form {
-  display: flex;
-  align-items: center;
-}
-
-.search-bar input {
-  padding: 6px 10px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background-color: #2a2a2a;
-  color: #ccc;
-}
-
-.search-bar input::placeholder {
-  color: #777;
-}
-
-.search-bar button {
-  margin-left: 8px;
-  background-color: #2a2a2a;
-  border: none;
-  color: #ccc;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 10px;
-}
-
-.search-bar button:hover {
-  color: #fff;
-}
-
-.search-button {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  outline: none;
 }
 
 /* 게시글 등록 버튼 */
