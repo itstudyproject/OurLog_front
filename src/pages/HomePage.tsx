@@ -38,11 +38,11 @@ const SAMPLE_AUCTIONS: AuctionItem[] = [
 
 export default function HomePage() {
   return (
-    <div className="space-y-20">
+    <div className="homepage-root">
       {/* Hero Section */}
       <section className="homepage-hero">
         <div className="homepage-container">
-          <div style={{maxWidth: '48rem'}} className="space-y-4">
+          <div className="homepage-hero-inner">
             <h1 className="homepage-hero-title">
               당신의 이야기가
               <br />
