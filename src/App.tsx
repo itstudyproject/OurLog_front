@@ -19,21 +19,19 @@ function App() {
     <Routes>
       {/* 메인 레이아웃을 사용하는 페이지들 */}
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<WorkerPage />} />
+        <Route index element={<HomePage />} />
       </Route>
-
       {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/profile/edit" element={<ProfileEditPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="mypage" element={<MyPage />} />
-      {/* <Route path="worker" element={<WorkerPage />} /> */}
+      <Route path="worker" element={<WorkerPage />} />
       <Route path="/chat" element={<ChatPage />} /> {/* 👈 등록 */}
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
-
       </Route>
       <Route path="/Art/:id" element={<ArtDetail />} />
     </Routes>

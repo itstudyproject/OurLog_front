@@ -35,7 +35,7 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleOpenChat = () => {
-    window.open("/chat", "_blank", "width=600,height=800");
+    navigate("/chat", { state: { fromWorkerPage: true } });
   };
 
   const handleCardClick = (id: number) => {
@@ -44,7 +44,6 @@ const WorkerPage: React.FC = () => {
 
   return (
     <div className="worker-container">
-      {/* 프로필 영역 */}
       <div className="worker-header">
         <img
           src="/path/to/your/image.png"
@@ -76,7 +75,6 @@ const WorkerPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 작품 갤러리 */}
       <section className="worker-gallery">
         {currentCards.map((card) => (
           <div
@@ -99,7 +97,6 @@ const WorkerPage: React.FC = () => {
         ))}
       </section>
 
-      {/* 페이지네이션 */}
       <div className="pagination">
         <nav aria-label="페이지네이션">
           <button

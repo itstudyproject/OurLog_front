@@ -1,244 +1,242 @@
 .chat-page {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-    font-family: sans-serif;
-    background-color: #000000;
-    color: white;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  font-family: sans-serif;
+  background-color: #000000;
+  color: white;
 }
 
+/* 공통 패널 */
 .left-panel,
 .center-panel,
 .right-panel {
-    flex: 1;
-    padding: 16px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  flex: 1;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-/* NEW: 왼쪽 상단 타이틀 */
-.back-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: auto;
-    color: white;
-}
-
-/* NEW: 버튼 묶음 하단 정렬 */
-.purchase-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: auto;
-}
-
-.purchase-buttons button {
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #000000;
-    color: white;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    width: 45%;
-}
-
-.purchase-buttons button:hover {
-    background-color: #444444;
-}
-
-/* NEW: 구매 요청 확인 박스 */
+/* 왼쪽 - 구매 확인 박스 + 버튼 */
 .purchase-confirm-box {
-    background-color: #222;
-    padding: 16px;
-    border: 1px solid #fff;
-    border-radius: 8px;
-    margin-top: 16px;
-    font-size: 14px;
-    color: white;
+  background-color: #222;
+  padding: 16px;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 12px;
 }
 
-/* 채팅 목록 */
-.chat-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    overflow-y: auto;
-    flex-grow: 1;
-}
-
-.chat-list li {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.chat-list li:hover {
-    background-color: #333;
-}
-
-.chat-list li.active {
-    background-color: #444;
-}
-
-.chat-list img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 12px;
-}
-
-.chat-info strong {
-    display: block;
-    font-weight: bold;
-}
-
-.chat-info p {
-    margin: 4px 0;
-    font-size: 14px;
-}
-
-/* 채팅 메뉴 */
-.chat-menu {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 10px;
-}
-
-.chat-menu button {
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #000000;
-    color: white;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    width: 45%;
-}
-
-.chat-menu button:hover {
-    background-color: #444444;
-}
-
-/* 오른쪽 패널 */
-.chat-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.chat-header img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 12px;
-}
-
-.chat-body {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding-bottom: 16px;
-}
-
-.message.blue {
-    background-color: #333;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    max-width: 80%;
-}
-
-.chat-image {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    margin-bottom: 16px;
-}
-
-.purchase-confirm {
-    font-size: 14px;
-    background-color: #444;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-}
-
-.payment-btn {
-    margin-top: 12px;
-    padding: 10px 16px;
-    background-color: #000000;
-    color: white;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.payment-btn:hover {
-    background-color: #444444;
-}
-
-/* 채팅 입력창 및 버튼 */
-.chat-footer {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: auto;
-}
-
-.chat-footer input[type="text"] {
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #444;
-    border-radius: 4px;
-    background-color: #333;
-    color: white;
-}
-
-/* NEW: 가운데 정렬된 ... 버튼 */
-.chat-footer>button {
-    align-self: center;
-    padding: 6px 12px;
-    font-size: 20px;
-    border: none;
-    background: none;
-    color: white;
-    cursor: pointer;
+.purchase-confirm-box.above-buttons {
+  margin-bottom: 12px;
 }
 
 .footer-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .safe-btn,
 .exit-btn {
-    padding: 8px 16px;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 45%;
+  padding: 8px 16px;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 45%;
 }
 
 .safe-btn {
-    background-color: #000000;
-    color: white;
+  background-color: #000000;
+  color: white;
 }
 
 .safe-btn:hover {
-    background-color: #444444;
+  background-color: #444444;
 }
 
 .exit-btn {
-    background-color: #f44336;
-    color: white;
+  background-color: #f44336;
+  color: white;
 }
 
 .exit-btn:hover {
-    background-color: #e53935;
+  background-color: #e53935;
+}
+
+/* 하단 고정 구매/문의 버튼 */
+.purchase-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.purchase-buttons button {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #000000;
+  color: white;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  width: 45%;
+}
+
+.purchase-buttons button:hover {
+  background-color: #444444;
+}
+
+/* 가운데 패널 - 채팅 목록 */
+.chat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.chat-list li {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chat-list li:hover {
+  background-color: #333;
+}
+
+.chat-list li.active {
+  background-color: #444;
+}
+
+.chat-list img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.chat-info strong {
+  display: block;
+  font-weight: bold;
+}
+
+.chat-info p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+/* 채팅 하단 메뉴 */
+.chat-menu {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.chat-menu button {
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #000000;
+  color: white;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  width: 45%;
+}
+
+.chat-menu button:hover {
+  background-color: #444444;
+}
+
+/* 오른쪽 채팅창 */
+.chat-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chat-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.chat-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.message.blue {
+  background-color: #333;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  max-width: 80%;
+}
+
+.chat-image {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  margin-bottom: 16px;
+}
+
+.purchase-confirm {
+  font-size: 14px;
+  background-color: #444;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.payment-btn {
+  margin-top: 12px;
+  padding: 10px 16px;
+  background-color: #000000;
+  color: white;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.payment-btn:hover {
+  background-color: #444444;
+}
+
+/* 채팅 입력창 */
+.chat-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.chat-footer input[type="text"] {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #333;
+  color: white;
+}
+
+.chat-footer > button {
+  align-self: center;
+  padding: 6px 12px;
+  font-size: 20px;
+  border: none;
+  background: none;
+  color: white;
+  cursor: pointer;
 }
