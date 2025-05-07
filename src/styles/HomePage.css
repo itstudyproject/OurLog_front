@@ -1,8 +1,22 @@
+.homepage-root {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+}
+
+.homepage-hero-inner {
+  max-width: 48rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
 .homepage-hero {
   position: relative;
-  height: 60vh;
+  /* height: 60vh; */
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .homepage-container {
@@ -16,6 +30,7 @@
   font-size: 3rem;
   font-weight: 600;
   line-height: 1.2;
+  text-align: left;
 }
 
 .homepage-hero-mint {
@@ -25,6 +40,7 @@
 .homepage-hero-desc {
   font-size: 1.25rem;
   color: #6b7280;
+  text-align: left;
 }
 
 .homepage-section-title {
