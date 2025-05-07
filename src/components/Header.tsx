@@ -13,19 +13,14 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
 const Header: React.FC = () => {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
-  // 화면 크기 변경 감지
   useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
   }, []);
 
   return (
@@ -41,13 +36,16 @@ const Header: React.FC = () => {
               onClick={() => setIsSidebarOpen(true)}
             />
           </div>
+
           {/* 가운데: 로고 */}
-          <div className="logo-container" onClick={() => navigate('/')}>
-            <img
-              src="/images/OurLog.png"
-              alt="OurLog 로고"
-              className="logo-image"
-            />
+          <div className="logo-container">
+            <Link to="/">
+              <img
+                src="/images/OurLog.png"
+                alt="OurLog 로고"
+                className="logo-image"
+              />
+            </Link>
           </div>
 
           {/* 오른쪽: 검색 + 마이페이지/로그아웃 */}
@@ -73,9 +71,9 @@ const Header: React.FC = () => {
                   <div
                     className="logout"
                     onClick={() => {
-                      localStorage.removeItem("token"); // ✅ 토큰 삭제
-                      setIsLoggedIn(false); // ✅ 상태 변경
-                      navigate("/"); // ✅ 메인으로 이동
+                      localStorage.removeItem("token");
+                      setIsLoggedIn(false);
+                      navigate("/");
                     }}
                   >
                     {windowWidth <= 576 ? 'OUT' : 'LOGOUT'}
@@ -141,3 +139,4 @@ const Header: React.FC = () => {
   );
 };
 export default Header;
+
