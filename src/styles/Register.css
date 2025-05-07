@@ -138,3 +138,21 @@ body {
 .button-group button:nth-child(3):hover {
   background-color: #2563eb;
 }
+
+/* ✅ 썸네일 셀(td)을 가운데 정렬 */
+tbody td:nth-child(2) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 8px;
+}
+
+/* ✅ 썸네일 이미지 스타일 (수정됨) */
+.thumbnail {
+  width: 100%;
+  max-width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin: 0 auto;
+  border-radius: 4px;
+}
