@@ -191,6 +191,7 @@ const ArtList = () => {
         ];
 
         // 인기 작품 - 좋아요 기준으로 정렬
+
         const sortedByPopularity = [...dummyArtworks]
           .sort((a, b) => b.likes - a.likes)
           .slice(0, 3);
@@ -202,7 +203,6 @@ const ArtList = () => {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         setRecentArtworks(sortedByDate);
-
         setLoading(false);
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
