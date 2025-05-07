@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Kolker+Brush&display=swap");
-
+@import url("https://hangeul.pstatic.net/hangeul_static/css/nanum-barun-pen.css");
+@import url("https://hangeul.pstatic.net/hangeul_static/css/nanum-square-neo.css");
 .main-banner {
   position: relative;
   width: 100%;
@@ -20,32 +21,31 @@
 
 .text-content {
   position: absolute;
-  top: 50%; /* 화면 중앙에 텍스트 배치 */
-  left: 50%;
+  top: 75%; /* 화면 중앙에 텍스트 배치 */
+  left: 80%;
   transform: translate(-50%, -50%); /* 중앙 정렬 */
   color: white;
-  text-align: center;
+  text-align: right;
   z-index: 3;
   max-width: 80%; /* 텍스트가 너무 넓어지지 않도록 최대 너비 설정 */
+  min-width: 30%;
 }
 
 .title {
-  font-size: 3rem;
-  font-weight: bold;
   line-height: 1.5;
-  margin-bottom: 15px;
+  font-family: "NanumSquareNeo";
 }
 
 .highlight {
-  font-family: "Kolker Brush", cursive;
-  font-size: 8rem;
+  font-size: 100px;
   color: #ffffff;
 }
 
 .subtitle {
-  font-size: 1.25rem;
+  font-family: "NanumSquareNeo";
+  font-size: 25px;
   color: #ffffff;
-  margin-top: 24px;
+  margin-bottom: 6px;
 }
 
 @keyframes fadeScale {
