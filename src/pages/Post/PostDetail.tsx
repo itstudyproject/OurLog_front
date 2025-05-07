@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../../styles/Detail.css";
+import "../../styles/PostDetail.css";
 
 interface Comment {
   id: number;
@@ -26,6 +26,9 @@ const PostDetail = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [commentContent, setCommentContent] = useState<string>("");
+  const handleModify = () => {
+    navigate(`/Post/PostModify/${post?.id}`);
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -35,6 +38,7 @@ const PostDetail = () => {
         if (id === "1") {
           const dummyPost: Post = {
             id: 1,
+            boardId : 1,
             title: "지금부터 마카오 환타지아 클라이맥스 썸머...",
             author: "판타지스트",
             content: `지금부터 마카오 환타지아 클라이맥스 썸머 영상 리뷰 시작합니다.
@@ -143,6 +147,9 @@ const PostDetail = () => {
 
         <div className="post-actions">
           <button onClick={handleGoBack} className="back-button">목록으로</button>
+          {post.boardId !== undefined && (
+          <button onClick={handleModify} className="modify-button">수정</button>
+          )}
         </div>
 
         <div className="comments-section">

@@ -216,3 +216,18 @@ tbody td:nth-child(2) {
 .artbid-input:focus {
   border-color: #2563eb;
 }
+
+.delete-button {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.delete-button:hover {
+  background: #dc2626;
+}

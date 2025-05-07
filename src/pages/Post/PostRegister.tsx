@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/Register.css";
+import "../../styles/PostForm.css";
 
 interface FormData {
   title: string;
@@ -226,6 +226,17 @@ const Register = () => {
             {previewUrl && (
               <div className="preview-img">
                 <img src={previewUrl} alt="미리보기" />
+                 <button
+          type="button"
+          className="remove-thumbnail-btn"
+          onClick={() => {
+            setPreviewUrl(null);
+            setFormData(prev => ({ ...prev, thumbnail: null }));
+          }}
+          aria-label="썸네일 삭제"
+        >
+          ×
+        </button>
               </div>
             )}
             <p className="file-guide">썸네일로 사용됩니다. (최대 10MB)</p>

@@ -222,3 +222,18 @@ body {
     border-radius: 4px;
     cursor: pointer;
   }
+  .modify-button {
+    margin-left: 8px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .modify-button:hover {
+    background: #1d4ed8;
+  }

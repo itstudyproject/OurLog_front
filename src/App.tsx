@@ -4,7 +4,8 @@ import CustomerCenter from "./pages/CustomerCenter";
 import HomePage from "./pages/HomePage";
 import PostList from "./pages/Post/PostList";
 import PostDetail from "./pages/Post/PostDetail";
-import PostRegister from "./pages/Post/Register";
+import PostRegister from "./pages/Post/PostRegister";
+import PostModify from "./pages/Post/PostModify";
 import ArtList from "./pages/Art/ArtList";
 import ArtDetail from "./pages/Art/ArtDetail";
 import Payment from "./pages/Art/Payment";
@@ -30,6 +31,7 @@ function App() {
           <Route index element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
           <Route path="register" element={<PostRegister />} />
+          <Route path="postModify/:id" element={<PostModify />} />
         </Route>
       </Route>
     </Routes>
