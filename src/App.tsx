@@ -22,7 +22,8 @@ function App() {
       {/* 메인 레이아웃을 사용하는 페이지들 */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="customer-support" element={<CustomerCenter />} />
+        <Route path="terms-condition" element={<TermsCondition />} />
+        <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="art">
           <Route index element={<ArtList />} />
@@ -38,8 +39,6 @@ function App() {
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
-      {/* <Route path="/terms-condition" element={<TermsCondition />} />
-      <Route path="/customer-center" element={<CustomerCenter />} /> */}
       <Route path="/PostList">
         <Route index element={<PostList />} />
         <Route path="/PostList/Postregister" element={<PostRegister />} />
