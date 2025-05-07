@@ -5,6 +5,7 @@ import "../styles/header.css";
 
 const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<{
     email?: string;
@@ -29,6 +30,7 @@ const Header: React.FC = () => {
       if (u) setUserInfo(JSON.parse(u));
     };
 
+
     const handleLogout = () => {
       setIsLoggedIn(false);
       setUserInfo(null);
@@ -36,7 +38,6 @@ const Header: React.FC = () => {
 
     window.addEventListener("login", handleLogin);
     window.addEventListener("logout", handleLogout);
-
     return () => {
       window.removeEventListener("login", handleLogin);
       window.removeEventListener("logout", handleLogout);
@@ -54,6 +55,7 @@ const Header: React.FC = () => {
               className="menu-icon"
               onClick={() => setIsSidebarOpen(true)}
             />
+
           </div>
 
           <div className="logo-container">
