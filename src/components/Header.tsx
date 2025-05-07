@@ -1,12 +1,19 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
 const Navbar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
-  const navigate = useNavigate(); // ✅ 추가
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   return (
     <>
@@ -49,9 +56,9 @@ const Navbar: React.FC = () => {
                   <div
                     className="logout"
                     onClick={() => {
-                      localStorage.removeItem("token"); // ✅ 토큰 삭제
-                      setIsLoggedIn(false); // ✅ 상태 변경
-                      navigate("/"); // ✅ 메인으로 이동
+                      localStorage.removeItem("token");
+                      setIsLoggedIn(false);
+                      navigate("/");
                     }}
                   >
                     LOGOUT

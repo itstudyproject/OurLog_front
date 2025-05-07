@@ -2,8 +2,22 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RankingPage.css";
 
-// 더미 데이터 (ArtList 참고, 18개)
-const artworks = [
+// ✅ Artwork 타입 선언
+type Artwork = {
+  id: number;
+  title: string;
+  author: string;
+  imageSrc: string;
+  avatar: string;
+  views: number;
+  followers: number;
+  downloads: number;
+};
+
+// ✅ rankingType 키를 타입으로 명시
+type RankingKey = "views" | "followers" | "downloads";
+
+const artworks: Artwork[] = [
   {
     id: 1,
     title: "푸른 들판의 산책",
@@ -187,13 +201,12 @@ const artworks = [
 ];
 
 const badgeColors = [
-  { bg: "#f8c147", color: "#222" }, // 1등: 금
-  { bg: "#b0b0b0", color: "#222" }, // 2등: 은
-  { bg: "#a67c52", color: "#fff" }, // 3등: 동
+  { bg: "#f8c147", color: "#222" },
+  { bg: "#b0b0b0", color: "#222" },
+  { bg: "#a67c52", color: "#fff" },
 ];
 
-const podiumOrder = [0, 1, 2]; // 1등(가운데), 2등(왼쪽), 3등(오른쪽)
-
+const podiumOrder = [0, 1, 2];
 const rankingTypes = [
   { key: "views", label: "조회수" },
   { key: "followers", label: "팔로우" },
@@ -202,13 +215,11 @@ const rankingTypes = [
 
 const RankingPage = () => {
   const navigate = useNavigate();
-  const [rankingType, setRankingType] = useState("views");
-  // 무한스크롤용 상태
-  const [visibleCount, setVisibleCount] = useState(12); // 최초 12개
-  const loader = useRef<HTMLDivElement | null>(null);
+  const [rankingType, setRankingType] = useState<RankingKey>("views");
+  const [visibleCount, setVisibleCount] = useState(12);
+  const loader = useRef(null);
 
-  // 무한스크롤 Intersection Observer
-  const handleObserver = useCallback((entries: any) => {
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const target = entries[0];
     if (target.isIntersecting) {
       setVisibleCount((prev) => Math.min(prev + 6, artworks.length));
@@ -217,70 +228,40 @@ const RankingPage = () => {
 
   useEffect(() => {
     const option = { root: null, rootMargin: "20px", threshold: 1.0 };
-    const observer = new window.IntersectionObserver(handleObserver, option);
+    const observer = new IntersectionObserver(handleObserver, option);
     if (loader.current) observer.observe(loader.current);
     return () => observer.disconnect();
   }, [handleObserver]);
 
-  // 정렬 기준에 따라 정렬
   const sortedArtworks = [...artworks].sort(
-    (a, b) => (b as any)[rankingType] - (a as any)[rankingType]
+    (a, b) => b[rankingType] - a[rankingType]
   );
+
   const podium = sortedArtworks.slice(0, 3);
   const rest = sortedArtworks.slice(3, visibleCount);
 
   return (
     <div className="art-list-container">
-      {/* TOP RANKING! 이미지 */}
-      <div
-        style={{
-          marginTop: 40,
-          marginBottom: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <img
-          src="/images/topranking.png"
-          alt="TOP RANKING!"
-          style={{ height: 150 }}
-        />
+      <div className="ranking-banner">
+        <img src="/images/topranking.png" alt="TOP RANKING!" />
       </div>
-      {/* 랭킹 타입 탭 */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 32,
-          marginBottom: 32,
-        }}
-      >
+
+      <div className="ranking-type-tab">
         {rankingTypes.map((type) => (
           <button
             key={type.key}
-            onClick={() => setRankingType(type.key)}
-            style={{
-              background: rankingType === type.key ? "#f8c147" : "#222",
-              color: rankingType === type.key ? "#222" : "#fff",
-              border: "none",
-              borderRadius: 16,
-              padding: "8px 32px",
-              fontWeight: 700,
-              fontSize: 18,
-              cursor: "pointer",
-              boxShadow:
-                rankingType === type.key ? "0 2px 8px #f8c14755" : "none",
-              transition: "all 0.2s",
-            }}
+            onClick={() => setRankingType(type.key as RankingKey)}
+            className={`ranking-type-button ${
+              rankingType === type.key ? "active" : "inactive"
+            }`}
           >
             {type.label}
           </button>
         ))}
       </div>
-      {/* 1~3등 podium */}
+
       <div className="ranking-podium-row">
-        {podiumOrder.map((idx, i) => (
+        {podiumOrder.map((idx) => (
           <div
             key={idx}
             className={`ranking-podium-card ${
@@ -289,10 +270,9 @@ const RankingPage = () => {
           >
             <div
               className="ranking-podium-image-card"
-              style={{ cursor: "pointer" }}
               onClick={() => navigate(`/Art/${podium[idx].id}`)}
+              style={{ cursor: "pointer" }}
             >
-              {/* 순위 배지 */}
               <div
                 className="ranking-badge"
                 style={{
@@ -305,11 +285,10 @@ const RankingPage = () => {
               <img
                 src={podium[idx].imageSrc}
                 alt={podium[idx].title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                className="podium-image"
               />
               <div
-                className="ranking-podium-info"
-                style={{ cursor: "pointer" }}
+                className="ranking-author-info large"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/profile/${podium[idx].author}`);
@@ -318,25 +297,12 @@ const RankingPage = () => {
                 <img
                   src={podium[idx].avatar}
                   alt={podium[idx].author}
-                  className="ranking-podium-avatar"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    marginRight: 8,
-                    borderWidth: 2,
-                  }}
+                  className="ranking-author-avatar large"
                 />
-                <span className="ranking-list-author" style={{ fontSize: 16 }}>
+                <span className="ranking-list-author">
                   {podium[idx].author}
                 </span>
-                <span
-                  style={{
-                    color: "#fff",
-                    fontSize: 14,
-                    marginLeft: 10,
-                    fontWeight: 500,
-                  }}
-                >
+                <span className="ranking-list-meta">
                   {rankingType === "views" && `👁️ ${podium[idx].views}`}
                   {rankingType === "followers" && `👥 ${podium[idx].followers}`}
                   {rankingType === "downloads" && `⬇️ ${podium[idx].downloads}`}
@@ -346,38 +312,18 @@ const RankingPage = () => {
           </div>
         ))}
       </div>
-      {/* 4등 이하 격자형 리스트 */}
+
       <div className="ranking-list-row">
         {rest.map((art, idx) => (
-          <div
-            key={art.id}
-            className="ranking-list-card"
-            style={{ position: "relative", overflow: "hidden" }}
-          >
-            {/* 순위 숫자 */}
+          <div key={art.id} className="ranking-list-card">
             <div className="ranking-list-badge">{idx + 4}</div>
             <img
               src={art.imageSrc}
               alt={art.title}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                zIndex: 0,
-              }}
+              className="ranking-list-image-full"
             />
             <div
-              className="ranking-podium-info"
-              style={{
-                left: 18,
-                bottom: 18,
-                cursor: "pointer",
-                position: "absolute",
-                zIndex: 2,
-              }}
+              className="ranking-author-info small"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/profile/${art.author}`);
@@ -386,25 +332,10 @@ const RankingPage = () => {
               <img
                 src={art.avatar}
                 alt={art.author}
-                className="ranking-podium-avatar"
-                style={{
-                  width: 32,
-                  height: 32,
-                  marginRight: 8,
-                  borderWidth: 2,
-                }}
+                className="ranking-author-avatar"
               />
-              <span className="ranking-list-author" style={{ fontSize: 16 }}>
-                {art.author}
-              </span>
-              <span
-                style={{
-                  color: "#fff",
-                  fontSize: 14,
-                  marginLeft: 10,
-                  fontWeight: 500,
-                }}
-              >
+              <span className="ranking-list-author">{art.author}</span>
+              <span className="ranking-list-meta">
                 {rankingType === "views" && `👁️ ${art.views}`}
                 {rankingType === "followers" && `👥 ${art.followers}`}
                 {rankingType === "downloads" && `⬇️ ${art.downloads}`}
@@ -413,7 +344,7 @@ const RankingPage = () => {
           </div>
         ))}
       </div>
-      {/* 무한스크롤 로더 */}
+
       <div ref={loader} style={{ height: 40 }} />
     </div>
   );
