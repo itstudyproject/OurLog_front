@@ -14,19 +14,6 @@ body {
   padding: 20px;
 }
 
-/* 헤더 */
-.header {
-  text-align: center;
-  padding: 20px 0;
-  border-bottom: 1px solid #333;
-}
-
-.header h1 {
-  font-size: 32px;
-  font-weight: bold;
-  color: #fff;
-}
-
 /* 탭 메뉴 */
 .tab-menu {
   display: flex;
@@ -35,7 +22,6 @@ body {
 }
 
 .tab-menu div {
-  user-select: none;
   padding: 10px 20px;
   cursor: pointer;
   color: #ccc;
@@ -132,7 +118,6 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-  table-layout: fixed;
 }
 
 thead {
@@ -144,42 +129,29 @@ thead th {
   text-align: center;
   border-bottom: 1px solid #444;
   color: #fff;
-  word-wrap: break-word;
 }
 
-/* 각 열 고정 너비 설정 */
-thead th:nth-child(1),
-tbody td:nth-child(1) {
-  width: 60px;
+tbody tr {
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-thead th:nth-child(2),
+tbody tr:hover {
+  background-color: #2f2f2f;
+}
+
+tbody td {
+  padding: 12px 8px;
+  color: #ccc;
+  text-align: center;
+}
+
 tbody td:nth-child(2) {
-  width: 11cm;
+  text-align: left;
 }
 
-thead th:nth-child(3),
-tbody td:nth-child(3) {
-  width: 100px;
-  text-align: center;
-}
-
-thead th:nth-child(4),
-tbody td:nth-child(4) {
-  width: 120px;
-}
-
-thead th:nth-child(5),
-tbody td:nth-child(5) {
-  width: 120px;
-}
-
-/* 제목 가운데 정렬 */
-tbody td:nth-child(3) {
-  text-align: center;
-}
-
-/* 썸네일 스타일 */
+/* 썸네일 */
 .thumbnail {
   width: 50px;
   height: 50px;
@@ -196,24 +168,6 @@ tbody td:nth-child(3) {
   border: 1px solid #555;
   color: #777;
   font-size: 12px;
-}
-
-/* 테이블 row */
-tbody tr {
-  border-bottom: 1px solid #333;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-tbody tr:hover {
-  background-color: #2f2f2f;
-}
-
-tbody td {
-  padding: 12px 8px;
-  color: #ccc;
-  text-align: center;
-  word-wrap: break-word;
 }
 
 /* 페이지네이션 */

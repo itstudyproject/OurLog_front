@@ -1,4 +1,4 @@
 export * from "./ArtList";
 export * from "./ArtDetail";
-export * from "./ArtPayment";
+export * from "./Payment";
 export * from "./BidHistory";

@@ -30,7 +30,6 @@ const Header: React.FC = () => {
       if (u) setUserInfo(JSON.parse(u));
     };
 
-
     const handleLogout = () => {
       setIsLoggedIn(false);
       setUserInfo(null);
@@ -55,7 +54,6 @@ const Header: React.FC = () => {
               className="menu-icon"
               onClick={() => setIsSidebarOpen(true)}
             />
-
           </div>
 
           <div className="logo-container">
@@ -119,7 +117,7 @@ const Header: React.FC = () => {
           </div>
           <nav className="sidebar-nav">
             <Link to="/art">아트</Link>
-            <Link to="/community">커뮤니티</Link>
+            <Link to="/Post">커뮤니티</Link>
             <Link to="/ranking">랭킹</Link>
           </nav>
         </div>
