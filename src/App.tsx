@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import CustomerCenter from "./pages/CustomerCenter";
 import HomePage from "./pages/HomePage";
-import PostList from "./pages/Post/List";
+import PostList from "./pages/Post/PostList";
 import PostDetail from "./pages/Post/PostDetail";
 import PostRegister from "./pages/Post/Register";
 import ArtList from "./pages/Art/ArtList";

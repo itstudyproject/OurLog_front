@@ -156,3 +156,63 @@ tbody td:nth-child(2) {
   margin: 0 auto;
   border-radius: 4px;
 }
+/* 기존 스타일 유지, 아래는 추가되는 부분만 */
+
+.artbid-section {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.artbid-label {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.artbid-textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.artbid-textarea:focus {
+  border-color: #2563eb;
+}
+
+.auction-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 700px) {
+  .auction-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auction-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.artbid-input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.artbid-input:focus {
+  border-color: #2563eb;
+}
