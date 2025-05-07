@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
-const Navbar: React.FC = () => {
+const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ const Navbar: React.FC = () => {
       setIsLoggedIn(true);
     }
   }, []);
+
 
   return (
     <>
@@ -99,4 +100,4 @@ const Navbar: React.FC = () => {
   );
 };
 
-export default Navbar;
+export default Header;
