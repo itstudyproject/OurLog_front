@@ -299,5 +299,4 @@
       </div>
     );
   };
-
   export default PostList;

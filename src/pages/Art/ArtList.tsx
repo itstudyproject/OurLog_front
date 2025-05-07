@@ -37,12 +37,12 @@ const ArtList = () => {
           },
           {
             id: 2,
-            title: "낙엽 전경",
+            title: "작품 제목 2",
             author: "작가2",
             price: 45000,
             likes: 97,
             createdAt: "2023.06.20",
-            imageSrc: "/images/낙엽사진.jpeg",
+            imageSrc: "/images/post2.jpg",
           },
           {
             id: 3,
@@ -191,13 +191,18 @@ const ArtList = () => {
         ];
 
         // 인기 작품 - 좋아요 기준으로 정렬
-        const sortedByPopularity = [...dummyArtworks].sort((a, b) => b.likes - a.likes).slice(0, 3);
+
+        const sortedByPopularity = [...dummyArtworks]
+          .sort((a, b) => b.likes - a.likes)
+          .slice(0, 3);
         setPopularArtworks(sortedByPopularity);
 
         // 최신 작품 - 날짜 기준으로 정렬
-        const sortedByDate = [...dummyArtworks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const sortedByDate = [...dummyArtworks].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         setRecentArtworks(sortedByDate);
-        
         setLoading(false);
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
@@ -210,7 +215,10 @@ const ArtList = () => {
 
   const indexOfLastArtwork = currentPage * artworksPerPage;
   const indexOfFirstArtwork = indexOfLastArtwork - artworksPerPage;
-  const currentArtworks = recentArtworks.slice(indexOfFirstArtwork, indexOfLastArtwork);
+  const currentArtworks = recentArtworks.slice(
+    indexOfFirstArtwork,
+    indexOfLastArtwork
+  );
 
   const totalPages = Math.ceil(recentArtworks.length / artworksPerPage);
   const pageNumbers: number[] = Array.from(
@@ -225,7 +233,7 @@ const ArtList = () => {
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
     // 페이지 변경 시 상단으로 스크롤
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (loading) {
@@ -238,7 +246,6 @@ const ArtList = () => {
 
   return (
     <div className="art-list-container">
-
       <div className="section-title">
         <h2>인기 작품</h2>
         <div className="line"></div>
@@ -246,9 +253,9 @@ const ArtList = () => {
 
       <div className="popular-artworks">
         {popularArtworks.map((artwork) => (
-          <div 
-            key={artwork.id} 
-            className="artwork-card popular" 
+          <div
+            key={artwork.id}
+            className="artwork-card popular"
             onClick={() => handleArtworkClick(artwork.id)}
           >
             <div className="artwork-image">
@@ -258,7 +265,9 @@ const ArtList = () => {
             <div className="artwork-info">
               <h3>{artwork.title}</h3>
               <p className="artwork-author">{artwork.author}</p>
-              <p className="artwork-price">{artwork.price.toLocaleString()}원</p>
+              <p className="artwork-price">
+                {artwork.price.toLocaleString()}원
+              </p>
             </div>
           </div>
         ))}
@@ -271,9 +280,9 @@ const ArtList = () => {
 
       <div className="recent-artworks">
         {currentArtworks.map((artwork) => (
-          <div 
-            key={artwork.id} 
-            className="artwork-card" 
+          <div
+            key={artwork.id}
+            className="artwork-card"
             onClick={() => handleArtworkClick(artwork.id)}
           >
             <div className="artwork-image">
@@ -283,7 +292,9 @@ const ArtList = () => {
             <div className="artwork-info">
               <h3>{artwork.title}</h3>
               <p className="artwork-author">{artwork.author}</p>
-              <p className="artwork-price">{artwork.price.toLocaleString()}원</p>
+              <p className="artwork-price">
+                {artwork.price.toLocaleString()}원
+              </p>
             </div>
           </div>
         ))}
