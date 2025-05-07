@@ -190,11 +190,11 @@
   .header {
     padding: 0 30px;
   }
-  
+
   .logo-image {
     height: 70px;
   }
-  
+
   .search-input {
     width: 140px;
   }
@@ -204,15 +204,15 @@
   .header {
     height: 100px;
   }
-  
+
   .logo-image {
     height: 60px;
   }
-  
+
   .search-label {
     display: none;
   }
-  
+
   .search-input {
     width: 120px;
   }
@@ -223,15 +223,15 @@
     height: 80px;
     padding: 0 20px;
   }
-  
+
   .logo-image {
     height: 50px;
   }
-  
+
   .search-box {
     display: none;
   }
-  
+
   .right-section {
     gap: 16px;
   }
@@ -242,20 +242,20 @@
     height: 70px;
     padding: 0 15px;
   }
-  
+
   .logo-image {
     height: 40px;
   }
-  
+
   .user-menu {
     gap: 10px;
   }
-  
+
   .sidebar {
     width: 220px;
     padding: 20px;
   }
-  
+
   .sidebar-nav {
     font-size: 16px;
   }

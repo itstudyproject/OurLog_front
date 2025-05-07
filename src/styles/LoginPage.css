@@ -1,4 +1,5 @@
-.login-container, .register-container {
+.login-container,
+.register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -172,7 +173,7 @@
 }
 
 .checkbox-input:checked + .checkbox-label .checkbox-custom:after {
-  content: '';
+  content: "";
   position: absolute;
   left: 5px;
   top: 1px;
@@ -274,4 +275,4 @@ input[type="tel"]:focus {
   border-color: #40a9ff;
   outline: none;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-} 
+}
