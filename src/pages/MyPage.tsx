@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -80,6 +81,7 @@ const PostCard = ({
   price: string;
   badge?: string;
 }) => (
+
   <div className="card bg-base-100 shadow-md">
     <figure>
       <img src={image} alt={title} className="h-40 w-full object-cover" />
@@ -88,12 +90,14 @@ const PostCard = ({
       <h3 className="card-title text-sm">{title}</h3>
       <p className="text-sm">{price}</p>
       {badge && <div className="badge badge-success mt-2">{badge}</div>}
+
     </div>
   </div>
 );
 
 // 임시 데이터
 const recentPosts = [
+
   { image: '/src/images/11.jpg', title: 'Suntowers', price: '₩1,000,000' },
   { image: '/src/images/22.jpg', title: 'Blue Landscape', price: '₩800,000' },
   { image: '/src/images/33.jpg', title: 'Portrait of Woman', price: '₩730,000' },
@@ -108,6 +112,7 @@ const purchaseHistory = [
 const bookmarked = [
   { image: '/src/images/77.jpg', title: 'Cityscape', price: '₩400,000' },
   { image: '/src/images/88.jpg', title: 'Green Fields', price: '₩400,000' },
+
 ];
 
 export default MyPage;

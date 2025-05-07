@@ -9,6 +9,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
   const navigate = useNavigate();
+
+const Header: React.FC = () => {
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
