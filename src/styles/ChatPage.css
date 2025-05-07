@@ -1,103 +1,44 @@
 .chat-page {
-  display: flex;
-  height: 100vh;
-  width: 100%;
+  background-color: #000;
+  color: white;
+  min-height: 100vh;
   font-family: sans-serif;
-  background-color: #000000;
-  color: white;
+  padding: 16px;
 }
 
-/* 공통 패널 */
-.left-panel,
-.center-panel,
-.right-panel {
-  flex: 1;
-  padding: 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* 왼쪽 - 구매 확인 박스 + 버튼 */
-.purchase-confirm-box {
-  background-color: #222;
-  padding: 16px;
-  border: 1px solid #fff;
+.chat-list-modal {
+  background-color: #111;
+  padding: 20px;
   border-radius: 8px;
-  font-size: 14px;
-  color: white;
-  margin-bottom: 12px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid #444;
 }
 
-.purchase-confirm-box.above-buttons {
-  margin-bottom: 12px;
-}
-
-.footer-buttons {
+.chat-list-header {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.safe-btn,
-.exit-btn {
-  padding: 8px 16px;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 45%;
-}
-
-.safe-btn {
-  background-color: #000000;
-  color: white;
-}
-
-.safe-btn:hover {
-  background-color: #444444;
-}
-
-.exit-btn {
-  background-color: #f44336;
-  color: white;
-}
-
-.exit-btn:hover {
-  background-color: #e53935;
-}
-
-/* 하단 고정 구매/문의 버튼 */
-.purchase-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: auto;
-}
-
-.purchase-buttons button {
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  background-color: #000000;
-  color: white;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  width: 45%;
-}
-
-.purchase-buttons button:hover {
-  background-color: #444444;
-}
-
-/* 가운데 패널 - 채팅 목록 */
 .chat-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  overflow-y: auto;
-  flex-grow: 1;
 }
 
 .chat-list li {
@@ -105,15 +46,11 @@
   align-items: center;
   padding: 12px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  border-bottom: 1px solid #333;
 }
 
 .chat-list li:hover {
-  background-color: #333;
-}
-
-.chat-list li.active {
-  background-color: #444;
+  background-color: #111;
 }
 
 .chat-list img {
@@ -125,118 +62,165 @@
 
 .chat-info strong {
   display: block;
-  font-weight: bold;
 }
 
 .chat-info p {
-  margin: 4px 0;
   font-size: 14px;
+  margin: 2px 0;
 }
 
-/* 채팅 하단 메뉴 */
-.chat-menu {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 10px;
-}
-
-.chat-menu button {
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  background-color: #000000;
+.chat-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #111;
   color: white;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  width: 45%;
+  border: 2px solid #444;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  padding: 16px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
 }
 
-.chat-menu button:hover {
-  background-color: #444444;
-}
-
-/* 오른쪽 채팅창 */
 .chat-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
 }
 
 .chat-header img {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  margin-right: 12px;
+  margin-right: 8px;
 }
 
-.chat-body {
+.exit-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.messages {
   flex-grow: 1;
   overflow-y: auto;
-  padding-bottom: 16px;
-}
-
-.message.blue {
-  background-color: #333;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  max-width: 80%;
-}
-
-.chat-image {
-  width: 100%;
-  max-height: 200px;
-  object-fit: cover;
-  margin-bottom: 16px;
-}
-
-.purchase-confirm {
-  font-size: 14px;
-  background-color: #444;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-.payment-btn {
-  margin-top: 12px;
-  padding: 10px 16px;
-  background-color: #000000;
-  color: white;
-  border: 1px solid #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-}
-
-.payment-btn:hover {
-  background-color: #444444;
-}
-
-/* 채팅 입력창 */
-.chat-footer {
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: auto;
+  gap: 8px;
 }
 
-.chat-footer input[type="text"] {
-  padding: 12px;
-  font-size: 16px;
-  border: 1px solid #444;
-  border-radius: 4px;
+.message-row {
+  display: flex;
+  align-items: flex-end;
+}
+
+.message-row.you {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.message-row.me {
+  justify-content: flex-end;
+}
+
+.profile-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 6px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.me-message {
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+}
+
+.you-message {
   background-color: #333;
   color: white;
 }
 
-.chat-footer > button {
-  align-self: center;
-  padding: 6px 12px;
-  font-size: 20px;
+.chat-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-footer textarea {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 4px;
   border: none;
-  background: none;
+  background-color: #222;
   color: white;
+  resize: none;
+  line-height: 1.4;
+  height: auto;
+  min-height: 40px;
+}
+
+.chat-footer button {
+  padding: 8px 12px;
+  background-color: #555;
+  border: none;
+  color: white;
+  border-radius: 4px;
   cursor: pointer;
+}
+
+.chat-footer button:hover {
+  background-color: #777;
+}
+
+/* 깜빡이는 테두리 */
+@keyframes blink-border {
+  0% {
+    border-color: #3f51b5;
+  }
+  50% {
+    border-color: transparent;
+  }
+  100% {
+    border-color: #3f51b5;
+  }
+}
+
+.blinking {
+  animation: blink-border 1s infinite;
+}
+
+/* 모달 페이드인 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

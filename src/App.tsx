@@ -13,17 +13,22 @@ import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
+import ArtList from "./pages/Art/ArtList";
+import RankingPage from "./pages/Ranking/RankingPage";
+import ChatPage from "./pages/ChatPage";
+import ArtDetail from "./pages/Art/ArtDetail";
 // import Header from './layouts/Header';
 function App() {
   return (
     <Routes>
       {/* 메인 레이아웃을 사용하는 페이지들 */}
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<HomePage />} />
+        <Route index element={<WorkerPage />} />
         <Route path="customer-support" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="art">
           <Route index element={<ArtList />} />
+          <Route path=":id" element={<ArtDetail />} />
         </Route>
         <Route path="ranking" element={<RankingPage />} />
       </Route>
@@ -34,12 +39,14 @@ function App() {
       <Route path="/profile/edit" element={<ProfileEditPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="/mypage" element={<MyPage />} />
-      <Route path="/worker" element={<WorkerPage />} />
+      {/* <Route path="/worker" element={<WorkerPage />} /> */}
       <Route path="/delete-account" element={<DeleteAccountPage />} />
       {/* <Route path="/terms-condition" element={<TermsCondition />} />
       <Route path="/customer-center" element={<CustomerCenter />} /> */}
+      <Route path="/chat" element={<ChatPage />} />
       <Route path="/PostList">
         <Route index element={<PostList />} />
+        <Route path="/PostList/PostList" element={<PostList />} />
         <Route path="/PostList/Postregister" element={<PostRegister />} />
       </Route>
     </Routes>
