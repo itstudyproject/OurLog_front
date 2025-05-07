@@ -210,7 +210,7 @@ const podiumOrder = [0, 1, 2];
 const rankingTypes = [
   { key: "views", label: "조회수" },
   { key: "followers", label: "팔로우" },
-  { key: "downloads", label: "다운로드수" },
+  { key: "downloads", label: "다운로드" },
 ];
 
 const RankingPage = () => {

@@ -1,4 +1,5 @@
 import React from "react";
+import "../styles/HomePage.css";
 import { cn } from "../utils/utils";
 import type { AuctionItem } from "../types";
 
@@ -39,17 +40,17 @@ export default function HomePage() {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl space-y-4">
-            <h1 className="text-5xl font-semibold leading-tight">
+      <section className="homepage-hero">
+        <div className="homepage-container">
+          <div style={{maxWidth: '48rem'}} className="space-y-4">
+            <h1 className="homepage-hero-title">
               당신의 이야기가
               <br />
               작품이 되는 곳,
               <br />
-              <span className="text-primary-mint">OurLog</span>
+              <span className="homepage-hero-mint">OurLog</span>
             </h1>
-            <p className="text-xl text-text-medium">
+            <p className="homepage-hero-desc">
               아티스트와 컬렉터가 만나는 특별한 공간
             </p>
           </div>
@@ -57,27 +58,27 @@ export default function HomePage() {
       </section>
 
       {/* Current Auctions */}
-      <section className="container mx-auto px-4">
-        <h2 className="text-3xl font-semibold mb-8">진행 중인 경매</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="homepage-container">
+        <h2 className="homepage-section-title">진행 중인 경매</h2>
+        <div className="homepage-auction-list">
           {SAMPLE_AUCTIONS.map((auction) => (
             <div
               key={auction.id}
-              className="bg-black/20 rounded-lg overflow-hidden"
+              className="homepage-auction-card"
             >
-              <div className="aspect-[4/3] relative">
+              <div className="homepage-auction-image-wrap">
                 <img
                   src={auction.imageUrl}
                   alt={auction.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="homepage-auction-image"
                 />
               </div>
-              <div className="p-4 space-y-4">
-                <h3 className="text-xl font-medium">{auction.title}</h3>
-                <p className="text-text-medium">
+              <div className="homepage-auction-content">
+                <h3 className="homepage-auction-title">{auction.title}</h3>
+                <p className="homepage-auction-price">
                   ₩{auction.price.toLocaleString()}
                 </p>
-                <div className="flex gap-2">
+                <div style={{display: 'flex', gap: '0.5rem'}}>
                   <button
                     className={cn(
                       "btn",
