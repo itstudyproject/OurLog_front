@@ -16,6 +16,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import ArtList from "./pages/Art/ArtList";
 import RankingPage from "./pages/Ranking/RankingPage";
+import PostDetail from "./pages/Post/PostDetail";
+import PostModify from "./pages/Post/PostModify";
 // import Header from './layouts/Header';
 function App() {
   return (
@@ -31,19 +33,20 @@ function App() {
         </Route>
         <Route path="ranking" element={<RankingPage />} />
       </Route>
+      <Route path="post">
+        <Route index element={<PostList />} />
+        <Route path=":id" element={<PostDetail />} />
+        <Route path="register" element={<PostRegister />} />
+        <Route path="postModify/:id" element={<PostModify />} />
+      </Route>
 
       {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile/edit" element={<ProfileEditPage />} />
-      <Route path="/board/:boardId" element={<PostList />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
-      <Route path="/PostList">
-        <Route index element={<PostList />} />
-        <Route path="/PostList/Postregister" element={<PostRegister />} />
-      </Route>
     </Routes>
   );
 }
