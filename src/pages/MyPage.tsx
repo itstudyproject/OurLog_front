@@ -1,7 +1,10 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MyPage = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="bg-base-200 text-base-content flex">
       {/* Sidebar */}
@@ -16,11 +19,11 @@ const MyPage = () => {
           </div>
         </div>
         <ul className="menu flex flex-col items-center text-center">
-  <li><a>프로필 수정</a></li>
-  <li><a>계정 설정</a></li>
-  <li><a>로그아웃</a></li>
-  <li><a className="text-error">계정 삭제</a></li>
-</ul>
+          <li><a>프로필 수정</a></li>
+          <li><a>계정 설정</a></li>
+          <li><a>로그아웃</a></li>
+          <li><a className="text-error" onClick={() => navigate('/delete-account')}>계정 삭제</a></li>
+        </ul>
 
         <button className="btn btn-outline mt-4 w-full">내 글 등록하기</button>
       </aside>
