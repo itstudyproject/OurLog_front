@@ -10,6 +10,10 @@ import WorkerPage from './pages/WorkerPage'
 import MyPage from './pages/MyPage'
 import PostList from './pages/Post/PostList'
 import PostRegister from './pages/Post/PostRegister'
+import CustomerCenter from './pages/CustomerCenter'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import RankingPage from './pages/Ranking/RankingPage'
+import ArtList from './pages/Art/ArtList'
 // import Header from './layouts/Header';
 function App() {
   return (
