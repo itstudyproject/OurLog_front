@@ -31,11 +31,13 @@ const Navbar: React.FC = () => {
 
           {/* 가운데: 로고 */}
           <div className="logo-container">
-            <img
-              src="/images/OurLog.png"
-              alt="OurLog 로고"
-              className="logo-image"
-            />
+            <Link to="/">
+              <img
+                src="/images/OurLog.png"
+                alt="OurLog 로고"
+                className="logo-image"
+              />
+            </Link>
           </div>
 
           {/* 오른쪽: 검색 + 마이페이지/로그아웃 */}
