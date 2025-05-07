@@ -35,7 +35,7 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen bg-black">
       <Header scrollWidth={scrollWidth} />
-      <main className="pt-[160px]">
+      <main className="md:pt-[160px] sm:pt-[120px] pt-[100px] transition-all duration-300">
         <Outlet />
       </main>
       <Footer />

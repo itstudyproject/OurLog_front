@@ -1,16 +1,31 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
+interface HeaderProps {
+  scrollWidth?: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ scrollWidth = 0 }) => {
+  const navigate = useNavigate();
+
 const Header: React.FC = () => {
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
-  const navigate = useNavigate(); // ✅ 추가
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   return (
     <>
-      <header className="header">
+      <header className="header" style={{ marginRight: `${scrollWidth}px` }}>
         <div className="header-inner">
           {/* 왼쪽: 햄버거 버튼 */}
           <div className="sidebar-button">
@@ -21,22 +36,29 @@ const Header: React.FC = () => {
               onClick={() => setIsSidebarOpen(true)}
             />
           </div>
+
           {/* 가운데: 로고 */}
           <div className="logo-container">
-            <img
-              src="/images/OurLog.png"
-              alt="OurLog 로고"
-              className="logo-image"
-            />
+            <Link to="/">
+              <img
+                src="/images/OurLog.png"
+                alt="OurLog 로고"
+                className="logo-image"
+              />
+            </Link>
           </div>
 
           {/* 오른쪽: 검색 + 마이페이지/로그아웃 */}
           <div className="right-section">
-            <div className="search-label">SEARCH</div>
-            <div className="search-box">
-              <input type="text" placeholder="검색" className="search-input" />
-              <span className="search-icon">🔍</span>
-            </div>
+            {windowWidth > 768 && (
+              <>
+                <div className="search-label">SEARCH</div>
+                <div className="search-box">
+                  <input type="text" placeholder="검색" className="search-input" />
+                  <span className="search-icon">🔍</span>
+                </div>
+              </>
+            )}
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
@@ -44,21 +66,22 @@ const Header: React.FC = () => {
                     src="/images/mypage.png"
                     alt="마이페이지"
                     className="mypage-icon"
+                    onClick={() => navigate('/mypage')}
                   />
                   <div
                     className="logout"
                     onClick={() => {
-                      localStorage.removeItem("token"); // ✅ 토큰 삭제
-                      setIsLoggedIn(false); // ✅ 상태 변경
-                      navigate("/"); // ✅ 메인으로 이동
+                      localStorage.removeItem("token");
+                      setIsLoggedIn(false);
+                      navigate("/");
                     }}
                   >
-                    LOGOUT
+                    {windowWidth <= 576 ? 'OUT' : 'LOGOUT'}
                   </div>
                 </>
               ) : (
                 <Link to="/login" className="logout">
-                  LOGIN
+                  {windowWidth <= 576 ? 'IN' : 'LOGIN'}
                 </Link>
               )}
             </div>
@@ -68,22 +91,49 @@ const Header: React.FC = () => {
 
       {/* 사이드바 */}
       {isSidebarOpen && (
-        <div className="sidebar">
-          <div className="sidebar-header">
-            <h2 className="sidebar-title">메뉴</h2>
-            <img
-              src="/images/close.png"
-              alt="닫기"
-              className="sidebar-close"
-              onClick={() => setIsSidebarOpen(false)}
-            />
+        <>
+          <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+          <div className="sidebar">
+            <div className="sidebar-header">
+              <h2 className="sidebar-title">메뉴</h2>
+              <img
+                src="/images/close.png"
+                alt="닫기"
+                className="sidebar-close"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+            </div>
+            <nav className="sidebar-nav">
+              <a onClick={() => {
+                navigate("/");
+                setIsSidebarOpen(false);
+              }}>홈</a>
+              <a onClick={() => {
+                navigate("/");
+                setIsSidebarOpen(false);
+              }}>아트</a>
+              <a 
+              onClick={() => {
+                  navigate("/PostList");
+                  setIsSidebarOpen(false);
+                }}
+                className="hover:text-blue-300"
+              >
+                커뮤니티
+              </a>
+              <a onClick={() => {
+                navigate("/");
+                setIsSidebarOpen(false);
+              }}>랭킹</a>
+              {windowWidth <= 768 && (
+                <a onClick={() => {
+                  setIsSidebarOpen(false);
+                  // 모바일에서 검색창 표시 로직 추가 가능
+                }}>검색</a>
+              )}
+            </nav>
           </div>
-          <nav className="sidebar-nav">
-            <Link to="/art">아트</Link>
-            <Link to="/community">커뮤니티</Link>
-            <Link to="/ranking">랭킹</Link>
-          </nav>
-        </div>
+        </>
       )}
     </>
   );
