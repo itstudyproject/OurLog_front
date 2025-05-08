@@ -12,6 +12,12 @@ import RecentPostsCarousel from './Post/RecentPostsCarousel';
 
 const MyPage = () => {
   const navigate = useNavigate();
+
+import React from "react";
+import { useNavigate } from "react-router-dom";
+
+const MyPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-base-200 text-base-content flex">
       {/* Sidebar */}
@@ -20,6 +26,14 @@ const MyPage = () => {
           <img src="/images/mypage/Mari.jpg" alt="profile" className="w-24 h-24 rounded-full mb-2" />
           <h2 className="text-xl font-semibold">xoxo</h2>
           <p className="text-sm">xoxo@gmail.com</p>
+
+          <img
+            src="/src/images/99.jpg"
+            alt="profile"
+            className="w-24 h-24 rounded-full mb-2"
+          />
+          <h2 className="text-xl font-semibold">만수</h2>
+          <p className="text-sm">minsu@example.com</p>
           <div className="mt-2 text-sm space-x-2">
             <span>팔로워 30</span>
             <span>팔로잉 30</span>
@@ -30,6 +44,23 @@ const MyPage = () => {
           <li><a onClick={() => navigate('/mypage/account')}>회원정보수정</a></li>
           <li><a>로그아웃</a></li>
           <li><a className="text-error" onClick={() => navigate('/account/delete')}>회원탈퇴</a></li>
+          <li>
+            <a>프로필 수정</a>
+          </li>
+          <li>
+            <a>계정 설정</a>
+          </li>
+          <li>
+            <a>로그아웃</a>
+          </li>
+          <li>
+            <a
+              className="text-error"
+              onClick={() => navigate("/delete-account")}
+            >
+              계정 삭제
+            </a>
+          </li>
         </ul>
 
         <button className="btn btn-outline mt-4 w-full">내 글 등록하기</button>
@@ -114,12 +145,47 @@ const MyPage = () => {
           <Route path="bookmark" element={<BookmarkPage />} />
 
         </Routes>
+
+        <h1 className="text-3xl font-bold mb-4">마이 페이지</h1>
+
+        {/* 최근 본 게시물 */}
+        <Section title="최근 본 게시물">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recentPosts.map((post) => (
+              <PostCard key={post.title} {...post} />
+            ))}
+          </div>
+        </Section>
+
+        {/* 내 입찰/구매 내역 */}
+        <Section title="내 입찰/구매 내역">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {purchaseHistory.map((post) => (
+              <PostCard key={post.title} {...post} badge={post.badge} />
+            ))}
+          </div>
+        </Section>
+
+        {/* 북마크한 작품들 */}
+        <Section title="북마크한 작품들">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {bookmarked.map((post) => (
+              <PostCard key={post.title} {...post} />
+            ))}
+          </div>
+        </Section>
       </div>
     </div>
   );
 };
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Section = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
   <div className="mb-8">
     <h2 className="text-xl font-semibold mb-4">{title}</h2>
     {children}
@@ -139,7 +205,6 @@ const PostCard = ({
   badge?: string;
   onClick?: () => void;
 }) => (
-
   <div className="card bg-base-100 shadow-md">
     <figure onClick={onClick} className="cursor-pointer">
       <img src={image} alt={title} className="h-40 w-full object-cover" />
@@ -177,6 +242,35 @@ const bookmarked = [
   { image: '/images/mypage/Romed Roni.jpg', title: 'a girl in a parasol', price: '₩400,000' },
 
 
+
+  { image: "/src/images/11.jpg", title: "Suntowers", price: "₩1,000,000" },
+  { image: "/src/images/22.jpg", title: "Blue Landscape", price: "₩800,000" },
+  {
+    image: "/src/images/33.jpg",
+    title: "Portrait of Woman",
+    price: "₩730,000",
+  },
+  { image: "/src/images/44.jpg", title: "Abstract Forms", price: "₩3,000,000" },
+];
+
+const purchaseHistory = [
+  {
+    image: "/src/images/55.jpg",
+    title: "Sitting",
+    price: "₩1,000,000",
+    badge: "복원 중",
+  },
+  {
+    image: "/src/images/66.jpg",
+    title: "Red Abstraction",
+    price: "₩500,000",
+    badge: "보관 중",
+  },
+];
+
+const bookmarked = [
+  { image: "/src/images/77.jpg", title: "Cityscape", price: "₩400,000" },
+  { image: "/src/images/88.jpg", title: "Green Fields", price: "₩400,000" },
 ];
 
 const ArrowLeftIcon = () => (

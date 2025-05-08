@@ -13,8 +13,10 @@
     "@fontsource/material-icons": "^5.2.5",
     "@radix-ui/react-slot": "^1.1.0",
     "@tailwindcss/postcss": "^4.1.5",
+
     "@tailwindcss/vite": "^4.1.5",
     "axios": "^1.9.0",
+
     "chance": "^1.1.12",
     "class-variance-authority": "^0.7.0",
     "clsx": "2.1.1",
@@ -25,14 +27,12 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.5.3",
     "styled-components": "^6.1.17",
-    "tailwind-merge": "2.5.4",
-    "tailwindcss": "^4.1.5"
+    "tailwind-merge": "2.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/line-clamp": "^0.4.4",
-    "@tailwindcss/postcss": "^4.1.5",
     "@tailwindcss/vite": "^4.1.4",
     "@types/axios": "^0.9.36",
     "@types/chance": "^1.1.6",

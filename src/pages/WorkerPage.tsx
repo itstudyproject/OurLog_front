@@ -1,19 +1,24 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/WorkerPage.css";
 
 const cardData = [
-  { id: 1, image: "", badgeColor: "#3a00e5", title: "작품 1" },
-  { id: 2, image: "", badgeColor: "#3a00e5", title: "작품 2" },
-  { id: 3, image: "", badgeColor: "#00000080", title: "작품 3" },
-  { id: 4, image: "", badgeColor: "#00000080", title: "작품 4" },
-  { id: 5, image: "", badgeColor: "#00000080", title: "작품 5" },
-  { id: 6, image: "", badgeColor: "#00000080", title: "작품 6" },
+  { id: 1, image: "/images/파스타.jpg", title: "작품 제목 1" },
+  { id: 2, image: "/images/22.jpg", title: "작품 제목 2" },
+  { id: 3, image: "/images/33.jpg", title: "작품 제목 3" },
+  { id: 4, image: "/images/44.jpg", title: "작품 제목 4" },
+  { id: 5, image: "/images/55.jpg", title: "작품 제목 5" },
+  { id: 6, image: "/images/66.jpg", title: "작품 제목 6" },
+  { id: 7, image: "/images/77.jpg", title: "작품 제목 7" },
+  { id: 8, image: "/images/88.jpg", title: "작품 제목 8" },
+  { id: 9, image: "/images/99.jpg", title: "작품 제목 9" },
 ];
 
 const WorkerPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [followCount, setFollowCount] = useState(120);
   const [isFollowing, setIsFollowing] = useState(false);
+  const navigate = useNavigate();
 
   const cardsPerPage = 6;
   const totalPages = Math.ceil(cardData.length / cardsPerPage);
@@ -24,13 +29,17 @@ const WorkerPage: React.FC = () => {
   );
 
   const handleFollowToggle = () => {
-    setIsFollowing((prev) => {
-      const newFollowing = !prev;
-      setFollowCount((prevCount) =>
-        newFollowing ? prevCount + 1 : prevCount - 1
-      );
-      return newFollowing;
-    });
+    const newFollowing = !isFollowing;
+    setIsFollowing(newFollowing);
+    setFollowCount((prev) => (newFollowing ? prev + 1 : prev - 1));
+  };
+
+  const handleOpenChat = () => {
+    navigate("/chat", { state: { fromWorkerPage: true } });
+  };
+
+  const handleCardClick = (id: number) => {
+    navigate(`/Art/${id}`);
   };
 
   return (
@@ -59,23 +68,26 @@ const WorkerPage: React.FC = () => {
             <button onClick={handleFollowToggle} className="btn">
               {isFollowing ? "팔로잉" : "팔로우"}
             </button>
-            <button className="btn">채팅창</button>
+            <button className="btn" onClick={handleOpenChat}>
+              채팅창
+            </button>
           </div>
         </div>
       </div>
 
       <section className="worker-gallery">
         {currentCards.map((card) => (
-          <div key={card.id} className="worker-card">
+          <div
+            key={card.id}
+            className="worker-card"
+            onClick={() => handleCardClick(card.id)}
+            style={{ cursor: "pointer" }}
+          >
             <figure className="card-image-wrapper">
               <img
                 src={card.image || "/default-image.png"}
                 alt={`작품 ${card.id}`}
                 className="card-image"
-              />
-              <div
-                className="badge"
-                style={{ backgroundColor: card.badgeColor }}
               />
             </figure>
             <div className="card-body">

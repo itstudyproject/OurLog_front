@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import Header from '../components/Header'
-import '../styles/Header.css'
-import Footer from '../components/Footer';
+import React, { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import Header from "../components/Header";
+import "../styles/Header.css";
+import Footer from "../components/Footer";
 
 export default function MainLayout() {
   const [scrollWidth, setScrollWidth] = useState(0);
@@ -33,13 +33,12 @@ export default function MainLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen flex flex-col bg-black">
       <Header scrollWidth={scrollWidth} />
-      <main className="pt-[160px]">
+      <main className="flex-grow md:pt-[160px] sm:pt-[120px] pt-[100px] transition-all duration-300">
         <Outlet />
       </main>
       <Footer />
     </div>
   );
 }
-
