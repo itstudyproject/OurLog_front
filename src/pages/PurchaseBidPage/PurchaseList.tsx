@@ -47,7 +47,7 @@ const PurchaseList = () => {
           <li key={idx} className="purchase-item">
             <img src={item.image} alt={item.title} className="item-image" />
             <div className="item-info">
-              <p className="title">{item.title}</p>
+              <p className="purchase-item-title">{item.title}</p>
               <p className="artist">{item.artist}</p>
               <p>구매날짜 {item.date}</p>
               <p>구매금액 {item.price}</p>
