@@ -35,7 +35,11 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
-const ProfileEditPage: React.FC = () => {
+interface ProfileEditPageProps {
+  onBack: () => void;
+}
+
+const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
   // 사용자 정보 상태
@@ -92,6 +96,8 @@ const ProfileEditPage: React.FC = () => {
     e.preventDefault();
 
     // 실제 애플리케이션에서는 API로 데이터 전송
+    console.log('프로필 데이터 저장:', profileData);
+
     console.log("프로필 데이터 저장:", profileData);
 
     // 성공 메시지와 함께 프로필 페이지로 리디렉션
@@ -102,10 +108,11 @@ const ProfileEditPage: React.FC = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1 className="header-title">회원정보 수정</h1>
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <h1 className="header-title">회원정보수정</h1>
+        <button className="back-button" onClick={onBack}>
           <ArrowLeftIcon /> 돌아가기
         </button>
+
       </div>
 
       <form onSubmit={handleSubmit} className="profile-content">
@@ -231,10 +238,11 @@ const ProfileEditPage: React.FC = () => {
             <button
               type="button"
               className="cancel-button"
-              onClick={() => navigate(-1)}
+              onClick={onBack}
             >
               취소
             </button>
+
             <button type="submit" className="save-button">
               변경사항 저장
             </button>

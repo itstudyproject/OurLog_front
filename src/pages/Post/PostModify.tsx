@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../styles/PostForm.css"; // PostRegister와 동일한 CSS 사용
+import "../../styles/PostRegiModi.css"; // PostRegister와 동일한 CSS 사용
 
 interface FormData {
   title: string;
@@ -32,7 +32,7 @@ const PostModify = () => {
     thumbnail: null,
     category: "자유게시판",
   });
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
 
@@ -75,19 +75,24 @@ const PostModify = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        thumbnail: file,
-      }));
+    const files = e.target.files;
+    if (!files) return;
 
+    const fileArray = Array.from(files);
+    const newPreviewUrls: string[] = [];
+
+    fileArray.forEach((file) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
+      reader.onload = () => {
+        if (reader.result) {
+          newPreviewUrls.push(reader.result as string);
+          if (newPreviewUrls.length === fileArray.length) {
+            setPreviewUrls(newPreviewUrls);
+          }
+        }
       };
       reader.readAsDataURL(file);
-    }
+    });
   };
 
   const handleFileButtonClick = () => {
@@ -130,8 +135,8 @@ const PostModify = () => {
   };
 
   return (
-    <div className="register-wrapper">
-      <div className="register-container">
+    <div className="post-register-wrapper">
+      <div className="post-register-container">
         <div className="category-select">
           <label>카테고리:</label>
           <select
@@ -145,7 +150,7 @@ const PostModify = () => {
         </div>
       </div>
 
-      <div className="register-container">
+      <div className="post-register-container">
         <div className="title-input">
           <input
             type="text"
@@ -157,7 +162,7 @@ const PostModify = () => {
         </div>
       </div>
 
-      <div className="register-container">
+      <div className="post-register-container">
         <div className="content-box">
           <div className="file-upload">
             <button type="button" onClick={handleFileButtonClick}>
@@ -169,6 +174,7 @@ const PostModify = () => {
               style={{ display: "none" }}
               onChange={handleFileChange}
               accept="image/*"
+              multiple
             />
             {previewUrl && (
               <div className="preview-img-wrapper">
