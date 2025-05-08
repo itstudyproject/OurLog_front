@@ -6,13 +6,13 @@ body {
   color: #d1d5db;
 }
 
-.register-wrapper {
+.post-register-wrapper {
   width: 100%;
   min-height: 100vh;
   padding-bottom: 5rem;
 }
 
-.register-container {
+.post-register-container {
   max-width: 1200px;
   margin: 1rem auto;
   padding: 0 1.25rem;
@@ -65,9 +65,20 @@ body {
   background-color: #4b5563;
 }
 
-.preview-img img {
-  max-width: 100%;
-  border-radius: 0.5rem;
+/* .preview-img-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 10px;
+} */
+
+.preview-img {
+  width: 400px;
+  object-fit: contain;
+  display: block;
 }
 
 .file-guide {

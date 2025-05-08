@@ -149,14 +149,19 @@ const ArtDetail = () => {
   return (
     <div className="art-detail-container">
       <div className="art-detail-content">
-        <div className="art-image-container">
-          <img
-            src={post.imageSrc}
-            alt={post.title}
-            className="art-main-image"
-          />
-          <div className="share-buttons">
-            <button onClick={handleShare}>공유</button>
+        <div className="left-content">
+          <div className="art-image-container">
+            <img
+              src={post.imageSrc}
+              alt={post.title}
+              className="art-main-image"
+            />
+          </div>
+          <div className="artwork-description">
+            <h3>작품 설명</h3>
+            <div className="description-content">
+              <p>{post.description}</p>
+            </div>
           </div>
         </div>
 
@@ -169,12 +174,17 @@ const ArtDetail = () => {
               <h3>{post.author}</h3>
               <p>일러스트레이터</p>
             </div>
-            <button
-              className={`follow-button ${isFollowing ? "following" : ""}`}
-              onClick={handleFollow}
-            >
-              {isFollowing ? "팔로잉" : "팔로우"}
-            </button>
+            <div className="artist-buttons">
+              <button
+                className={`follow-button ${isFollowing ? "following" : ""}`}
+                onClick={handleFollow}
+              >
+                {isFollowing ? "팔로잉" : "팔로우"}
+              </button>
+              <button className="share-button" onClick={handleShare}>
+                공유
+              </button>
+            </div>
           </div>
 
           <div className="art-title">
@@ -196,47 +206,40 @@ const ArtDetail = () => {
               <p>{post.buyNowPrice.toLocaleString()}원</p>
             </div>
           </div>
+
           <div className="auction-timer">
             <div className="timer-icon">⏱️</div>
             <div className="timer-content">
               <span>남은 시간</span>
               <p>{countdown}</p>
             </div>
-            <button className="bid-history-button" onClick={handleBidHistory}>
-              입찰내역
-            </button>
           </div>
+
           <div className="bid-input">
             <input
               type="number"
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
-              min={post.currentBid + 1000}
-              step="1000"
               placeholder="입찰 금액을 입력하세요"
             />
             <span className="currency">원</span>
           </div>
 
           <div className="action-buttons">
-            <button className="bid-button" onClick={handleBidSubmit}>
-              입찰하기
-            </button>
-            <button className="buy-now-button" onClick={handleBuyNow}>
-              즉시구매
-            </button>
-          </div>
-          <button className="chat-button" onClick={handleChat}>
-            <span className="chat-icon">💬</span> 작가와 1:1 채팅
-          </button>
-
-          <div className="description-section">
-            <h3>작품 설명</h3>
-            <div className="description-content">
-              {post.description.split("\n").map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+            <div className="main-actions">
+              <button className="bid-button" onClick={handleBidSubmit}>
+                입찰하기
+              </button>
+              <button className="buy-now-button" onClick={handleBuyNow}>
+                즉시구매
+              </button>
             </div>
+            <button className="chat-button" onClick={handleChat}>
+              <span className="chat-icon">💬</span> 작가와 1:1 채팅
+            </button>
+            <button className="bid-history-button" onClick={handleBidHistory}>
+              입찰내역
+            </button>
           </div>
         </div>
       </div>
