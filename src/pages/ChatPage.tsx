@@ -22,23 +22,27 @@ const ChatPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
+  const [isPaymentRequestVisible, setIsPaymentRequestVisible] = useState(false);
 
-  // 채팅창 모달 열기
+  // 채팅 모달 열기
   const handleOpenChatModal = (user: string) => {
+    const confirmChat = window.confirm(`${user}님과 채팅을 시작하시겠습니까?`);
+    if (!confirmChat) return;
+
     setCurrentUser(user);
-    setIsListModalVisible(false);
-    setIsChatModalVisible(true);
-    setMessages([]); // 새 채팅 시작
+    setIsListModalVisible(false); // 채팅 목록 모달 숨기기
+    setIsChatModalVisible(true); // 채팅 창 모달 열기
+    setMessages([]); // 채팅 내용 초기화
   };
 
-  // 채팅목록 모달 닫기
+  // 채팅 목록 모달 닫기
   const handleCloseListModal = () => setIsListModalVisible(false);
 
-  // 나가기 버튼 클릭
+  // 채팅 모달 나가기
   const handleExitClick = () => {
-    setIsChatModalVisible(false);
-    setCurrentUser(null);
-    setIsListModalVisible(true);
+    setIsChatModalVisible(false); // 채팅 모달 숨기기
+    setCurrentUser(null); // 현재 사용자 초기화
+    setIsListModalVisible(true); // 채팅 목록 모달 다시 열기
   };
 
   // 메시지 보내기
@@ -48,17 +52,42 @@ const ChatPage: React.FC = () => {
         sender: "Me",
         message: newMessage,
       };
-      setMessages([...messages, message]);
-      setNewMessage(""); // 입력창 초기화
+      setMessages([...messages, message]); // 새 메시지 추가
+      setNewMessage(""); // 메시지 입력 필드 초기화
     }
   };
 
-  // 엔터키로 메시지 전송
+  // Enter 키를 눌러 메시지 보내기
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  // 안전결제 요청을 클릭했을 때
+  const handleSecurePaymentRequest = () => {
+    setIsPaymentRequestVisible(true); // 안전결제 요청 메시지 보이기
+  };
+
+  // 수락 버튼 클릭
+  const handleAcceptPayment = () => {
+    const message: ChatMessage = {
+      sender: "Me",
+      message: "안전결제를 수락하셨습니다.",
+    };
+    setMessages([...messages, message]); // 수락 메시지 추가
+    setIsPaymentRequestVisible(false); // 안전결제 요청 메시지 숨기기
+  };
+
+  // 거절 버튼 클릭
+  const handleRejectPayment = () => {
+    const message: ChatMessage = {
+      sender: "Me",
+      message: "안전결제를 거절하셨습니다.",
+    };
+    setMessages([...messages, message]); // 거절 메시지 추가
+    setIsPaymentRequestVisible(false); // 안전결제 요청 메시지 숨기기
   };
 
   return (
@@ -69,7 +98,10 @@ const ChatPage: React.FC = () => {
           <div className="chat-list-modal">
             <div className="chat-list-header">
               <h2>채팅 목록</h2>
-              <button className="exit-btn" onClick={handleCloseListModal}>닫기</button>
+              {/* 닫기 버튼 클릭 시 모달 닫기 */}
+              <button className="exit-btn" onClick={handleCloseListModal}>
+                닫기
+              </button>
             </div>
             <ul className="chat-list">
               {Object.keys(userProfiles).map((user, idx) => (
@@ -91,29 +123,57 @@ const ChatPage: React.FC = () => {
         <div className="chat-modal">
           <div className="chat-header">
             <div className="chat-header-left">
-              <img src={userProfiles[currentUser] || "/profile-placeholder.jpg"} alt={currentUser} />
+              <img
+                src={userProfiles[currentUser] || "/profile-placeholder.jpg"}
+                alt={currentUser}
+              />
               <span>{currentUser}</span>
             </div>
-            <button className="exit-btn" onClick={handleExitClick}>나가기</button>
+            {/* 나가기 버튼 클릭 시 채팅 목록 모달로 돌아가기 */}
+            <button className="exit-btn" onClick={handleExitClick}>
+              나가기
+            </button>
           </div>
 
-          {/* 메시지 영역 */}
           <div className="messages">
             {messages.map((msg, index) => (
-              <div key={index} className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}>
+              <div
+                key={index}
+                className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
+              >
                 {msg.sender !== "Me" && (
-                  <img src={userProfiles[currentUser] || "/profile-placeholder.jpg"} alt="상대방" className="profile-icon" />
+                  <img
+                    src={
+                      userProfiles[currentUser] || "/profile-placeholder.jpg"
+                    }
+                    alt="상대방"
+                    className="profile-icon"
+                  />
                 )}
-                <div className={`message ${msg.sender === "Me" ? "me-message" : "you-message"}`}>
+                <div
+                  className={`message ${
+                    msg.sender === "Me" ? "me-message" : "you-message"
+                  }`}
+                >
                   {msg.message.split("\n").map((line, i) => (
                     <div key={i}>{line}</div>
                   ))}
                 </div>
               </div>
             ))}
+
+            {/* 안전결제 요청 메시지가 있을 때만 중앙에 배치 */}
+            {isPaymentRequestVisible && (
+              <div className="payment-request-message">
+                <p>안전결제를 하시겠습니까?</p>
+                <div className="payment-buttons">
+                  <button onClick={handleAcceptPayment}>수락</button>
+                  <button onClick={handleRejectPayment}>거절</button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* 메시지 입력창 */}
           <div className="chat-footer">
             <textarea
               value={newMessage}
@@ -126,7 +186,12 @@ const ChatPage: React.FC = () => {
 
             {/* 안전결제 요청 버튼 */}
             <div className="secure-payment-box">
-              <button className="secure-payment-btn">안전결제 요청</button>
+              <button
+                className="secure-payment-btn"
+                onClick={handleSecurePaymentRequest}
+              >
+                안전결제 요청
+              </button>
             </div>
           </div>
         </div>

@@ -36,7 +36,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -50,7 +50,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -64,7 +64,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -78,7 +78,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -105,7 +105,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 2,
         email: "user@example.com",
-        name: "사용자",
+        nickname: "사용자",
       },
       answerDTO: {
         answerId: 1,
@@ -200,7 +200,7 @@ const CustomerCenter: React.FC = () => {
         userDTO: {
           id: 2,
           email: "user@example.com",
-          name: "사용자",
+          nickname: "사용자",
         },
         isOpen: false,
       };
@@ -214,11 +214,11 @@ const CustomerCenter: React.FC = () => {
 
   return (
     <>
-      <div className="container">
-        <nav className="sidebar">
-          <h2 className="sidebar-title">고객센터</h2>
+      <div className="cc-container">
+        <nav className="cc-sidebar">
+          <h2 className="cc-sidebar-title">고객센터</h2>
           <div
-            className={`nav-item ${activeSection === "faq" ? "active" : ""}`}
+            className={`cc-nav-item ${activeSection === "faq" ? "active" : ""}`}
             onClick={() => scrollToSection("faq")}
           >
             자주 묻는 질문
@@ -226,7 +226,7 @@ const CustomerCenter: React.FC = () => {
           {!searchTerm && (
             <>
               <div
-                className={`nav-item ${
+                className={`cc-nav-item ${
                   activeSection === "inquiry" ? "active" : ""
                 }`}
                 onClick={() => scrollToSection("inquiry")}
@@ -234,7 +234,7 @@ const CustomerCenter: React.FC = () => {
                 1:1 문의하기
               </div>
               <div
-                className={`nav-item ${
+                className={`cc-nav-item ${
                   activeSection === "history" ? "active" : ""
                 }`}
                 onClick={() => scrollToSection("history")}
@@ -245,26 +245,26 @@ const CustomerCenter: React.FC = () => {
           )}
         </nav>
 
-        <div className="content">
+        <div className="cc-content">
           <section id="faq">
-            <h1 className="styled-h1">
+            <h1 className="cc-styled-h1">
               무엇이든 물어보세요
               <br />
               궁금하신 점 바로 풀어드립니다.
             </h1>
 
-            <div className="search-wrapper">
+            <div className="cc-search-wrapper">
               <input
                 type="text"
-                className="search-input"
+                className="cc-search-input"
                 placeholder="검색어를 입력하세요"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="search-icon" />
+              <Search className="cc-search-icon" />
             </div>
 
-            <div className="section-title">
+            <div className="cc-section-title">
               {searchTerm
                 ? `"${searchTerm}"에 대한 검색 결과`
                 : "자주 묻는 질문"}
@@ -294,7 +294,7 @@ const CustomerCenter: React.FC = () => {
           {!searchTerm && (
             <>
               <section id="inquiry">
-                <h2 className="section-title">1:1 문의하기</h2>
+                <h2 className="cc-section-title">1:1 문의하기</h2>
                 <p className="info-text">
                   서비스 이용 중 불편하신 점이나 문의사항을 남겨주시면 신속하게
                   답변 드리도록 하겠습니다.
@@ -320,7 +320,7 @@ const CustomerCenter: React.FC = () => {
               </section>
 
               <section id="history">
-                <h2 className="section-title">1:1 문의내역</h2>
+                <h2 className="cc-section-title">1:1 문의내역</h2>
                 <table className="table">
                   <thead>
                     <tr>

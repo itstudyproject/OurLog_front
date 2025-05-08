@@ -1,49 +1,51 @@
 .terms-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 12px 12px;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.7;
-  color: #333;
-  background-color: #fff;
+  line-height: 1.5; /* 읽기 좋은 줄간격 */
+  color: #f1f1f1;
+  background-color: #121212;
 }
 
 .terms-container h1 {
-  font-size: 2rem;
+  font-size: 2.5rem; /* 더 크게 */
+  font-weight: 700;
   text-align: center;
-  margin-bottom: 30px;
-  color: #222;
+  margin-bottom: 16px;
+  color: #ffffff;
 }
 
 .terms-container section {
-  margin-bottom: 40px;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 20px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
 }
 
 .terms-container h2 {
-  font-size: 1.25rem;
-  color: #2c3e50;
-  margin-bottom: 15px;
+  font-size: 1.4rem; /* 제목 글씨 키움 */
+  color: #f8f8f8;
+  margin-bottom: 8px;
 }
 
 .terms-container p,
 .terms-container ol {
-  font-size: 1rem;
-  margin-bottom: 10px;
+  font-size: 1.05rem; /* 본문 글씨 키움 */
+  margin-bottom: 6px;
 }
 
 .terms-container ol {
-  padding-left: 20px;
+  padding-left: 18px;
 }
 
 .terms-container ol li {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .terms-container section:last-child {
   border-bottom: none;
   font-weight: bold;
-  color: #555;
+  color: #ccc;
   text-align: right;
+  margin-top: 8px;
 }

@@ -1,10 +1,12 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import ChatLayout from "./pages/ChatPage"; // 별도의 Chat Layout 추가
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
+import AccountEdit from "./pages/AccountEdit";
+import AccountDelete from "./pages/AccountDelete";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
@@ -15,41 +17,57 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import ArtList from "./pages/Art/ArtList";
 import RankingPage from "./pages/Ranking/RankingPage";
-import ChatPage from "./pages/ChatPage";
+import PostDetail from "./pages/Post/PostDetail";
+import Payment from "./pages/Art/Payment";
+import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
-// import Header from './layouts/Header';
+import BidHistory from "./pages/Art/BidHistory";
+import RegisterPage from "./pages/RegisterPage";
+import ChatPage from "./pages/ChatPage";
+
 function App() {
   return (
     <Routes>
-      {/* 메인 레이아웃을 사용하는 페이지들 */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<WorkerPage />} />
-        <Route path="customer-support" element={<CustomerCenter />} />
+        <Route path="chat" element={<ChatPage />} />
+        <Route path="terms-condition" element={<TermsCondition />} />
+        <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
+
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
+          <Route path="payment/:id" element={<Payment />} />
+          <Route path="bids" element={<BidHistory />} />
         </Route>
+
         <Route path="ranking" element={<RankingPage />} />
+
+        <Route path="post">
+          <Route index element={<PostList />} />
+          <Route path=":id" element={<PostDetail />} />
+          <Route path="Register" element={<PostRegister />} />
+          <Route path="postModify/:id" element={<PostModify />} />
+        </Route>
       </Route>
 
       {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile/edit" element={<ProfileEditPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
-      <Route path="/mypage" element={<MyPage />} />
-      {/* <Route path="/worker" element={<WorkerPage />} /> */}
+      <Route path="mypage/*" element={<MyPage />} />
+      <Route path="/account/delete" element={<AccountDelete />} />
+      <Route path="worker" element={<WorkerPage />} />
+
+      {/* ChatPage는 별도의 레이아웃을 사용 */}
+
       <Route path="/delete-account" element={<DeleteAccountPage />} />
-      {/* <Route path="/terms-condition" element={<TermsCondition />} />
-      <Route path="/customer-center" element={<CustomerCenter />} /> */}
-      <Route path="/chat" element={<ChatPage />} />
-      <Route path="/PostList">
-        <Route index element={<PostList />} />
-        <Route path="/PostList/PostList" element={<PostList />} />
-        <Route path="/PostList/Postregister" element={<PostRegister />} />
-      </Route>
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/profile-edit" element={<ProfileEditPage />} />
+      <Route path="/mypage" element={<MyPage />} />
+      <Route path="/worker" element={<WorkerPage />} />
     </Routes>
   );
 }
+
 export default App;

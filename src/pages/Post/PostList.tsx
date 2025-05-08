@@ -17,6 +17,7 @@ const PostList = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedBoardId, setSelectedBoardId] = useState<number>(1);
 
   const postsPerPage = 10;
 
@@ -30,6 +31,7 @@ const PostList = () => {
             author: "판타지스트",
             createdAt: "2023.03.26.14:22",
             thumbnail: "/images/post1.jpg",
+            boardId: 1,
           },
           {
             id: 2,
@@ -37,6 +39,7 @@ const PostList = () => {
             author: "애유기냉동식",
             createdAt: "2023.03.26.14:21",
             thumbnail: "/images/post2.jpg",
+            boardId: 2,
           },
           {
             id: 3,
@@ -44,6 +47,7 @@ const PostList = () => {
             author: "시각예술",
             createdAt: "2023.03.26.14:21",
             thumbnail: "/images/post3.jpg",
+            boardId: 3,
           },
           {
             id: 4,
@@ -51,6 +55,7 @@ const PostList = () => {
             author: "작가4",
             createdAt: "2023.03.26.14:20",
             thumbnail: "/images/post4.jpg",
+            boardId: 4,
           },
           {
             id: 5,
@@ -58,6 +63,7 @@ const PostList = () => {
             author: "작가5",
             createdAt: "2023.03.26.14:20",
             thumbnail: "/images/post4.jpg",
+            boardId: 5,
           },
           {
             id: 6,
@@ -65,12 +71,15 @@ const PostList = () => {
             author: "작가6",
             createdAt: "2023.03.26.14:19",
             thumbnail: "/images/post5.jpg",
+            boardId: 6,
           },
           {
             id: 7,
             title: "일곱 번째 포스트",
             author: "작가7",
             createdAt: "2023.03.26.14:18",
+            thumbnail: "/images/post6.jpg",
+            boardId: 7,
           },
           {
             id: 8,
@@ -78,12 +87,15 @@ const PostList = () => {
             author: "작가8",
             createdAt: "2023.03.26.14:17",
             thumbnail: "/images/post8.jpg",
+            boardId: 8,
           },
           {
             id: 9,
             title: "아홉 번째 포스트",
             author: "작가9",
             createdAt: "2023.03.26.14:16",
+            thumbnail: "/images/post9.jpg",
+            boardId: 9,
           },
           {
             id: 10,
@@ -91,12 +103,15 @@ const PostList = () => {
             author: "작가10",
             createdAt: "2023.03.26.14:15",
             thumbnail: "/images/post10.jpg",
+            boardId: 10,
           },
           {
             id: 11,
             title: "열한 번째 포스트",
             author: "작가11",
             createdAt: "2023.03.26.14:14",
+            thumbnail: "/images/post11.jpg",
+            boardId: 11,
           },
           {
             id: 12,
@@ -104,6 +119,7 @@ const PostList = () => {
             author: "작가12",
             createdAt: "2023.03.26.14:13",
             thumbnail: "/images/post12.jpg",
+            boardId: 12,
           },
           {
             id: 13,
@@ -111,6 +127,7 @@ const PostList = () => {
             author: "작가2",
             createdAt: "2023.03.26.14:11",
             thumbnail: "/images/post15.jpg",
+            boardId: 13,
           },
           {
             id: 14,
@@ -118,8 +135,9 @@ const PostList = () => {
             author: "작가17",
             createdAt: "2023.03.26.14:11",
             thumbnail: "/images/post16.jpg",
+            boardId: 14,
           },
-        ]; // 생략: 기존 더미데이터 그대로 유지
+        ];
         setPosts(dummyPosts);
         setLoading(false);
       } catch (error) {
@@ -131,26 +149,28 @@ const PostList = () => {
     fetchPosts();
   }, []);
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-
-  const handlePostClick = (postId: number) => {
-    navigate(`/Post/${postId}`);
-  };
-
-  const handleRegisterClick = () => {
-    navigate("/Post/Register");
-  };
-
+  const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
+  const handleRegisterClick = () => navigate("/Post/Register");
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("검색어:", searchTerm);
   };
+  const handlePageClick = (page: number) => setCurrentPage(page);
 
-  const handlePageClick = (page: number) => {
-    setCurrentPage(page);
+  const handleTabClick = (boardId: number) => {
+    setSelectedBoardId(boardId);
+    setCurrentPage(1);
   };
+
+  const filteredPosts = posts
+    .filter((post) => post.boardId === selectedBoardId)
+    .filter((post) => post.title.includes(searchTerm));
+
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   if (loading) {
     return (
@@ -160,27 +180,47 @@ const PostList = () => {
     );
   }
 
-  const totalPages = Math.ceil(posts.length / postsPerPage);
-  const pageNumbers: number[] = Array.from(
-    { length: totalPages },
-    (_, i) => i + 1
-  );
-
   return (
-    <div className="container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
-
+    <div className="w-full max-w-screen-xl mx-auto px-4">
       <div className="tab-menu">
-        <div>새소식</div>
-        <div className="active">자유게시판</div>
-        <div>홍보게시판</div>
-        <div>요청게시판</div>
+        <div
+          className={selectedBoardId === 1 ? "active" : ""}
+          onClick={() => handleTabClick(1)}
+        >
+          새소식
+        </div>
+        <div
+          className={selectedBoardId === 2 ? "active" : ""}
+          onClick={() => handleTabClick(2)}
+        >
+          자유게시판
+        </div>
+        <div
+          className={selectedBoardId === 3 ? "active" : ""}
+          onClick={() => handleTabClick(3)}
+        >
+          홍보게시판
+        </div>
+        <div
+          className={selectedBoardId === 4 ? "active" : ""}
+          onClick={() => handleTabClick(4)}
+        >
+          요청게시판
+        </div>
       </div>
 
       <div className="board-header">
-        <h2>자유게시판</h2>
+        <h2>
+          {
+            {
+              1: "새소식",
+              2: "자유게시판",
+              3: "홍보게시판",
+              4: "요청게시판",
+            }[selectedBoardId]
+          }
+        </h2>
+
         <div className="search-bar">
           <form onSubmit={handleSearch}>
             <input

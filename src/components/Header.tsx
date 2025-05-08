@@ -5,6 +5,7 @@ import "../styles/header.css";
 
 const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<{
     email?: string;
@@ -36,7 +37,6 @@ const Header: React.FC = () => {
 
     window.addEventListener("login", handleLogin);
     window.addEventListener("logout", handleLogout);
-
     return () => {
       window.removeEventListener("login", handleLogin);
       window.removeEventListener("logout", handleLogout);
@@ -75,6 +75,14 @@ const Header: React.FC = () => {
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
+                <Link to={"/mypage"}>
+                  <img
+                    src="/images/mypage.png"
+                    alt="마이페이지"
+                    className="mypage-icon"
+                  />
+                  </Link>
+
                   {userInfo?.profileImage && (
                     <img
                       src={userInfo.profileImage}
@@ -82,6 +90,7 @@ const Header: React.FC = () => {
                       className="mypage-icon"
                     />
                   )}
+
                   <div
                     className="logout"
                     onClick={() => {
@@ -117,7 +126,7 @@ const Header: React.FC = () => {
           </div>
           <nav className="sidebar-nav">
             <Link to="/art">아트</Link>
-            <Link to="/community">커뮤니티</Link>
+            <Link to="/Post">커뮤니티</Link>
             <Link to="/ranking">랭킹</Link>
           </nav>
         </div>
