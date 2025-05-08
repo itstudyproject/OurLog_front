@@ -11,6 +11,9 @@ const Header: React.FC = () => {
     email?: string;
     profileImage?: string;
   } | null>(null);
+
+  const [keyword, setKeyword] = useState(""); // ✅ 검색어 상태 추가
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,8 +72,26 @@ const Header: React.FC = () => {
           <div className="right-section">
             <div className="search-label">SEARCH</div>
             <div className="search-box">
-              <input type="text" placeholder="검색" className="search-input" />
-              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="검색"
+                className="search-input"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    navigate(`/search?query=${encodeURIComponent(keyword)}`);
+                  }
+                }}
+              />
+              <span
+                className="search-icon"
+                onClick={() =>
+                  navigate(`/search?query=${encodeURIComponent(keyword)}`)
+                }
+              >
+                🔍
+              </span>
             </div>
             <div className="user-menu">
               {isLoggedIn ? (
