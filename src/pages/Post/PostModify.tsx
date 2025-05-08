@@ -32,7 +32,7 @@ const PostModify = () => {
     thumbnail: null,
     category: "자유게시판",
   });
-  const [previewUrl, setPreviewUrl] = useState<string[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
 
@@ -87,7 +87,7 @@ const PostModify = () => {
         if (reader.result) {
           newPreviewUrls.push(reader.result as string);
           if (newPreviewUrls.length === fileArray.length) {
-            setPreviewUrl(newPreviewUrls);
+            setPreviewUrls(newPreviewUrls);
           }
         }
       };
@@ -100,7 +100,7 @@ const PostModify = () => {
   };
 
   const handleRemoveThumbnail = () => {
-    setPreviewUrl([]);
+    setPreviewUrl(null);
     setFormData((prev) => ({ ...prev, thumbnail: null }));
   };
 
@@ -178,7 +178,7 @@ const PostModify = () => {
             />
             {previewUrl && (
               <div className="preview-img-wrapper">
-                <img src={previewUrl[0]} alt="미리보기" className="preview-img" />
+                <img src={previewUrl} alt="미리보기" className="preview-img" />
                 <button
                   type="button"
                   className="remove-thumbnail-btn"
