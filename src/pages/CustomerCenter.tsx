@@ -36,7 +36,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -50,7 +50,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -64,7 +64,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -78,7 +78,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 1,
         email: "admin@example.com",
-        name: "관리자",
+        nickname: "관리자",
       },
       isOpen: false,
     },
@@ -105,7 +105,7 @@ const CustomerCenter: React.FC = () => {
       userDTO: {
         id: 2,
         email: "user@example.com",
-        name: "사용자",
+        nickname: "사용자",
       },
       answerDTO: {
         answerId: 1,
@@ -200,7 +200,7 @@ const CustomerCenter: React.FC = () => {
         userDTO: {
           id: 2,
           email: "user@example.com",
-          name: "사용자",
+          nickname: "사용자",
         },
         isOpen: false,
       };
