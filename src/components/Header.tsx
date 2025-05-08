@@ -12,7 +12,6 @@ const Header: React.FC = () => {
     <>
       <header className="header">
         <div className="header-inner">
-          {/* 왼쪽: 햄버거 버튼 */}
           <div className="sidebar-button">
             <img
               src="/images/sideba.png"
@@ -22,7 +21,6 @@ const Header: React.FC = () => {
             />
           </div>
 
-          {/* 가운데: 로고 */}
           <div className="logo-container">
             <img
               src="/images/OurLog.png"
@@ -31,7 +29,6 @@ const Header: React.FC = () => {
             />
           </div>
 
-          {/* 오른쪽: 검색 + 마이페이지/로그아웃 */}
           <div className="right-section">
             <div className="search-label">SEARCH</div>
             <div className="search-box">
@@ -41,17 +38,29 @@ const Header: React.FC = () => {
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
+                <Link to={"/mypage"}>
                   <img
                     src="/images/mypage.png"
                     alt="마이페이지"
                     className="mypage-icon"
                   />
+                  </Link>
+
+                  {userInfo?.profileImage && (
+                    <img
+                      src={userInfo.profileImage}
+                      alt="프로필"
+                      className="mypage-icon"
+                    />
+                  )}
+
                   <div
                     className="logout"
                     onClick={() => {
                       localStorage.removeItem("token"); // ✅ 토큰 삭제
                       setIsLoggedIn(false); // ✅ 상태 변경
                       navigate("/"); // ✅ 메인으로 이동
+
                     }}
                   >
                     LOGOUT
@@ -71,6 +80,7 @@ const Header: React.FC = () => {
       <div className={isSidebarOpen ? "sidebar open" : "sidebar"}>
         <div className="sidebar-header">
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+
             <img
               src="/images/menu.png"
               alt="메뉴 아이콘"

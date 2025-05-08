@@ -8,6 +8,7 @@
   height: 130px;
   padding: 0 50px;
   opacity: 0.9;
+  transition: height 0.3s ease, padding 0.3s ease;
 }
 
 /* 내부 레이아웃 */
@@ -39,10 +40,12 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+  cursor: pointer;
 }
 
 .logo-image {
-  height: 80px;
+  height: 150px;
+  transition: height 0.3s ease;
 }
 
 /* 오른쪽: 검색 및 사용자 메뉴 */
@@ -142,6 +145,16 @@
   opacity: 1;
 }
 
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -172,6 +185,7 @@
   color: white;
   text-decoration: none;
   transition: color 0.3s;
+  cursor: pointer;
 }
 
 .sidebar-nav a:hover {
