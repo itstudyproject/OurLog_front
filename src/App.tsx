@@ -62,7 +62,7 @@ function App() {
 
 
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile-edit" element={<ProfileEditPage />} />
+      <Route path="/profile-edit" element={<ProfileEditPage onBack={() => window.history.back()} />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
