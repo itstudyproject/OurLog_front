@@ -1,60 +1,119 @@
-
 import React from 'react';
+import { useNavigate, Routes, Route } from 'react-router-dom';
+import ProfileEditPage from './ProfileEditPage';
+import AccountEdit from './AccountEdit';
+import AccountDelete from './AccountDelete';
+import PurchaseBidPage from './PurchaseBidPage/PurchaseBidPage'; // 경로를 정확하게
+import SalePage from './SalePage/SalePage';
+import BookmarkPage from './BookmarkPage';
+import RecentPostsCarousel from './Post/RecentPostsCarousel';
+
+
 
 const MyPage = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-base-200 text-base-content flex">
       {/* Sidebar */}
       <aside className="w-72 bg-base-100 p-4 text-base-content shadow-md flex-shrink-0">
         <div className="flex flex-col items-center mb-6">
-          <img src="/src/images/99.jpg" alt="profile" className="w-24 h-24 rounded-full mb-2" />
-          <h2 className="text-xl font-semibold">만수</h2>
-          <p className="text-sm">minsu@example.com</p>
+          <img src="/images/mypage/Mari.jpg" alt="profile" className="w-24 h-24 rounded-full mb-2" />
+          <h2 className="text-xl font-semibold">xoxo</h2>
+          <p className="text-sm">xoxo@gmail.com</p>
           <div className="mt-2 text-sm space-x-2">
-            <span>찜한 ⓘ 150</span>
-            <span>찜받은 ⓘ 30</span>
+            <span>팔로워 30</span>
+            <span>팔로잉 30</span>
           </div>
         </div>
         <ul className="menu flex flex-col items-center text-center">
-  <li><a>프로필 수정</a></li>
-  <li><a>계정 설정</a></li>
-  <li><a>로그아웃</a></li>
-  <li><a className="text-error">계정 삭제</a></li>
-</ul>
+          <li><a onClick={() => navigate('/profile/edit')}>프로필수정</a></li>
+          <li><a onClick={() => navigate('/mypage/account')}>회원정보수정</a></li>
+          <li><a>로그아웃</a></li>
+          <li><a className="text-error" onClick={() => navigate('/account/delete')}>회원탈퇴</a></li>
+        </ul>
 
         <button className="btn btn-outline mt-4 w-full">내 글 등록하기</button>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold mb-4">마이 페이지</h1>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <h1 className="text-3xl font-bold mb-4">마이페이지</h1>
 
-        {/* 최근 본 게시물 */}
-        <Section title="최근 본 게시물">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {recentPosts.map(post => (
-              <PostCard key={post.title} {...post} />
-            ))}
-          </div>
-        </Section>
+                {/* 최근 본 게시물 */}
+                <Section title="최근 본 게시물">
+                  <RecentPostsCarousel
+                    posts={recentPosts.map((post, index) => ({
+                      id: index, // 고유 ID 필요, title 기반 index 사용
+                      title: post.title,
+                      price: Number(post.price.replace(/[^0-9]/g, '')),
+                      thumbnailUrl: post.image
+                    }))}
+                  />
+                </Section>
 
-        {/* 내 입찰/구매 내역 */}
-        <Section title="내 입찰/구매 내역">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {purchaseHistory.map(post => (
-              <PostCard key={post.title} {...post} badge={post.badge} />
-            ))}
-          </div>
-        </Section>
 
-        {/* 북마크한 작품들 */}
-        <Section title="북마크한 작품들">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {bookmarked.map(post => (
-              <PostCard key={post.title} {...post} />
-            ))}
-          </div>
-        </Section>
+                {/* 내 입찰/구매 내역 */}
+                <Section title="내 구매/입찰 현황">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {purchaseHistory.map(post => (
+                      <PostCard
+                        key={post.title}
+                        {...post}
+                        onClick={() => navigate('/mypage/purchase-bid')}
+                      />
+                    ))}
+                  </div>
+                </Section>
+
+
+                {/* 내 판매/판매 내역 */}
+                <Section title="내 판매/판매 현황">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {purchaseHistory.map(post => (
+                      <PostCard
+                        key={post.title}
+                        {...post}
+
+                        onClick={() => navigate('/mypage/sale')}
+                      />
+                    ))}
+                  </div>
+                </Section>
+
+
+
+
+                {/* 북마크한 작품들 */}
+                <Section title="북마크한 작품들">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {bookmarked.map(post => (
+                      <PostCard
+                        key={post.title}
+                        {...post}
+                        onClick={() => navigate('/mypage/bookmark')}
+                      />
+                    ))}
+                  </div>
+                </Section>
+
+              </>
+            }
+          />
+
+          <Route path="edit" element={<ProfileEditPage onBack={() => navigate('/mypage')} />} />
+          <Route path="account" element={<AccountEdit onBack={() => navigate('/mypage')} />} />
+          <Route path="account/delete" element={<AccountDelete />} />
+          <Route path="purchase-bid" element={<PurchaseBidPage />} />
+          <Route path="sale" element={<SalePage />} />
+          {/* <Route path="/mypage/sale" element={<SalePage />} /> */}
+          <Route path="bookmark" element={<BookmarkPage />} />
+
+        </Routes>
       </div>
     </div>
   );
@@ -72,22 +131,28 @@ const PostCard = ({
   title,
   price,
   badge,
+  onClick, // 클릭 핸들러 받기
 }: {
   image: string;
   title: string;
   price: string;
   badge?: string;
+  onClick?: () => void;
 }) => (
 
   <div className="card bg-base-100 shadow-md">
-    <figure>
+    <figure onClick={onClick} className="cursor-pointer">
       <img src={image} alt={title} className="h-40 w-full object-cover" />
     </figure>
     <div className="card-body p-4">
-      <h3 className="card-title text-sm">{title}</h3>
+      <h3
+        className="card-title text-sm cursor-pointer"
+        onClick={onClick}
+      >
+        {title}
+      </h3>
       <p className="text-sm">{price}</p>
       {badge && <div className="badge badge-success mt-2">{badge}</div>}
-
     </div>
   </div>
 );
@@ -95,21 +160,31 @@ const PostCard = ({
 // 임시 데이터
 const recentPosts = [
 
-  { image: '/src/images/11.jpg', title: 'Suntowers', price: '₩1,000,000' },
-  { image: '/src/images/22.jpg', title: 'Blue Landscape', price: '₩800,000' },
-  { image: '/src/images/33.jpg', title: 'Portrait of Woman', price: '₩730,000' },
-  { image: '/src/images/44.jpg', title: 'Abstract Forms', price: '₩3,000,000' },
+  { image: '/images/mypage/Realization.jpg', title: 'Realization', price: '₩1,000,000' },
+  { image: '/images/mypage/Andrew Loomis.jpg', title: 'Andrew Loomis', price: '₩800,000' },
+  { image: '/images/mypage/White Roses.jpg', title: 'White Roses', price: '₩730,000' },
+  { image: '/images/mypage/tangerine.jpg', title: 'tangerine', price: '₩3,000,000' },
 ];
 
 const purchaseHistory = [
-  { image: '/src/images/55.jpg', title: 'Sitting', price: '₩1,000,000', badge: '복원 중' },
-  { image: '/src/images/66.jpg', title: 'Red Abstraction', price: '₩500,000', badge: '보관 중' },
+  { image: '/images/mypage/Victoriaa.JPG', title: 'Victoria', price: '₩1,000,000' },
+  { image: '/images/mypage/Goats and Girls.jpg', title: 'Goats and Girls', price: '₩500,000' },
 ];
 
 const bookmarked = [
-  { image: '/src/images/77.jpg', title: 'Cityscape', price: '₩400,000' },
-  { image: '/src/images/88.jpg', title: 'Green Fields', price: '₩400,000' },
+  { image: '/images/mypage/Sorolla y Bastida, Joaquin (Spanish, 1863-1923) - Running along the Beach - 1908.jpg', title: 'Running along the Beach', price: '₩400,000' },
+  { image: '/images/mypage/Bodas de Odio.jpg', title: 'Bodas de Odio', price: '₩400,000' },
+  { image: '/images/mypage/Romed Roni.jpg', title: 'a girl in a parasol', price: '₩400,000' },
+
 
 ];
+
+const ArrowLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+  </svg>
+);
+
+
 
 export default MyPage;
