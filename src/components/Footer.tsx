@@ -17,7 +17,7 @@ const Footer = () => (
         <h4 className="font-medium mb-2">사이트</h4>
         <ul className="space-y-1 text-sm">
           <li>
-            <Link to="/terms" className="hover:text-white">
+            <Link to="/terms-condition" className="hover:text-white">
               이용약관
             </Link>
           </li>

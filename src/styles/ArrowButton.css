@@ -75,9 +75,6 @@
     transition-delay: 0s;
   }
   
-  .arrow:active {
-    transform: scale(0.9);
-  }
   .arrow-left {
     transform: scaleX(-1);
   }

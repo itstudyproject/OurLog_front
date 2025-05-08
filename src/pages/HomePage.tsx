@@ -1,42 +1,8 @@
-import React from 'react'
-import { cn } from '../utils/utils'
-import type { AuctionItem } from '../types'
+import MainBanner from "../components/MainBanner";
+import ArtworkSlider from "../components/ArtworkSlider";
+import BulletinBoard from "../components/BulletinBoard";
 
-
-const SAMPLE_AUCTIONS: AuctionItem[] = [
-  {
-    id: "1",
-    title: "Abstract Forms",
-    price: 300000,
-    imageUrl: '/images/11.jpg',
-    artist: '김민수',
-    endTime: new Date('2024-05-01'),
-    currentBid: 300000,
-    bidCount: 5,
-  },
-  {
-    id: "2",
-    title: "Blue Landscape",
-    price: 1200000,
-    imageUrl: '/images/22.jpg',
-    artist: '이지원',
-    endTime: new Date('2024-05-02'),
-    currentBid: 1200000,
-    bidCount: 3,
-  },
-  {
-    id: "3",
-    title: "Colorful Composition",
-    price: 900000,
-    imageUrl: '/images/33.jpg',
-    artist: '박서연',
-    endTime: new Date('2024-05-03'),
-    currentBid: 900000,
-    bidCount: 7,
-  },
-];
-
-export default function HomePage() {
+const HomePage = () => {
   return (
     <div className="space-y-20">
       {/* Hero Section */}
@@ -97,6 +63,13 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+    <div className="bg-[#000000] text-[#e7ded9] min-h-screen p-6 space-y-10">
+      <MainBanner />
+      <ArtworkSlider />
+      <BulletinBoard />
     </div>
   );
-}
+};
+
+export default HomePage;

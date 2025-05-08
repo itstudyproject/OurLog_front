@@ -4,7 +4,7 @@ body {
   background-color: #000000;
 }
 
-.container {
+.cc-container {
   display: flex;
   gap: 2rem;
   padding: 2rem;
@@ -17,7 +17,7 @@ body {
   scroll-margin-top: 0;
 }
 
-.sidebar {
+.cc-sidebar {
   width: 240px;
   background: #111111;
   border-radius: 8px;
@@ -29,7 +29,7 @@ body {
   margin-top: 150px;
 }
 
-.sidebar-title {
+.cc-sidebar-title {
   font-size: 1.25rem;
   font-weight: bold;
   margin-bottom: 1rem;
@@ -37,7 +37,7 @@ body {
   color: #ffffff;
 }
 
-.nav-item {
+.cc-nav-item {
   padding: 1rem 1.5rem;
   cursor: pointer;
   border-radius: 6px;
@@ -47,20 +47,20 @@ body {
   color: #cccccc;
 }
 
-.nav-item:hover {
+.cc-nav-item:hover {
   background-color: #222222;
 }
 
-.nav-item.active {
+.cc-nav-item.active {
   background-color: #4a90e2;
   color: #ffffff;
 }
 
-.nav-item.active:hover {
+.cc-nav-item.active:hover {
   background-color: #357abd;
 }
 
-.content {
+.cc-content {
   flex: 1;
   background: #111111;
   border-radius: 8px;
@@ -68,13 +68,13 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.styled-h1 {
+.cc-styled-h1 {
   text-align: center;
   margin-bottom: 1.5rem;
   color: #ffffff;
 }
 
-.section-title {
+.cc-section-title {
   font-size: 1.5rem;
   color: #ffffff;
   margin-bottom: 1.5rem;
@@ -83,12 +83,12 @@ body {
   padding-top: 2rem;
 }
 
-.search-wrapper {
+.cc-search-wrapper {
   position: relative;
   margin-bottom: 2rem;
 }
 
-.search-input {
+.cc-search-input {
   width: 100%;
   padding: 1rem 3rem 1rem 1rem;
   border: 1px solid #333;
@@ -98,7 +98,7 @@ body {
   font-size: 1rem;
 }
 
-.search-icon {
+.cc-search-icon {
   position: absolute;
   right: 1rem;
   top: 50%;
@@ -246,7 +246,6 @@ body {
 }
 
 .overlay {
-  position: fixed;
   top: 0;
   left: 0;
   right: 0;

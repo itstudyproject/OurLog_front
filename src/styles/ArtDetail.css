@@ -1,0 +1,523 @@
+/* 기본 설정 */
+body {
+  background-color: #1a1a1a;
+  color: #ccc;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 가운데 정렬된 컨테이너 */
+.art-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 아트 상세 콘텐츠 레이아웃 */
+.art-detail-content {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .art-detail-content {
+    flex-direction: column;
+  }
+}
+
+/* 왼쪽 이미지 영역 */
+.art-image-container {
+  flex: 1;
+  position: relative;
+}
+
+.art-main-image {
+  width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.share-buttons button {
+  background-color: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.share-buttons button:hover {
+  background-color: #444;
+}
+
+/* 오른쪽 정보 영역 */
+.art-info-container {
+  flex: 1;
+  background-color: #222;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #333;
+}
+
+.artist-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.artist-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 15px;
+  border: 2px solid #444;
+}
+
+.artist-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artist-detail {
+  flex-grow: 1;
+}
+
+.artist-detail h3 {
+  color: #fff;
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.artist-detail p {
+  color: #999;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 아티스트 버튼 그룹 */
+.artist-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.follow-button, .share-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  height: 48px;
+  padding: 0 32px;
+  border-radius: 24px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.follow-button {
+  background: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+.follow-button.following {
+  background: #333;
+  color: #fff;
+  border-color: #444;
+}
+
+.follow-button:hover {
+  background: #ffd36b;
+  color: #111;
+  box-shadow: 0 4px 16px rgba(248,193,71,0.15);
+  border-color: #ffd36b;
+}
+
+.share-button {
+  background: #232323;
+  color: #f8c147;
+  border-color: #232323;
+}
+
+.share-button:hover {
+  background: #444;
+  color: #fff;
+  border-color: #444;
+  box-shadow: 0 4px 16px rgba(80,80,80,0.10);
+}
+
+.art-title {
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.art-title h2 {
+  color: #fff;
+  margin: 0 0 5px 0;
+  font-size: 24px;
+}
+
+.art-date {
+  color: #999;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 입찰 정보 */
+.bid-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.bid-detail {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #2a2a2a;
+  text-align: center;
+}
+
+.bid-detail span {
+  font-size: 12px;
+  color: #999;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.bid-detail p {
+  font-size: 16px;
+  color: #fff;
+  margin: 0;
+  font-weight: 500;
+}
+
+.bid-detail.current {
+  background-color: rgba(248, 193, 71, 0.2);
+  border: 1px solid #f8c147;
+}
+
+.bid-detail.current p {
+  color: #f8c147;
+  font-weight: bold;
+}
+
+/* 경매 타이머 */
+.auction-timer {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #2a2a2a;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.timer-icon {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.timer-content {
+  flex-grow: 1;
+}
+
+.timer-content span {
+  font-size: 12px;
+  color: #999;
+  display: block;
+}
+
+.timer-content p {
+  font-size: 18px;
+  color: #fff;
+  font-weight: bold;
+  margin: 0;
+}
+
+.bid-history-button {
+  background-color: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.bid-history-button:hover {
+  background-color: #444;
+}
+
+/* 입찰 폼 */
+.bid-input {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.bid-input input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 5px;
+  background-color: #2a2a2a;
+  color: #fff;
+  font-size: 16px;
+  box-sizing: border-box;
+  padding-right: 40px;
+}
+
+.bid-input input:focus {
+  outline: none;
+  border-color: #f8c147;
+}
+
+.bid-input .currency {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+/* 왼쪽 콘텐츠 영역 */
+.left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 작품 설명 섹션 */
+.artwork-description {
+  background-color: #222;
+  border: 2px solid #333;
+  border-radius: 18px;
+  padding: 36px 36px 36px 36px;
+  min-height: 260px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.artwork-description h3 {
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 18px 0;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid #333;
+}
+
+.description-content {
+  color: #ccc;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* 액션 버튼 영역 */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.main-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.main-actions button {
+  flex: 1;
+}
+
+.bid-button,
+.buy-now-button {
+  padding: 12px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.bid-button {
+  background-color: #f8c147;
+  color: #111;
+}
+
+.bid-button:hover {
+  background-color: #e5b142;
+}
+
+.buy-now-button {
+  background-color: #444;
+  color: #fff;
+}
+
+.buy-now-button:hover {
+  background-color: #555;
+}
+
+.chat-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.chat-button:hover {
+  background-color: #333;
+}
+
+.chat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.bid-history-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.bid-history-button:hover {
+  background-color: #444;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .left-content {
+    gap: 8px;
+  }
+
+  .main-actions {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .artwork-description {
+    padding: 18px 10px 18px 10px;
+    min-height: 140px;
+  }
+
+  .artist-buttons {
+    gap: 8px;
+  }
+}
+
+/* 뒤로가기 버튼 영역 */
+.art-actions {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #444;
+}
+
+/* 로딩 및 에러 화면 */
+.loading,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+}
+
+.loading p,
+.error-container p {
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.error-container button {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .bid-info {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .art-detail-content {
+    gap: 20px;
+  }
+}
+
+/* 공유 버튼 */
+.share-button {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  background-color: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.share-button:hover {
+  background-color: #444;
+}

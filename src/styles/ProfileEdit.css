@@ -17,12 +17,6 @@
   border-bottom: 1px solid #333;
 }
 
-.header-title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #fff;
-}
-
 .back-button {
   background: none;
   border: none;
@@ -187,7 +181,7 @@
 
 .connect-button {
   padding: 0.5rem 1rem;
-  background-color: #1DB954;
+  background-color: #1db954;
   color: white;
   border: none;
   border-radius: 9999px;
@@ -248,4 +242,4 @@
 
 .save-button:hover {
   opacity: 0.9;
-} 
+}
