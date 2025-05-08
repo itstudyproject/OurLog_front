@@ -38,21 +38,13 @@ const Header: React.FC = () => {
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
-                <Link to={"/mypage"}>
-                  <img
-                    src="/images/mypage.png"
-                    alt="마이페이지"
-                    className="mypage-icon"
-                  />
-                  </Link>
-
-                  {userInfo?.profileImage && (
+                  <Link to={"/mypage"}>
                     <img
-                      src={userInfo.profileImage}
-                      alt="프로필"
+                      src="/images/mypage.png"
+                      alt="마이페이지"
                       className="mypage-icon"
                     />
-                  )}
+                  </Link>
 
                   <div
                     className="logout"
@@ -60,7 +52,6 @@ const Header: React.FC = () => {
                       localStorage.removeItem("token"); // ✅ 토큰 삭제
                       setIsLoggedIn(false); // ✅ 상태 변경
                       navigate("/"); // ✅ 메인으로 이동
-
                     }}
                   >
                     LOGOUT
@@ -80,7 +71,6 @@ const Header: React.FC = () => {
       <div className={isSidebarOpen ? "sidebar open" : "sidebar"}>
         <div className="sidebar-header">
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-
             <img
               src="/images/menu.png"
               alt="메뉴 아이콘"

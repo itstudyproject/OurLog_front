@@ -15,12 +15,12 @@ import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import RankingPage from "./pages/Ranking/RankingPage";
-import PostDetail from "./pages/Post/PostDetail";
 import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
+import ArtList from "./pages/Art/ArtList";
 function App() {
   return (
     <Routes>
@@ -59,10 +59,8 @@ function App() {
         <Route path="register" element={<PostRegister />} />
       </Route>
 
-
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile-edit" element={<ProfileEditPage />} />
-      <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
       {/* <Route path="/terms-condition" element={<TermsCondition />} />
