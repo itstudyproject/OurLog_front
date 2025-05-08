@@ -1,0 +1,104 @@
+.account-delete-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #fff;
+    background-color: #111;
+  }
+  
+  .delete-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+  }
+  
+  .warning-banner {
+    display: flex;
+    align-items: flex-start;
+    background-color: #2a0f0f;
+    border: 1px solid #aa2e2e;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #f88;
+    margin-bottom: 2rem;
+  }
+  
+  .warning-banner .icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 1.5rem 0 0.75rem;
+    color: #eee;
+  }
+  
+  .caution-list {
+    list-style: disc;
+    padding-left: 1.5rem;
+    color: #bbb;
+  }
+  
+  .reason-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .reason-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: #ddd;
+  }
+  
+  .custom-reason-input {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #222;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 4px;
+  }
+  
+  .form-group {
+    margin-top: 2rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ccc;
+  }
+  
+  .password-input {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #222;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 6px;
+  }
+  
+  .delete-button {
+    margin-top: 2rem;
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #aa2e2e;
+    border: none;
+    border-radius: 9999px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .delete-button:hover {
+    background-color: #cc3a3a;
+  }
+  

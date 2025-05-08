@@ -75,6 +75,14 @@ const Header: React.FC = () => {
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
+                <Link to={"/mypage"}>
+                  <img
+                    src="/images/mypage.png"
+                    alt="마이페이지"
+                    className="mypage-icon"
+                  />
+                  </Link>
+
                   {userInfo?.profileImage && (
                     <img
                       src={userInfo.profileImage}
@@ -82,6 +90,7 @@ const Header: React.FC = () => {
                       className="mypage-icon"
                     />
                   )}
+
                   <div
                     className="logout"
                     onClick={() => {
