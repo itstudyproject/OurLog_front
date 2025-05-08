@@ -5,10 +5,8 @@
   position: fixed;
   top: 0;
   z-index: 50;
-  height: 90px;
-  text-align: center;
-  padding: 60px 50px;
-
+  height: 130px;
+  padding: 0 50px;
   opacity: 0.9;
   transition: height 0.3s ease, padding 0.3s ease;
 }
@@ -112,8 +110,7 @@
 }
 
 .logout {
-  font-size: 15px;
-  color: white;
+  font-size: 12px;
   font-weight: bold;
   letter-spacing: 0.05em;
   transition: color 0.3s;
@@ -130,13 +127,22 @@
   top: 0;
   left: 0;
   height: 100%;
-  width: 256px;
+  width: 300px;
   background-color: black;
   color: white;
-  padding: 24px;
-  z-index: 100;
+  padding: 20px;
+  z-index: 50;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-100%);
+  opacity: 0;
+  animation: sidebar-fadein 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .sidebar-overlay {
@@ -153,23 +159,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
 }
 
 .sidebar-title {
-  font-size: 18px;
+  font-size: 35px;
   font-weight: bold;
 }
 
 .sidebar-close {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
+  opacity: 0.7;
   cursor: pointer;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
+  padding: 0 15px;
   gap: 16px;
   font-size: 18px;
 }
@@ -185,78 +192,42 @@
   color: #ff69b4;
 }
 
-/* 반응형 스타일 추가 */
-@media (max-width: 1200px) {
-  .header {
-    padding: 0 30px;
-  }
-
-  .logo-image {
-    height: 70px;
-  }
-
-  .search-input {
-    width: 140px;
-  }
+/* 사이드바 Depth 1: 큰제목 */
+.sidebar-section-title {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 40px;
+  color: #fff;
+  text-decoration: none;
+  display: block;
 }
 
-@media (max-width: 992px) {
-  .header {
-    height: 100px;
-  }
-
-  .logo-image {
-    height: 60px;
-  }
-
-  .search-label {
-    display: none;
-  }
-
-  .search-input {
-    width: 120px;
-  }
+/* Depth 2: 소제목 */
+.sidebar-section-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 10px;
+  margin-bottom: 8px;
+}
+.sidebar-section-sub a {
+  font-size: 18px;
+  color: #bdbdbd;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sidebar-section-sub a:hover {
+  color: #ff69b4;
 }
 
-@media (max-width: 768px) {
-  .header {
-    height: 80px;
-    padding: 0 20px;
+@keyframes sidebar-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-
-  .logo-image {
-    height: 50px;
-  }
-
-  .search-box {
-    display: none;
-  }
-
-  .right-section {
-    gap: 16px;
-  }
-}
-
-@media (max-width: 576px) {
-  .header {
-    height: 70px;
-    padding: 0 15px;
-  }
-
-  .logo-image {
-    height: 40px;
-  }
-
-  .user-menu {
-    gap: 10px;
-  }
-
-  .sidebar {
-    width: 220px;
-    padding: 20px;
-  }
-
-  .sidebar-nav {
-    font-size: 16px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

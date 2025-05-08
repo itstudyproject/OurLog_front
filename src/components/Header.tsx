@@ -1,47 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
 // @ts-ignore
 import "../styles/header.css";
 
 const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState<{
-    email?: string;
-    profileImage?: string;
-  } | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
-
-    if (token) {
-      setIsLoggedIn(true);
-    }
-    if (user) {
-      setUserInfo(JSON.parse(user));
-    }
-
-    const handleLogin = () => {
-      setIsLoggedIn(true);
-      const u = localStorage.getItem("user");
-      if (u) setUserInfo(JSON.parse(u));
-    };
-
-    const handleLogout = () => {
-      setIsLoggedIn(false);
-      setUserInfo(null);
-    };
-
-    window.addEventListener("login", handleLogin);
-    window.addEventListener("logout", handleLogout);
-    return () => {
-      window.removeEventListener("login", handleLogin);
-      window.removeEventListener("logout", handleLogout);
-    };
-  }, []);
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
+  const navigate = useNavigate(); // ✅ 추가
 
   return (
     <>
@@ -57,13 +22,11 @@ const Header: React.FC = () => {
           </div>
 
           <div className="logo-container">
-            <Link to="/">
-              <img
-                src="/images/OurLog.png"
-                alt="OurLog 로고"
-                className="logo-image"
-              />
-            </Link>
+            <img
+              src="/images/OurLog.png"
+              alt="OurLog 로고"
+              className="logo-image"
+            />
           </div>
 
           <div className="right-section">
@@ -94,10 +57,10 @@ const Header: React.FC = () => {
                   <div
                     className="logout"
                     onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("user");
-                      window.dispatchEvent(new Event("logout"));
-                      navigate("/");
+                      localStorage.removeItem("token"); // ✅ 토큰 삭제
+                      setIsLoggedIn(false); // ✅ 상태 변경
+                      navigate("/"); // ✅ 메인으로 이동
+
                     }}
                   >
                     LOGOUT
@@ -113,24 +76,70 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      {isSidebarOpen && (
-        <div className="sidebar">
-          <div className="sidebar-header">
-            <h2 className="sidebar-title">메뉴</h2>
+      {/* 사이드바 */}
+      <div className={isSidebarOpen ? "sidebar open" : "sidebar"}>
+        <div className="sidebar-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+
             <img
-              src="/images/close.png"
-              alt="닫기"
-              className="sidebar-close"
-              onClick={() => setIsSidebarOpen(false)}
+              src="/images/menu.png"
+              alt="메뉴 아이콘"
+              style={{ width: 30, height: 30 }}
             />
+            <h2 className="sidebar-title">MENU</h2>
           </div>
-          <nav className="sidebar-nav">
-            <Link to="/art">아트</Link>
-            <Link to="/Post">커뮤니티</Link>
-            <Link to="/ranking">랭킹</Link>
-          </nav>
+          <img
+            src="/images/close.png"
+            alt="닫기"
+            className="sidebar-close"
+            onClick={() => setIsSidebarOpen(false)}
+          />
         </div>
-      )}
+        <nav className="sidebar-nav">
+          {/* 아트 섹션 */}
+          <Link to="/art" className="sidebar-section-title">
+            아트
+          </Link>
+          <div className="sidebar-section-sub">
+            <Link to="/art/register">아트 등록</Link>
+            <Link to="/art/board">아트 게시판</Link>
+          </div>
+
+          {/* 커뮤니티 섹션 */}
+          <Link to="/community" className="sidebar-section-title">
+            커뮤니티
+          </Link>
+          <div className="sidebar-section-sub">
+            <Link to="/community/news">새소식</Link>
+            <Link to="/community/free">자유게시판</Link>
+            <Link to="/community/promo">홍보 게시판</Link>
+            <Link to="/community/request">요청 게시판</Link>
+          </div>
+
+          {/* 랭킹 섹션 */}
+          <Link to="/ranking" className="sidebar-section-title">
+            랭킹
+          </Link>
+
+          {/* 마이페이지 섹션 */}
+          <Link to="/mypage" className="sidebar-section-title">
+            마이페이지
+          </Link>
+        </nav>
+        <div
+          style={{
+            position: "absolute",
+            opacity: 0.7,
+            bottom: 70,
+          }}
+        >
+          <img
+            src="/images/OurLog.png"
+            alt="OurLog 로고"
+            style={{ height: 80 }}
+          />
+        </div>
+      </div>
     </>
   );
 };
