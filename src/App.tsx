@@ -60,7 +60,6 @@ function App() {
         <Route path="register" element={<PostRegister />} />
       </Route>
 
-
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile-edit" element={<ProfileEditPage />} />
       <Route path="/mypage" element={<MyPage />} />

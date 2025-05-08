@@ -44,8 +44,7 @@
 }
 
 .logo-image {
-  height: 150px;
-  transition: height 0.3s ease;
+  height: 80px;
 }
 
 /* 오른쪽: 검색 및 사용자 메뉴 */
