@@ -1,62 +1,78 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/ChatPage.css";
 
-const ChatPage: React.FC = () => {
-  const [isChatActive, setIsChatActive] = useState(false);
+const userProfiles: { [key: string]: string } = {
+  ann: "/images/ann_01.jpg",
+  john: "/images/john_01.jpg",
+  mary: "/images/mary_01.jpg",
+  오달숙: "/images/오달숙_01.jpg",
+  제임스: "/images/제임스_01.jpg",
+};
 
-  const handleInquiryClick = () => {
-    setIsChatActive(true);
+interface ChatMessage {
+  sender: string;
+  message: string;
+}
+
+const ChatPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [isListModalVisible, setIsListModalVisible] = useState(true);
+  const [isChatModalVisible, setIsChatModalVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState<string>("");
+
+  const handleOpenChatModal = (user: string) => {
+    setCurrentUser(user);
+    setIsListModalVisible(false);
+    setIsChatModalVisible(true);
+    setMessages([]);
+  };
+
+  const handleCloseListModal = () => {
+    navigate("/worker");
   };
 
   const handleExitClick = () => {
-    setIsChatActive(false);
+    setIsChatModalVisible(false);
+    setCurrentUser(null);
+    setIsListModalVisible(true);
+  };
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() !== "") {
+      const message: ChatMessage = {
+        sender: "Me",
+        message: newMessage,
+      };
+      setMessages([...messages, message]);
+      setNewMessage("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
     <div className="chat-page">
-      {/* 왼쪽 패널 */}
-      <div className="left-panel">
-        {/* 구매 확인 메시지 박스 - 채팅 활성화 시에만 표시 */}
-        {isChatActive && (
-          <div className="purchase-confirm-box above-buttons">
-            <p>
-              판매자에게 거래 요청하시겠습니까?
-              <br />
-              거절을 방지하려면 확인해주세요.
-            </p>
-            <div className="footer-buttons">
-              <button className="safe-btn">안전 거래</button>
-              <button className="exit-btn" onClick={handleExitClick}>
-                취소
+      {isListModalVisible && (
+        <div className="modal-overlay">
+          <div className="chat-list-modal">
+            <div className="chat-list-header">
+              <h2>채팅 목록</h2>
+              <button className="exit-btn" onClick={handleCloseListModal}>
+                닫기
               </button>
             </div>
-          </div>
-        )}
-
-        {/* 하단 고정 문의/구매 버튼 - 항상 표시 */}
-        <div className="purchase-buttons">
-          <button onClick={handleInquiryClick}>문의</button>
-          <button>구매</button>
-        </div>
-      </div>
-
-      {/* 가운데 패널 - 채팅 목록 */}
-      <div className="center-panel">
-        {isChatActive && (
-          <>
             <ul className="chat-list">
-              {[
-                "Sintae",
-                "예지사랑",
-                "podutron",
-                "bans3985",
-                "naroriri",
-                "6677Anam",
-                "Minsohee_0933",
-                "lee_sg",
-              ].map((user, idx) => (
-                <li key={idx} className={user === "lee_sg" ? "active" : ""}>
-                  <img src="/profile-placeholder.jpg" alt="profile" />
+              {Object.keys(userProfiles).map((user, idx) => (
+                <li key={idx} onClick={() => handleOpenChatModal(user)}>
+                  <img src={userProfiles[user]} alt={user} />
                   <div className="chat-info">
                     <strong>{user}</strong>
                     <p>구매 확실하면 안전거래 이용해주세요</p>
@@ -64,55 +80,68 @@ const ChatPage: React.FC = () => {
                 </li>
               ))}
             </ul>
-            <div className="chat-menu">
-              <button>채팅하기</button>
-              <button>프로필보기</button>
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
 
-      {/* 오른쪽 패널 - 채팅창 */}
-      <div className="right-panel">
-        {isChatActive && (
-          <>
-            <div className="chat-header">
-              <img src="/cat-profile.jpg" alt="XOXO" />
-              <span>XOXO</span>
-            </div>
-
-            <div className="chat-body">
-              <div className="message blue">
-                구매 확실하면 안전거래 이용해주세요
-              </div>
+      {isChatModalVisible && currentUser && (
+        <div className="chat-modal">
+          <div className="chat-header">
+            <div className="chat-header-left">
               <img
-                className="chat-image"
-                src="/cat-art.jpg"
-                alt="작품 이미지"
+                src={userProfiles[currentUser] || "/profile-placeholder.jpg"}
+                alt={currentUser}
               />
-              <div className="purchase-confirm">
-                위의 그림을 구매하시겠습니까?
-                <br />
-                개인 거래로 인한 피해는 책임지지 않습니다.
-                <br />
-                사기거래에 주의해 안전결제를 권장합니다.
-                <button className="payment-btn">결제창으로 이동</button>
-              </div>
+              <span>{currentUser}</span>
             </div>
+            <button className="exit-btn" onClick={handleExitClick}>
+              나가기
+            </button>
+          </div>
 
-            <div className="chat-footer">
-              <input type="text" placeholder="메시지를 입력하세요..." />
-              <button>...</button>
-              <div className="footer-buttons">
-                <button className="safe-btn">안전 거래</button>
-                <button className="exit-btn" onClick={handleExitClick}>
-                  나가기
-                </button>
+          <div className="messages">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
+              >
+                {msg.sender !== "Me" && (
+                  <img
+                    src={
+                      userProfiles[currentUser] || "/profile-placeholder.jpg"
+                    }
+                    alt="상대방"
+                    className="profile-icon"
+                  />
+                )}
+                <div
+                  className={`message ${
+                    msg.sender === "Me" ? "me-message" : "you-message"
+                  }`}
+                >
+                  {msg.message.split("\n").map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+                </div>
               </div>
+            ))}
+          </div>
+
+          <div className="chat-footer">
+            <textarea
+              value={newMessage}
+              placeholder="메시지를 입력하세요..."
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+            />
+            <button onClick={handleSendMessage}>보내기</button>
+            <div className="secure-payment-box">
+              <button className="secure-payment-btn">안전결제 요청</button>
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
