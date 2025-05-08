@@ -90,7 +90,6 @@ const Header: React.FC = () => {
                       className="mypage-icon"
                     />
                   )}
-
                   <div
                     className="logout"
                     onClick={() => {

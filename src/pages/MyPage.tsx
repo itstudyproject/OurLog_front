@@ -8,8 +8,6 @@ import SalePage from './SalePage/SalePage';
 import BookmarkPage from './BookmarkPage';
 import RecentPostsCarousel from './Post/RecentPostsCarousel';
 
-
-
 const MyPage = () => {
   const navigate = useNavigate();
 
@@ -145,7 +143,6 @@ const MyPage = () => {
           <Route path="bookmark" element={<BookmarkPage />} />
 
         </Routes>
-
         <h1 className="text-3xl font-bold mb-4">마이 페이지</h1>
 
         {/* 최근 본 게시물 */}

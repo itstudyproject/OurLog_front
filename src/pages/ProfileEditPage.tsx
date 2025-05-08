@@ -99,7 +99,6 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     console.log('프로필 데이터 저장:', profileData);
 
     console.log("프로필 데이터 저장:", profileData);
-
     // 성공 메시지와 함께 프로필 페이지로 리디렉션
     alert("프로필이 성공적으로 업데이트되었습니다.");
     navigate("/profile");
