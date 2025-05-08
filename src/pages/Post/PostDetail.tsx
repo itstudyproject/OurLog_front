@@ -1,100 +1,140 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../../styles/PostDetail.css";
+import "../../styles/ArtDetail.css";
 
-interface Comment {
+interface ArtPost {
   id: number;
-  author: string;
-  content: string;
-  createdAt: string;
-}
-
-interface Post {
-  id: number;
-  boardId?: number;
   title: string;
   author: string;
-  content: string;
+  description: string;
+  currentBid: number;
+  startingBid: number;
+  buyNowPrice: number;
+  endTime: string;
   createdAt: string;
-  thumbnail?: string;
-  comments: Comment[];
+  imageSrc: string;
+  likes: number;
+  artistProfileImg: string;
+  isFollowing: boolean;
 }
 
-const PostDetail = () => {
+const ArtDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<Post | null>(null);
+  const [post, setPost] = useState<ArtPost | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [commentContent, setCommentContent] = useState<string>("");
-  const handleModify = () => {
-    navigate(`/Post/PostModify/${post?.id}`);
-  };
-
+  const [bidAmount, setBidAmount] = useState<string>("");
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<string>("");
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchArtPost = async () => {
       try {
-        // 실제 구현에서는 API 호출로 대체됩니다
-        // 테스트용으로 1번 게시물에 대한 더미 데이터를 제공합니다
-        if (id === "1") {
-          const dummyPost: Post = {
-            id: 1,
-            boardId : 1,
-            title: "지금부터 마카오 환타지아 클라이맥스 썸머...",
-            author: "판타지스트",
-            content: `지금부터 마카오 환타지아 클라이맥스 썸머 영상 리뷰 시작합니다.
-            
-이 영상은 마카오에서 펼쳐지는 환상적인 쇼에 대한 내용으로, 화려한 퍼포먼스와 다양한 문화적 요소가 조화롭게 어우러져 있습니다.
-
-특히 무대 설계와 조명 효과는 정말 놀라웠습니다. 마치 다른 세계에 온 것 같은 느낌을 줍니다.
-
-퍼포머들의 기술적인 완성도와 예술성도 매우 뛰어났습니다. 고난이도 기술들을 완벽하게 소화해내는 모습이 인상적이었습니다.
-
-음악과 시각적 효과의 조화도 훌륭했으며, 스토리텔링 방식으로 관객들을 끝까지 몰입시켰습니다.
-
-다음에 마카오를 방문할 기회가 있다면 꼭 직접 관람해보시길 추천합니다.`,
-            createdAt: "2023.03.26.14:22",
-            thumbnail: "/images/post1.jpg",
-            comments: [
-              {
-                id: 1,
-                author: "여행좋아",
-                content: "저도 얼마 전에 다녀왔는데 정말 환상적이었어요! 특히 마지막 장면은 압권이었습니다.",
-                createdAt: "2023.03.26.15:30"
-              },
-              {
-                id: 2,
-                author: "쇼마니아",
-                content: "영상만 봐도 대단한데 실제로 보면 어떨지 궁금하네요. 입장료는 얼마인가요?",
-                createdAt: "2023.03.26.16:45"
-              }
-            ]
-          };
-          setPost(dummyPost);
-        } else {
-          // 1번 외의 다른 게시물은 준비되지 않았다는 메시지를 표시합니다
-          alert("현재 준비된 게시물은 1번 게시물뿐입니다.");
-          navigate("/Post");
-        }
+        // 테스트용 1번 아트워크의 데이터
+        const dummyPost: ArtPost = {
+          id: 1,
+          title: "뚱글뚱글 파스타",
+          author: "작가1",
+          description:
+            "일러스트 디지털 드로잉 작품입니다. 파스타와 다양한 베이커리 음식들을 귀엽게 표현한 작품입니다. 주방이나 카페 등에 인테리어용으로 적합합니다.",
+          currentBid: 30000,
+          startingBid: 20000,
+          buyNowPrice: 50000,
+          endTime: "2023-12-31T23:59:59",
+          createdAt: "2023.05.15",
+          imageSrc: "/images/파스타.jpg",
+          likes: 128,
+          artistProfileImg: "/images/avatar.png",
+          isFollowing: false,
+        };
+        setPost(dummyPost);
+        setIsFollowing(dummyPost.isFollowing);
+        setBidAmount((dummyPost.currentBid + 1000).toString());
         setLoading(false);
       } catch (error) {
-        console.error("포스트를 불러오는 중 오류가 발생했습니다:", error);
+        console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
         setLoading(false);
       }
     };
 
-    fetchPost();
-  }, [id, navigate]);
+    fetchArtPost();
+    // 카운트다운 타이머 설정
+    const timer = setInterval(() => {
+      if (post) {
+        const endTime = new Date(post.endTime).getTime();
+        const now = new Date().getTime();
+        const distance = endTime - now;
+        if (distance < 0) {
+          clearInterval(timer);
+          setCountdown("경매 종료");
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          setCountdown(`${days}일 ${hours}:${minutes}:${seconds}`);
+        }
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [id, post?.endTime]);
 
   const handleGoBack = () => {
-    navigate("/Post");
+    navigate("/Art");
   };
 
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentContent.trim()) return;
+  const handleBidSubmit = () => {
+    if (!bidAmount || isNaN(Number(bidAmount))) {
+      alert("유효한 입찰 금액을 입력해주세요.");
+      return;
+    }
+    const bid = Number(bidAmount);
+    if (post && bid <= post.currentBid) {
+      alert("현재 입찰가보다 높은 금액을 입력해주세요.");
+      return;
+    }
 
-    alert("댓글 기능은 현재 개발 중입니다.");
-    setCommentContent("");
+    const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
+  if (!confirmBid) return;
+
+    alert(`${bidAmount}원 입찰이 완료되었습니다.`);
+    if (post) {
+      setPost({ ...post, currentBid: bid });
+      setBidAmount((bid + 1000).toString());
+    }
+  };
+
+  const handleBuyNow = () => {
+    const confirmBuy = window.confirm(`정말 즉시 구매하시겠습니까?`);
+    if (!confirmBuy) return;
+    navigate(`/Art/payment/${post?.id}`);
+  };
+
+  const handleOpenChat = () => {
+    const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
+  if (confirmChat) {
+    window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
+  }
+};
+
+  const handleBidHistory = () => {
+    alert("입찰 내역을 확인합니다.");
+  };
+
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing);
+    if (post) {
+      const followMsg = !isFollowing
+        ? "작가님을 팔로우합니다."
+        : "작가님 팔로우를 취소합니다.";
+      alert(followMsg);
+    }
+  };
+  const handleShare = () => {
+    alert("작품 링크가 복사되었습니다.");
   };
 
   if (loading) {
@@ -108,78 +148,117 @@ const PostDetail = () => {
   if (!post) {
     return (
       <div className="error-container">
-        <p>게시물을 찾을 수 없습니다.</p>
+        <p>작품을 찾을 수 없습니다.</p>
         <button onClick={handleGoBack}>목록으로 돌아가기</button>
       </div>
     );
   }
 
   return (
-    <div className="detail-container">
+    <div className="art-detail-container">
+      <div className="art-detail-content">
+        <div className="left-content">
+          <div className="art-image-container">
+            <img
+              src={post.imageSrc}
+              alt={post.title}
+              className="art-main-image"
+            />
+          </div>
+          <div className="artwork-description">
+            <h3>작품 설명</h3>
+            <div className="description-content">
+              <p>{post.description}</p>
+            </div>
+          </div>
+        </div>
 
-      <div className="tab-menu">
-        <div>새소식</div>
-        <div className="active">자유게시판</div>
-        <div>홍보게시판</div>
-        <div>요청게시판</div>
+        <div className="art-info-container">
+          <div className="artist-info">
+            <div className="artist-avatar">
+              <img src={post.artistProfileImg} alt={`${post.author} 프로필`} />
+            </div>
+            <div className="artist-detail">
+              <h3>{post.author}</h3>
+              <p>일러스트레이터</p>
+            </div>
+            <div className="artist-buttons">
+              <button
+                className={`follow-button ${isFollowing ? "following" : ""}`}
+                onClick={handleFollow}
+              >
+                {isFollowing ? "팔로잉" : "팔로우"}
+              </button>
+              <button className="share-button" onClick={handleShare}>
+                공유
+              </button>
+            </div>
+          </div>
+
+          <div className="art-title">
+            <h2>{post.title}</h2>
+            <p className="art-date">등록일: {post.createdAt}</p>
+          </div>
+
+          <div className="bid-info">
+            <div className="bid-detail">
+              <span>시작가</span>
+              <p>{post.startingBid.toLocaleString()}원</p>
+            </div>
+            <div className="bid-detail current">
+              <span>현재 입찰가</span>
+              <p>{post.currentBid.toLocaleString()}원</p>
+            </div>
+            <div className="bid-detail">
+              <span>즉시 구매가</span>
+              <p>{post.buyNowPrice.toLocaleString()}원</p>
+            </div>
+          </div>
+
+          <div className="auction-timer">
+            <div className="timer-icon">⏱️</div>
+            <div className="timer-content">
+              <span>남은 시간</span>
+              <p>{countdown}</p>
+            </div>
+          </div>
+
+          <div className="bid-input">
+            <input
+              type="number"
+              value={bidAmount}
+              onChange={(e) => setBidAmount(e.target.value)}
+              placeholder="입찰 금액을 입력하세요"
+            />
+            <span className="currency">원</span>
+          </div>
+
+          <div className="action-buttons">
+            <div className="main-actions">
+              <button className="bid-button" onClick={handleBidSubmit}>
+                입찰하기
+              </button>
+              <button className="buy-now-button" onClick={handleBuyNow}>
+                즉시구매
+              </button>
+            </div>
+            <button className="chat-button" onClick={handleOpenChat}>
+              <span className="chat-icon">💬</span> 작가와 1:1 채팅
+            </button>
+            <button className="bid-history-button" onClick={handleBidHistory}>
+              입찰내역
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="post-detail">
-        <div className="post-header">
-          <h2>{post.title}</h2>
-          <div className="post-info">
-            <span>작성자: {post.author}</span>
-            <span>작성일: {post.createdAt}</span>
-          </div>
-        </div>
-
-        {post.thumbnail && (
-          <div className="post-thumbnail">
-            <img src={post.thumbnail} alt={post.title} />
-          </div>
-        )}
-
-        <div className="post-content">
-          {post.content.split('\n').map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-
-        <div className="post-actions">
-          <button onClick={handleGoBack} className="back-button">목록으로</button>
-          {post.boardId !== undefined && (
-          <button onClick={handleModify} className="modify-button">수정</button>
-          )}
-        </div>
-
-        <div className="comments-section">
-          <h3>댓글 ({post.comments.length})</h3>
-          
-          <div className="comments-list">
-            {post.comments.map((comment) => (
-              <div key={comment.id} className="comment">
-                <div className="comment-header">
-                  <span className="comment-author">{comment.author}</span>
-                  <span className="comment-date">{comment.createdAt}</span>
-                </div>
-                <div className="comment-content">{comment.content}</div>
-              </div>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmitComment} className="comment-form">
-            <textarea
-              value={commentContent}
-              onChange={(e) => setCommentContent(e.target.value)}
-              placeholder="댓글을 입력하세요"
-              rows={4}
-            ></textarea>
-            <button type="submit" className="submit-button">댓글 등록</button>
-          </form>
-        </div>
+      <div className="art-actions">
+        <button onClick={handleGoBack} className="back-button">
+          목록으로
+        </button>
       </div>
     </div>
   );
 };
 
-export default PostDetail;
+export default ArtDetail;

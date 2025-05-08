@@ -7,14 +7,13 @@ import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
+import PostDetail from "./pages/Post/PostDetail";
 import PostRegister from "./pages/Post/PostRegister";
 // import Header from './layouts/Header';
-
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
-import ArtList from "./pages/Art/ArtList";
 import RankingPage from "./pages/Ranking/RankingPage";
 import PostDetail from "./pages/Post/PostDetail";
 import Payment from "./pages/Art/Payment";
@@ -66,6 +65,14 @@ function App() {
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
+      {/* <Route path="/terms-condition" element={<TermsCondition />} />
+      <Route path="/customer-center" element={<CustomerCenter />} /> */}
+      <Route path="/post">
+        <Route index element={<PostList />} />
+        <Route path=":id" element={<PostDetail />} />
+        <Route path="register" element={<PostRegister />} />
+        <Route path="Modify/:id" element={<PostModify />} />
+      </Route>
     </Routes>
   );
 }
