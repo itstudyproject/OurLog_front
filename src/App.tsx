@@ -62,6 +62,7 @@ function App() {
           <Route path="Register" element={<PostRegister />} />
           <Route path="postModify/:id" element={<PostModify />} />
         </Route>
+
       </Route>
 
       {/* 별도 레이아웃을 사용하는 페이지들 */}
@@ -84,6 +85,7 @@ function App() {
         path="/mypage/account"
         element={<AccountEdit onBack={() => window.history.back()} />}
       />
+
 
 
       <Route path="/register" element={<RegisterPage />} />
