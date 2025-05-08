@@ -5,10 +5,8 @@
   position: fixed;
   top: 0;
   z-index: 50;
-  height: 90px;
-  text-align: center;
-  padding: 60px 50px;
-
+  height: 130px;
+  padding: 0 50px;
   opacity: 0.9;
 }
 
@@ -109,8 +107,7 @@
 }
 
 .logout {
-  font-size: 15px;
-  color: white;
+  font-size: 12px;
   font-weight: bold;
   letter-spacing: 0.05em;
   transition: color 0.3s;
@@ -127,36 +124,46 @@
   top: 0;
   left: 0;
   height: 100%;
-  width: 256px;
+  width: 300px;
   background-color: black;
   color: white;
-  padding: 24px;
+  padding: 20px;
   z-index: 50;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-100%);
+  opacity: 0;
+  animation: sidebar-fadein 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
 }
 
 .sidebar-title {
-  font-size: 18px;
+  font-size: 35px;
   font-weight: bold;
 }
 
 .sidebar-close {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
+  opacity: 0.7;
   cursor: pointer;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
+  padding: 0 15px;
   gap: 16px;
   font-size: 18px;
 }
@@ -169,4 +176,44 @@
 
 .sidebar-nav a:hover {
   color: #ff69b4;
+}
+
+/* 사이드바 Depth 1: 큰제목 */
+.sidebar-section-title {
+  font-size: 30px;
+  font-weight: bold;
+  margin-top: 40px;
+  color: #fff;
+  text-decoration: none;
+  display: block;
+}
+
+/* Depth 2: 소제목 */
+.sidebar-section-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: 10px;
+  margin-bottom: 8px;
+}
+.sidebar-section-sub a {
+  font-size: 18px;
+  color: #bdbdbd;
+  font-weight: 400;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sidebar-section-sub a:hover {
+  color: #ff69b4;
+}
+
+@keyframes sidebar-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
