@@ -9,12 +9,17 @@ import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
+import PostDetail from "./pages/Post/PostDetail";
 import PostRegister from "./pages/Post/PostRegister";
+import PostModify from "./pages/Post/PostModify";
+import ArtList from "./pages/Art/ArtList";
+import ArtDetail from "./pages/Art/ArtDetail";
+import Payment from "./pages/Art/Payment";
+import BidHistory from "./pages/Art/BidHistory";
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
-import ArtList from "./pages/Art/ArtList";
 import RankingPage from "./pages/Ranking/RankingPage";
 import PostDetail from "./pages/Post/PostDetail";
 import PostModify from "./pages/Post/PostModify";
@@ -30,6 +35,9 @@ function App() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="art">
           <Route index element={<ArtList />} />
+          <Route path=":id" element={<ArtDetail />} />
+          <Route path="payment/:id" element={<Payment />} />
+          <Route path="bids" element={<BidHistory />} />
         </Route>
         <Route path="ranking" element={<RankingPage />} />
       </Route>
@@ -47,6 +55,17 @@ function App() {
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
+<<<<<<< Updated upstream
+=======
+      {/* <Route path="/terms-condition" element={<TermsCondition />} />
+      <Route path="/customer-center" element={<CustomerCenter />} /> */}
+      <Route path="/post">
+        <Route index element={<PostList />} />
+        <Route path=":id" element={<PostDetail />} />
+        <Route path="register" element={<PostRegister />} />
+        <Route path="Modify/:id" element={<PostModify />} />
+      </Route>
+>>>>>>> Stashed changes
     </Routes>
   );
 }

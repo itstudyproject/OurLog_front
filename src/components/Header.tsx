@@ -116,8 +116,13 @@ const Header: React.FC = () => {
             />
           </div>
           <nav className="sidebar-nav">
+<<<<<<< Updated upstream
             <Link to="/art">아트</Link>
             <Link to="/Post">커뮤니티</Link>
+=======
+            <Link to="/ArtList">아트</Link>
+            <Link to="/PostList">커뮤니티</Link>
+>>>>>>> Stashed changes
             <Link to="/ranking">랭킹</Link>
           </nav>
         </div>
