@@ -1,4 +1,3 @@
-import img6 from "../assets/img/img6.png";
 import "../styles/BulletinBoard.css"; // CSS 파일 임포트
 
 type CategoryKey = "news" | "free" | "promotion" | "request";
@@ -39,26 +38,26 @@ const BulletinBoard: React.FC = () => {
   };
 
   return (
-    <section className="flex mb-10 px-4">
+    <section className="bulletin-section">
       {/* 왼쪽 썸네일 */}
-      <div className="w-1/2 pr-6 min-h-[400px] flex justify-center items-start">
+      <div className="left-thumbnail">
         <img
           src="/images/bulletinboard.png"
           alt="카테고리 관련 썸네일 이미지"
-          className="rounded-lg w-[700px] h-[450px] object-cover" // 고정 크기 지정
+          className="thumbnail-image"
         />
       </div>
 
       {/* 오른쪽 4개 카테고리 */}
-      <div className="w-1/2 category-container">
+      <div className="right-categories category-container">
         {Object.entries(categories).map(([key, items]) => {
           const typedKey = key as CategoryKey;
           return (
             <div key={typedKey}>
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="category-heading">
                 {categoryLabels[typedKey]}
               </h3>
-              <ul className="space-y-2">
+              <ul className="category-list">
                 {items.map((item) => (
                   <li key={item.id} className="category-item">
                     <div className="category-thumbnail" />

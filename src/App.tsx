@@ -1,32 +1,17 @@
-
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
-import ProfileEditPage from './pages/ProfileEditPage'
-import AccountEdit from './pages/AccountEdit';
-import AccountDelete from './pages/AccountDelete'; 
-import WorkerPage from './pages/WorkerPage'
-import MyPage from './pages/MyPage'
-import PostList from './pages/Post/PostList'
-import PostRegister from './pages/Post/PostRegister'
-// import Header from './layouts/Header';
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
-
-
 import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
+import AccountEdit from "./pages/AccountEdit";
+import AccountDelete from "./pages/AccountDelete";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
 import PostRegister from "./pages/Post/PostRegister";
+// import Header from './layouts/Header';
+
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -38,12 +23,14 @@ import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
+import RegisterPage from "./pages/RegisterPage";
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
 
+        <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
 
@@ -67,7 +54,6 @@ function App() {
       {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
 
-      <Route path="/signup" element={<SignupPage />} />
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="mypage/*" element={<MyPage />} />
       <Route path="/account/delete" element={<AccountDelete />} />
@@ -77,17 +63,16 @@ function App() {
         <Route path="register" element={<PostRegister />} />
       </Route>
       <Route
-        path="/profile/edit"
+        path="/profile-edit"
         element={<ProfileEditPage onBack={() => window.history.back()} />}
       />
       <Route
-        path="/mypage/account"
+        path="/mypage-account"
         element={<AccountEdit onBack={() => window.history.back()} />}
       />
 
-
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile/edit" element={<ProfileEditPage />} />
+      <Route path="/profile-edit" element={<ProfileEditPage />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
