@@ -78,4 +78,11 @@
   .arrow:active {
     transform: scale(0.9);
   }
+  .arrow-left {
+    transform: scaleX(-1);
+  }
+  
+  .arrow-left:active {
+    transform: scaleX(-1) scale(0.9);
+  }
   

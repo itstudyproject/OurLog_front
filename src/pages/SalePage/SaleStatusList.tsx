@@ -13,6 +13,26 @@ const dummyData = [
     method: '공개입찰',
     status: '입찰중',
   },
+  {
+    image: '/images/sample7.jpg',
+    title: 'peach',
+    artist: 'uouo',
+    regDate: '2025.05.03',
+    auctionStart: '2025.05.03',
+    saleEnd: '2025.05.10',
+    method: '공개입찰',
+    status: '입찰중',
+  },
+  {
+    image: '/images/sample7.jpg',
+    title: 'peach',
+    artist: 'uouo',
+    regDate: '2025.05.03',
+    auctionStart: '2025.05.03',
+    saleEnd: '2025.05.10',
+    method: '공개입찰',
+    status: '입찰중',
+  },
 ];
 
 const SaleStatusList = () => {

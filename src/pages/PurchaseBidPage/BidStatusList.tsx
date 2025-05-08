@@ -23,6 +23,16 @@ const dummyData = [
     participants: 12,
     isParticipating: false,
   },
+  {
+    image: '/images/sample5.jpg',
+    title: '작품명',
+    startTime: '2025.04.01 PM 13:00',
+    endTime: '2025.04.03 PM 17:00',
+    bidPrice: '15,000원',
+    status: '마감',
+    participants: 12,
+    isParticipating: false,
+  },
 ];
 
 const BidStatusList = () => {

@@ -13,6 +13,24 @@ const dummyData = [
     price: '200,000원',
     method: '개인의뢰',
   },
+  {
+    image: '/images/sample6.jpg',
+    title: 'coconut',
+    artist: 'coco',
+    count: 20,
+    date: '2025.03.05',
+    price: '200,000원',
+    method: '개인의뢰',
+  },
+  {
+    image: '/images/sample6.jpg',
+    title: 'coconut',
+    artist: 'coco',
+    count: 20,
+    date: '2025.03.05',
+    price: '200,000원',
+    method: '개인의뢰',
+  },
 ];
 
 const SaleList = () => {
