@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/PostForm.css";
+import "../../styles/PostRegister.css";
 
 interface FormData {
   title: string;
@@ -8,17 +8,9 @@ interface FormData {
   thumbnail: File | null;
   categoryType: "그림 게시판" | "글 게시판";
   category: string;
-  // 추가: 그림게시판용
-  description?: string;
-  auction?: {
-    startPrice: number | "";
-    instantPrice: number | "";
-    startDate: string;
-    endDate: string;
-  };
 }
 
-const Register = () => {
+const PostRegister = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,19 +20,11 @@ const Register = () => {
     thumbnail: null,
     categoryType: "글 게시판",
     category: "자유게시판",
-    description: "",
-    auction: {
-      startPrice: "",
-      instantPrice: "",
-      startDate: "",
-      endDate: "",
-    },
   });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
 
-  // 기존 핸들러 유지
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -55,40 +39,12 @@ const Register = () => {
     }
   };
 
-  // 그림게시판용 핸들러
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      description: e.target.value,
-    }));
-  };
-
-  const handleAuctionChange = (field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      auction: {
-        ...prev.auction,
-        [field]: value,
-      },
-    }));
-  };
-
   const handleCategoryTypeChange = (type: "그림 게시판" | "글 게시판") => {
     setFormData((prev) => ({
       ...prev,
       categoryType: type,
       category: type === "그림 게시판" ? "그림" : "자유게시판",
-      // 그림게시판 전환 시 내용 초기화
-      content: "",
-      description: "",
-      auction: {
-        startPrice: "",
-        instantPrice: "",
-        startDate: "",
-        endDate: "",
-      },
     }));
-    setCharacterCount(0);
   };
 
   const handleCategoryChange = (category: string) => {
@@ -119,27 +75,9 @@ const Register = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title) {
-      alert("제목을 입력해주세요.");
+    if (!formData.title || !formData.content) {
+      alert("제목과 내용을 모두 입력해주세요.");
       return;
-    }
-    if (formData.categoryType === "글 게시판" && !formData.content) {
-      alert("내용을 입력해주세요.");
-      return;
-    }
-    if (formData.categoryType === "그림 게시판") {
-      if (!formData.description) {
-        alert("작품설명을 입력해주세요.");
-        return;
-      }
-      if (
-        !formData.auction?.startPrice ||
-        !formData.auction?.startDate ||
-        !formData.auction?.endDate
-      ) {
-        alert("경매 정보를 모두 입력해주세요.");
-        return;
-      }
     }
 
     setIsSubmitting(true);
@@ -215,7 +153,7 @@ const Register = () => {
       <div className="register-container">
         <div className="content-box">
           <div className="file-upload">
-            <button type="button" onClick={handleFileButtonClick}>이미지 업로드</button>
+            <button onClick={handleFileButtonClick}>이미지 업로드</button>
             <input
               type="file"
               ref={fileInputRef}
@@ -226,117 +164,27 @@ const Register = () => {
             {previewUrl && (
               <div className="preview-img">
                 <img src={previewUrl} alt="미리보기" />
-                 <button
-          type="button"
-          className="remove-thumbnail-btn"
-          onClick={() => {
-            setPreviewUrl(null);
-            setFormData(prev => ({ ...prev, thumbnail: null }));
-          }}
-          aria-label="썸네일 삭제"
-        >
-          ×
-        </button>
               </div>
             )}
             <p className="file-guide">썸네일로 사용됩니다. (최대 10MB)</p>
           </div>
 
-          {/* 글 게시판: 기존 내용 입력란 */}
-          {formData.categoryType === "글 게시판" && (
-            <>
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                placeholder="내용을 입력하세요"
-              />
-              <div className="char-count">{characterCount}자</div>
-            </>
-          )}
-
-          {/* 그림 게시판: 작품설명 + 경매설정 */}
-          {formData.categoryType === "그림 게시판" && (
-            <div className="artbid-section">
-              <label className="artbid-label">작품설명</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleDescriptionChange}
-                placeholder="작품에 대한 설명을 입력하세요."
-                className="artbid-textarea"
-                rows={4}
-              />
-              <div className="auction-grid">
-                <div className="auction-field">
-                  <label className="artbid-label">경매 시작가 (₩)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    className="artbid-input"
-                    value={formData.auction?.startPrice}
-                    onChange={e =>
-                      handleAuctionChange(
-                        "startPrice",
-                        e.target.value === "" ? "" : Number(e.target.value)
-                      )
-                    }
-                    placeholder="예: 10000"
-                    required
-                  />
-                </div>
-                <div className="auction-field">
-                  <label className="artbid-label">즉시구매가 (₩, 선택)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    className="artbid-input"
-                    value={formData.auction?.instantPrice}
-                    onChange={e =>
-                      handleAuctionChange(
-                        "instantPrice",
-                        e.target.value === "" ? "" : Number(e.target.value)
-                      )
-                    }
-                    placeholder="예: 50000"
-                  />
-                </div>
-                <div className="auction-field">
-                  <label className="artbid-label">경매 시작일</label>
-                  <input
-                    type="datetime-local"
-                    className="artbid-input"
-                    value={formData.auction?.startDate}
-                    onChange={e =>
-                      handleAuctionChange("startDate", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-                <div className="auction-field">
-                  <label className="artbid-label">경매 종료일</label>
-                  <input
-                    type="datetime-local"
-                    className="artbid-input"
-                    value={formData.auction?.endDate}
-                    onChange={e =>
-                      handleAuctionChange("endDate", e.target.value)
-                    }
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <textarea
+            name="content"
+            value={formData.content}
+            onChange={handleInputChange}
+            placeholder="내용을 입력하세요"
+          />
+          <div className="char-count">{characterCount}자</div>
         </div>
       </div>
 
       <div className="button-group">
-        <button type="button" onClick={handleCancel}>뒤로 가기</button>
-        <button type="button" onClick={handleTemporarySave} disabled={isSubmitting}>
+        <button onClick={handleCancel}>뒤로 가기</button>
+        <button onClick={handleTemporarySave} disabled={isSubmitting}>
           임시저장
         </button>
-        <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+        <button onClick={handleSubmit} disabled={isSubmitting}>
           등록
         </button>
       </div>
@@ -344,4 +192,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default PostRegister;

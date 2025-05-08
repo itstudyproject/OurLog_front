@@ -33,9 +33,9 @@ export default function MainLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen flex flex-col bg-black">
       <Header scrollWidth={scrollWidth} />
-      <main className="md:pt-[160px] sm:pt-[120px] pt-[100px] transition-all duration-300">
+      <main className="flex-grow md:pt-[160px] sm:pt-[120px] pt-[100px] transition-all duration-300">
         <Outlet />
       </main>
       <Footer />

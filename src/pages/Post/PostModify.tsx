@@ -96,7 +96,7 @@ const PostModify = () => {
 
   const handleRemoveThumbnail = () => {
     setPreviewUrl(null);
-    setFormData(prev => ({ ...prev, thumbnail: null }));
+    setFormData((prev) => ({ ...prev, thumbnail: null }));
   };
 
   const handleDelete = () => {
@@ -160,7 +160,9 @@ const PostModify = () => {
       <div className="register-container">
         <div className="content-box">
           <div className="file-upload">
-            <button type="button" onClick={handleFileButtonClick}>이미지 업로드</button>
+            <button type="button" onClick={handleFileButtonClick}>
+              이미지 업로드
+            </button>
             <input
               type="file"
               ref={fileInputRef}
@@ -196,15 +198,17 @@ const PostModify = () => {
       </div>
 
       <div className="button-group">
-        <button type="button" onClick={handleCancel}>취소</button>
+        <button type="button" onClick={handleCancel}>
+          취소
+        </button>
         <button
-        type="button"
-        className="delete-button"
-        onClick={handleDelete}
-        style={{ background: "#ef4444", color: "#fff" }}
-      >
-        삭제
-      </button>
+          type="button"
+          className="delete-button"
+          onClick={handleDelete}
+          style={{ background: "#ef4444", color: "#fff" }}
+        >
+          삭제
+        </button>
         <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
           저장
         </button>
