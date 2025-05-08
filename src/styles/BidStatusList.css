@@ -1,0 +1,77 @@
+/* src/styles/BidStatusList.css */
+
+.bid-status-list {
+    width: 100%;
+    padding: 16px;
+  }
+  
+  .filter-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .bid-item {
+    display: flex;
+    align-items: center;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .item-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 16px;
+  }
+  
+  .item-info {
+    flex: 1;
+  }
+  
+  .item-info .title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .button-col {
+    margin-left: 16px;
+  }
+  
+  .btn {
+    background-color: #eee;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .btn:hover {
+    background-color: #ddd;
+  }
+  
+  .btn.active {
+    background-color: #c5e1a5;
+    font-weight: bold;
+  }
+  
+  .pagination {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+  

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/PostRegister.css";
+import "../../styles/PostRegiModi.css";
 
 interface FormData {
   title: string;
@@ -74,6 +74,11 @@ const PostRegister = () => {
     fileInputRef.current?.click();
   };
 
+  const handleRemoveThumbnail = () => {
+    setPreviewUrl(null);
+    setFormData((prev) => ({ ...prev, thumbnail: null }));
+  };
+
   const handleSubmit = async () => {
     if (!formData.title || !formData.content) {
       alert("제목과 내용을 모두 입력해주세요.");
@@ -106,8 +111,8 @@ const PostRegister = () => {
   };
 
   return (
-    <div className="register-wrapper">
-      <div className="register-container">
+    <div className="post-register-wrapper">
+      <div className="post-register-container">
         <div className="category-select">
           <label>게시판:</label>
           <select
@@ -138,7 +143,7 @@ const PostRegister = () => {
         </div>
       </div>
 
-      <div className="register-container">
+      <div className="post-register-container">
         <div className="title-input">
           <input
             type="text"
@@ -150,7 +155,7 @@ const PostRegister = () => {
         </div>
       </div>
 
-      <div className="register-container">
+      <div className="post-register-container">
         <div className="content-box">
           <div className="file-upload">
             <button onClick={handleFileButtonClick}>이미지 업로드</button>
@@ -164,6 +169,14 @@ const PostRegister = () => {
             {previewUrl && (
               <div className="preview-img">
                 <img src={previewUrl} alt="미리보기" />
+                <button
+                  type="button"
+                  className="remove-thumbnail-btn"
+                  onClick={handleRemoveThumbnail}
+                  aria-label="썸네일 삭제"
+                >
+                  ×
+                </button>
               </div>
             )}
             <p className="file-guide">썸네일로 사용됩니다. (최대 10MB)</p>

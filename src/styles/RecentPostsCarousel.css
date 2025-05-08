@@ -1,0 +1,59 @@
+.carousel-container {
+    position: relative;
+    padding: 0 48px; /* 버튼 공간 확보 */
+  }
+  
+  .carousel-content {
+    display: flex;
+    overflow-x: auto;
+    gap: 24px;
+    padding: 16px 24px;
+    scroll-behavior: smooth;
+    position: relative;
+  }
+  
+  .carousel-content::-webkit-scrollbar {
+    display: none; /* 스크롤바 숨김 */
+  }
+  
+  .post-card {
+    flex: 0 0 auto;
+    width: 270px;
+    text-align: center;
+    color: white;
+  }
+  
+  .post-image {
+    width: 270px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 0px;
+  }
+  
+  .scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.813);
+    font-size: 32px;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    padding: 8px;
+    transition: background 0.2s ease;
+  }
+  
+  .scroll-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+  }
+  
+  .scroll-btn.left {
+    left: 18px;
+  }
+  
+  .scroll-btn.right {
+    right: 18px;
+  }
+  

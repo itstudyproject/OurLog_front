@@ -107,25 +107,62 @@ body {
   font-size: 14px;
 }
 
-.follow-button {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
+/* 아티스트 버튼 그룹 */
+.artist-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.follow-button,
+.share-button {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  height: 48px;
+  padding: 0 32px;
+  border-radius: 24px;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
-  background-color: #f8c147;
-  color: #111;
-  border: none;
+  border: 2px solid;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.follow-button {
+  background: #f8c147;
+  color: #222;
+  border-color: #f8c147;
 }
 
 .follow-button.following {
-  background-color: #333;
+  background: #333;
   color: #fff;
+  border-color: #444;
 }
 
 .follow-button:hover {
-  opacity: 0.9;
+  background: #ffd36b;
+  color: #111;
+  box-shadow: 0 4px 16px rgba(248, 193, 71, 0.15);
+  border-color: #ffd36b;
+}
+
+.share-button {
+  background: #232323;
+  color: #f8c147;
+  border-color: #232323;
+}
+
+.share-button:hover {
+  background: #444;
+  color: #fff;
+  border-color: #444;
+  box-shadow: 0 4px 16px rgba(80, 80, 80, 0.1);
 }
 
 .art-title {
@@ -263,16 +300,59 @@ body {
   color: #999;
 }
 
+/* 왼쪽 콘텐츠 영역 */
+.left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 작품 설명 섹션 */
+.artwork-description {
+  background-color: #222;
+  border: 2px solid #333;
+  border-radius: 18px;
+  padding: 36px 36px 36px 36px;
+  min-height: 260px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.artwork-description h3 {
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 18px 0;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid #333;
+}
+
+.description-content {
+  color: #ccc;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
 /* 액션 버튼 영역 */
 .action-buttons {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-bottom: 15px;
+}
+
+.main-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.main-actions button {
+  flex: 1;
 }
 
 .bid-button,
 .buy-now-button {
-  flex: 1;
   padding: 12px;
   border-radius: 5px;
   font-size: 16px;
@@ -300,11 +380,9 @@ body {
   background-color: #555;
 }
 
-/* 채팅 버튼 */
 .chat-button {
   width: 100%;
   padding: 12px;
-  margin-bottom: 20px;
   background-color: #2a2a2a;
   color: #fff;
   border: 1px solid #444;
@@ -314,6 +392,7 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 14px;
 }
 
 .chat-button:hover {
@@ -325,26 +404,44 @@ body {
   font-size: 18px;
 }
 
-/* 작품 설명 영역 */
-.description-section {
-  margin-top: 20px;
-  border-top: 1px solid #333;
-  padding-top: 15px;
-}
-
-.description-section h3 {
-  font-size: 18px;
-  color: #fff;
-  margin: 0 0 15px 0;
-}
-
-.description-content {
-  line-height: 1.6;
+.bid-history-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #333;
   color: #ccc;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
 }
 
-.description-content p {
-  margin-bottom: 15px;
+.bid-history-button:hover {
+  background-color: #444;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .left-content {
+    gap: 8px;
+  }
+
+  .main-actions {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .artwork-description {
+    padding: 18px 10px 18px 10px;
+    min-height: 140px;
+  }
+
+  .artist-buttons {
+    gap: 8px;
+  }
 }
 
 /* 뒤로가기 버튼 영역 */
@@ -407,4 +504,22 @@ body {
   .art-detail-content {
     gap: 20px;
   }
+}
+
+/* 공유 버튼 */
+.share-button {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  background-color: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.share-button:hover {
+  background-color: #444;
 }

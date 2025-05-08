@@ -1,7 +1,7 @@
 export interface UserDTO {
   id: number;
   email: string;
-  name: string;
+  nickname: string;
 }
 
 export interface AnswerDTO {
