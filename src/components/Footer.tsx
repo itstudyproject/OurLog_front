@@ -8,14 +8,14 @@ const Footer = () => (
       <div>
         <h3 className="footer-heading">OurLog</h3>
         <p className="footer-text">
-          디지털 아티스트를 위한 최고의 커뮤니티. 작품 공유부터 피드백까지,
-          당신의 창작 여정을 응원합니다.
+          아티스트를 위한 최고의 커뮤니티! <br />
+          작품 공유와 피드백을 통해 창작 여정을 응원합니다.
         </p>
       </div>
 
       {/* 사이트 링크 */}
       <div>
-        <h4 className="footer-subheading">사이트</h4>
+        <h4 className="footer-heading">Support</h4>
         <ul className="footer-links">
           <li>
             <Link to="/terms-condition" className="footer-link">
@@ -37,11 +37,11 @@ const Footer = () => (
 
       {/* Contact */}
       <div>
-        <h4 className="footer-subheading">Contact</h4>
+        <h4 className="footer-heading">Contact</h4>
         <p className="footer-text">
           Email: contact@ourlog.com
           <br />
-          Tel: 02-123-4567
+          Tel: 0687-5640
         </p>
       </div>
     </div>

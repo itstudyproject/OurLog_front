@@ -8,19 +8,20 @@
 }
 
 .footer-container {
-  max-width: 1024px; /* max-w-screen-lg */
-  margin-left: auto; /* mx-auto */
-  margin-right: auto;
-  padding-left: 1.5rem; /* px-6 */
-  padding-right: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(1, 1fr); /* grid-cols-1 */
-  gap: 2rem; /* gap-8 */
+  width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  grid-template-columns: repeat(1, 1fr); /* 기본적으로 1열로 설정 */
+  gap: 2rem; /* 각 항목 간 간격을 늘림 */
 }
 
 @media (min-width: 768px) {
   .footer-container {
-    grid-template-columns: repeat(3, 1fr); /* md:grid-cols-3 */
+    grid-template-columns: repeat(
+      3,
+      1fr
+    ); /* 화면 크기 768px 이상에서 3열로 변경 */
   }
 }
 
@@ -28,11 +29,6 @@
   font-size: 1.25rem; /* text-xl */
   font-weight: 600; /* font-semibold */
   margin-bottom: 0.75rem; /* mb-3 */
-}
-
-.footer-subheading {
-  font-weight: 500; /* font-medium */
-  margin-bottom: 0.5rem; /* mb-2 */
 }
 
 .footer-links {
@@ -44,10 +40,11 @@
 
 .footer-link {
   transition: color 0.15s ease-in-out;
+  color: #ffffff;
 }
 
 .footer-link:hover {
-  color: #ffffff; /* hover:text-white */
+  color: #cc2efa; /* hover:text-white */
 }
 
 .footer-text {
