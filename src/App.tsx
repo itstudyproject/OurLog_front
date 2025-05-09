@@ -22,17 +22,19 @@ import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
+import SearchPage from "./pages/SearchPage";
 import ChatPage from "./pages/ChatPage";
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<WorkerPage />} />
-
+        <Route path="chat" element={<ChatPage />} />
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="chat" element={<ChatPage />} />
+
+        <Route path="/search" element={<SearchPage />} />
 
         <Route path="art">
           <Route index element={<ArtList />} />

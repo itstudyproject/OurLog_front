@@ -66,8 +66,9 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  // 토글되어 수락/거절 박스가 생겼다 사라졌다 합니다
   const handleSecurePaymentRequest = () => {
-    setIsPaymentRequestVisible(true);
+    setIsPaymentRequestVisible((prev) => !prev);
   };
 
   const handleAcceptPayment = () => {
@@ -154,7 +155,6 @@ const ChatPage: React.FC = () => {
                 {msg.message.split("\n").map((line, i) => (
                   <div key={i}>{line}</div>
                 ))}
-
                 {msg.paymentInfo && (
                   <div className="payment-card">
                     <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />

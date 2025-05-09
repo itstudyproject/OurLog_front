@@ -35,8 +35,7 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleOpenChat = () => {
-    // 새 탭에서 채팅 목록을 열기 위해 window.open() 사용
-    window.open("/chat", "_blank");
+    navigate("/chat", { state: { fromWorkerPage: true } });
   };
 
   const handleCardClick = (id: number) => {
