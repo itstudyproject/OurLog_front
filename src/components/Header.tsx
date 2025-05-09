@@ -163,14 +163,14 @@ const Header: React.FC = () => {
           </div>
 
           {/* 커뮤니티 섹션 */}
-          <Link to="/community" className="sidebar-section-title">
+          <Link to="/post" className="sidebar-section-title">
             커뮤니티
           </Link>
           <div className="sidebar-section-sub">
-            <Link to="/board">새소식</Link>
-            <Link to="/board/free">자유게시판</Link>
-            <Link to="/board/promo">홍보 게시판</Link>
-            <Link to="/board/request">요청 게시판</Link>
+            <Link to="/post/news">새소식</Link>
+            <Link to="/post/free">자유게시판</Link>
+            <Link to="/post/promotion">홍보 게시판</Link>
+            <Link to="/post/request">요청 게시판</Link>
           </div>
 
           {/* 랭킹 섹션 */}
