@@ -8,8 +8,6 @@ import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
 import PostRegister from "./pages/Post/PostRegister";
-// import Header from './layouts/Header';
-
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -24,56 +22,45 @@ import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
 import ChatPage from "./pages/ChatPage";
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<WorkerPage />} />
-        <Route path="chat" element={<ChatPage />} />
+        <Route path="chat" element={<ChatPage />} />{" "}
+        {/* ✅ 이거만 남기고 아래 중복 제거 */}
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-
-        <Route path="/search" element={<SearchPage />} />
-
+        <Route path="search" element={<SearchPage />} />
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
         </Route>
-
         <Route path="ranking" element={<RankingPage />} />
-
         <Route path="mypage" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
-
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
-          <Route path="Register" element={<PostRegister />} />
+          <Route path="register" element={<PostRegister />} />
           <Route path="postModify/:id" element={<PostModify />} />
         </Route>
       </Route>
 
-      {/* 별도 레이아웃을 사용하는 페이지들 */}
+      {/* MainLayout을 사용하지 않는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
-
-      <Route path="/board/:boardId" element={<PostList />} />
-
-      <Route path="post">
-        <Route index element={<PostList />} />
-        <Route path="register" element={<PostRegister />} />
-      </Route>
-
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/profile-edit"
         element={<ProfileEditPage onBack={() => window.history.back()} />}
       />
-
       <Route path="/delete-account" element={<DeleteAccountPage />} />
     </Routes>
   );
 }
+
 export default App;

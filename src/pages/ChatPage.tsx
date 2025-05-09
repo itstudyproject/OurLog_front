@@ -1,5 +1,6 @@
 // ChatPage.tsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/ChatPage.css";
 
 const userProfiles: { [key: string]: string } = {
@@ -24,6 +25,7 @@ interface ChatMessage {
 }
 
 const ChatPage: React.FC = () => {
+  const navigate = useNavigate();
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -42,7 +44,10 @@ const ChatPage: React.FC = () => {
     setMessagesByUser((prev) => ({ ...prev, [user]: prev[user] || [] }));
   };
 
-  const handleCloseListModal = () => setIsListModalVisible(false);
+  const handleCloseListModal = () => {
+    navigate("/"); // 전체 창 닫기
+  };
+
   const handleExitClick = () => {
     setIsChatModalVisible(false);
     setCurrentUser(null);
@@ -52,7 +57,10 @@ const ChatPage: React.FC = () => {
 
   const handleSendMessage = () => {
     if (newMessage.trim() === "" || !currentUser) return;
-    const message: ChatMessage = { sender: "Me", message: newMessage };
+    const message: ChatMessage = {
+      sender: "Me",
+      message: newMessage,
+    };
     setMessagesByUser((prev) => ({
       ...prev,
       [currentUser]: [...(prev[currentUser] || []), message],
@@ -133,20 +141,20 @@ const ChatPage: React.FC = () => {
 
     alert("결제가 완료되었습니다.");
 
-    const updatedMessages = messagesByUser[currentUser || ""].map((msg, i) =>
-      i === index
-        ? { ...msg, isPaymentFormVisible: false, isPaymentComplete: true }
-        : msg
-    );
-
     const paymentSuccessMessage: ChatMessage = {
       sender: "Me",
       message: "결제가 완료되었습니다.",
+      hidden: false,
+      isPaymentComplete: true,
     };
 
     setMessagesByUser((prev) => ({
       ...prev,
-      [currentUser || ""]: [...updatedMessages, paymentSuccessMessage],
+      [currentUser || ""]: prev[currentUser || ""]
+        .map((msg, i) =>
+          i === index ? { ...msg, isPaymentFormVisible: false } : msg
+        )
+        .concat(paymentSuccessMessage),
     }));
 
     setCardNumber("");
@@ -170,7 +178,7 @@ const ChatPage: React.FC = () => {
                   <div className="chat-info">
                     <strong>{user}</strong>
                     <p>
-                      {messagesByUser[user]?.length
+                      {messagesByUser[user] && messagesByUser[user].length > 0
                         ? messagesByUser[user][messagesByUser[user].length - 1]
                             .message
                         : "대화를 시작해보세요"}
@@ -187,7 +195,10 @@ const ChatPage: React.FC = () => {
         <div className="chat-modal">
           <div className="chat-header">
             <div className="chat-header-left">
-              <img src={userProfiles[currentUser]} alt={currentUser} />
+              <img
+                src={userProfiles[currentUser] || "/profile-placeholder.jpg"}
+                alt={currentUser}
+              />
               <span>{currentUser}</span>
             </div>
             <button className="exit-btn" onClick={handleExitClick}>
@@ -203,7 +214,9 @@ const ChatPage: React.FC = () => {
               >
                 {msg.sender !== "Me" && (
                   <img
-                    src={userProfiles[currentUser]}
+                    src={
+                      userProfiles[currentUser] || "/profile-placeholder.jpg"
+                    }
                     alt="상대방"
                     className="profile-icon"
                   />
@@ -218,7 +231,7 @@ const ChatPage: React.FC = () => {
                   ))}
                   {msg.paymentInfo && (
                     <div className="payment-card">
-                      <img src={msg.paymentInfo.itemImage} alt="상품" />
+                      <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />
                       <div className="item-details">
                         <strong>{msg.paymentInfo.itemName}</strong>
                         <p>{msg.paymentInfo.price.toLocaleString()}원</p>
@@ -240,8 +253,8 @@ const ChatPage: React.FC = () => {
                             카드 번호:
                             <input
                               type="text"
-                              value={cardNumber}
                               placeholder="123456789012"
+                              value={cardNumber}
                               onChange={(e) =>
                                 setCardNumber(
                                   e.target.value.replace(/[^0-9]/g, "")
@@ -277,6 +290,7 @@ const ChatPage: React.FC = () => {
               placeholder="메시지를 입력하세요..."
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyDown}
+              rows={1}
             />
             <button onClick={handleSendMessage}>보내기</button>
             <div className="secure-payment-box">
