@@ -26,12 +26,15 @@ const PostList = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedBoardId, setSelectedBoardId] = useState<number>(boardIdMap[location.pathname as keyof typeof boardIdMap] || 1);
+  const [selectedBoardId, setSelectedBoardId] = useState<number>(
+    boardIdMap[location.pathname as keyof typeof boardIdMap] || 1
+  );
 
   const postsPerPage = 10;
 
   useEffect(() => {
-    const currentBoardId = boardIdMap[location.pathname as keyof typeof boardIdMap] || 1;
+    const currentBoardId =
+      boardIdMap[location.pathname as keyof typeof boardIdMap] || 1;
     setSelectedBoardId(currentBoardId);
   }, [location.pathname]);
 
@@ -167,11 +170,20 @@ const PostList = () => {
   const handleRegisterClick = () => {
     let category = "";
     switch (selectedBoardId) {
-      case 1: category = "새소식"; break;
-      case 2: category = "자유게시판"; break;
-      case 3: category = "홍보게시판"; break;
-      case 4: category = "요청게시판"; break;
-      default: category = "자유게시판";
+      case 1:
+        category = "새소식";
+        break;
+      case 2:
+        category = "자유게시판";
+        break;
+      case 3:
+        category = "홍보게시판";
+        break;
+      case 4:
+        category = "요청게시판";
+        break;
+      default:
+        category = "자유게시판";
     }
     navigate(`/Post/Register?category=${encodeURIComponent(category)}`);
   };
@@ -278,7 +290,7 @@ const PostList = () => {
             </button>
           </form>
           <button onClick={handleRegisterClick} className="register-button">
-             게시글 등록 
+            게시글 등록
           </button>
         </div>
       </div>

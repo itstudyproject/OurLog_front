@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-import DatePicker from 'react-datepicker';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ko } from "date-fns/locale";
+import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import '../../styles/ArtRegister.css';
+import "../../styles/ArtRegister.css";
 
 interface ImageFile {
   file: File;
@@ -26,10 +25,10 @@ interface ArtworkForm {
 const ArtRegister = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<ArtworkForm>({
-    title: '',
-    description: '',
-    startPrice: '',
-    instantPrice: '',
+    title: "",
+    description: "",
+    startPrice: "",
+    instantPrice: "",
     startTime: new Date(),
     endTime: new Date(),
     images: [],
@@ -39,7 +38,7 @@ const ArtRegister = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
+      Array.from(files).forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
           const newImage: ImageFile = {
@@ -47,10 +46,10 @@ const ArtRegister = () => {
             preview: reader.result as string,
             id: Math.random().toString(36).substring(7),
           };
-          setForm(prev => ({
+          setForm((prev) => ({
             ...prev,
             images: [...prev.images, newImage],
-            thumbnailId: prev.thumbnailId || newImage.id
+            thumbnailId: prev.thumbnailId || newImage.id,
           }));
         };
         reader.readAsDataURL(file);
@@ -59,9 +58,11 @@ const ArtRegister = () => {
   };
 
   const handleThumbnailSelect = (imageId: string) => {
-    setForm(prev => {
+    setForm((prev) => {
       // 선택된 이미지 찾기
-      const selectedImageIndex = prev.images.findIndex(img => img.id === imageId);
+      const selectedImageIndex = prev.images.findIndex(
+        (img) => img.id === imageId
+      );
       if (selectedImageIndex === -1) return prev;
 
       // 이미지 배열 복사
@@ -74,30 +75,33 @@ const ArtRegister = () => {
       return {
         ...prev,
         images: newImages,
-        thumbnailId: imageId
+        thumbnailId: imageId,
       };
     });
   };
 
   const handleImageDelete = (imageId: string) => {
-    setForm(prev => {
-      const newImages = prev.images.filter(img => img.id !== imageId);
+    setForm((prev) => {
+      const newImages = prev.images.filter((img) => img.id !== imageId);
       return {
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId === imageId ? (newImages[0]?.id || null) : prev.thumbnailId
+        thumbnailId:
+          prev.thumbnailId === imageId
+            ? newImages[0]?.id || null
+            : prev.thumbnailId,
       };
     });
   };
 
   const formatPrice = (value: string) => {
-    const number = value.replace(/[^\d]/g, '');
-    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const number = value.replace(/[^\d]/g, "");
+    return number.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [name]: formatPrice(value),
     }));
@@ -105,7 +109,7 @@ const ArtRegister = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (form.images.length === 0) {
       alert("최소 한 개의 이미지를 업로드해주세요.");
       return;
@@ -125,12 +129,16 @@ const ArtRegister = () => {
           <div className="image-grid">
             {/* 첫 번째 슬롯: 메인 이미지 업로드 또는 미리보기 */}
             {form.images.length > 0 ? (
-              <div 
-                className={`image-item ${form.thumbnailId === form.images[0].id ? 'thumbnail-selected' : ''}`}
+              <div
+                className={`image-item ${
+                  form.thumbnailId === form.images[0].id
+                    ? "thumbnail-selected"
+                    : ""
+                }`}
               >
-                <img 
-                  src={form.images[0].preview} 
-                  alt="메인 이미지" 
+                <img
+                  src={form.images[0].preview}
+                  alt="메인 이미지"
                   className="uploaded-image"
                   onClick={() => handleThumbnailSelect(form.images[0].id)}
                 />
@@ -168,22 +176,22 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-main">
                   <span>메인 이미지를 업로드해주세요</span>
-                  <span className="text-sm mt-2">
-                    (클릭하여 파일 선택)
-                  </span>
+                  <span className="mt-2 text-sm">(클릭하여 파일 선택)</span>
                 </label>
               </div>
             )}
 
             {/* 나머지 이미지들 */}
             {form.images.slice(1).map((image) => (
-              <div 
-                key={image.id} 
-                className={`image-item ${form.thumbnailId === image.id ? 'thumbnail-selected' : ''}`}
+              <div
+                key={image.id}
+                className={`image-item ${
+                  form.thumbnailId === image.id ? "thumbnail-selected" : ""
+                }`}
               >
-                <img 
-                  src={image.preview} 
-                  alt="업로드 이미지" 
+                <img
+                  src={image.preview}
+                  alt="업로드 이미지"
                   className="uploaded-image"
                   onClick={() => handleThumbnailSelect(image.id)}
                 />
@@ -224,7 +232,7 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-additional">
                   <span>추가 이미지</span>
-                  <span className="text-sm mt-1">
+                  <span className="mt-1 text-sm">
                     ({form.images.length}/10)
                   </span>
                 </label>
@@ -255,7 +263,9 @@ const ArtRegister = () => {
                 id="title"
                 name="title"
                 value={form.title}
-                onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, title: e.target.value }))
+                }
                 className="form-input"
                 required
               />
@@ -269,7 +279,9 @@ const ArtRegister = () => {
                 id="description"
                 name="description"
                 value={form.description}
-                onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, description: e.target.value }))
+                }
                 className="form-textarea"
                 required
               />
@@ -278,15 +290,15 @@ const ArtRegister = () => {
             <div className="price-info">
               <div className="price-box">
                 <div className="price-label">시작가</div>
-                <div className="price-value">{form.startPrice || '0'}원</div>
+                <div className="price-value">{form.startPrice || "0"}원</div>
               </div>
               <div className="price-box current-price">
                 <div className="price-label">현재 입찰가</div>
-                <div className="price-value">{form.startPrice || '0'}원</div>
+                <div className="price-value">{form.startPrice || "0"}원</div>
               </div>
               <div className="price-box">
                 <div className="price-label">즉시 구매가</div>
-                <div className="price-value">{form.instantPrice || '0'}원</div>
+                <div className="price-value">{form.instantPrice || "0"}원</div>
               </div>
             </div>
 
@@ -325,7 +337,9 @@ const ArtRegister = () => {
                 <label className="form-label">경매 시작 시간</label>
                 <DatePicker
                   selected={form.startTime}
-                  onChange={(date: Date | null) => date && setForm(prev => ({ ...prev, startTime: date }))}
+                  onChange={(date: Date | null) =>
+                    date && setForm((prev) => ({ ...prev, startTime: date }))
+                  }
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
@@ -339,7 +353,9 @@ const ArtRegister = () => {
                 <label className="form-label">경매 종료 시간</label>
                 <DatePicker
                   selected={form.endTime}
-                  onChange={(date: Date | null) => date && setForm(prev => ({ ...prev, endTime: date }))}
+                  onChange={(date: Date | null) =>
+                    date && setForm((prev) => ({ ...prev, endTime: date }))
+                  }
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
@@ -352,7 +368,11 @@ const ArtRegister = () => {
             </div>
 
             <div className="button-group">
-              <button type="button" onClick={() => navigate(-1)} className="button button-secondary">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="button button-secondary"
+              >
                 취소
               </button>
               <button type="submit" className="button button-primary">
@@ -366,4 +386,4 @@ const ArtRegister = () => {
   );
 };
 
-export default ArtRegister; 
+export default ArtRegister;

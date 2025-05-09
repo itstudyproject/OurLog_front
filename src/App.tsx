@@ -7,21 +7,21 @@ import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
+import PostDetail from "./pages/Post/PostDetail";
 import PostRegister from "./pages/Post/PostRegister";
 // import Header from './layouts/Header';
-
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
-import ArtList from "./pages/Art/ArtList";
 import RankingPage from "./pages/Ranking/RankingPage";
-import PostDetail from "./pages/Post/PostDetail";
 import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
+import ArtList from "./pages/Art/ArtList";
+import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
 function App() {
   return (
@@ -38,6 +38,7 @@ function App() {
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
+          <Route path="register" element={<ArtRegister />} />
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
         </Route>
@@ -46,6 +47,10 @@ function App() {
 
         <Route path="post">
           <Route index element={<PostList />} />
+          <Route path="news" element={<PostList />} />
+          <Route path="free" element={<PostList />} />
+          <Route path="promotion" element={<PostList />} />
+          <Route path="request" element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
           <Route path="Register" element={<PostRegister />} />
           <Route path="postModify/:id" element={<PostModify />} />
