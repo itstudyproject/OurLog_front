@@ -1,20 +1,20 @@
 .art-register-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 32px;
   color: #fff;
 }
 
 .art-register-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: 32px;
 }
 
 .image-upload-section {
   background: #1a1a1a;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 16px;
   min-height: 400px;
   display: flex;
   flex-direction: column;
@@ -23,8 +23,8 @@
 .image-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .image-grid > *:first-child {
@@ -108,7 +108,7 @@
 .image-upload-placeholder {
   border: 2px dashed #333;
   border-radius: 8px;
-  padding: 2rem;
+  padding: 32px;
   text-align: center;
   cursor: pointer;
   height: 100%;
@@ -129,47 +129,47 @@
 }
 
 .image-upload-placeholder.small {
-  padding: 1rem;
+  padding: 16px;
   min-height: 120px;
 }
 
 .image-upload-placeholder.small span {
-  font-size: 0.8rem;
+  font-size: 13px;
 }
 
 .image-help-text {
   color: #888;
-  font-size: 0.9rem;
+  font-size: 14px;
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 16px;
 }
 
 .art-info-section {
   background: #1a1a1a;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 24px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 0.75rem;
+  padding: 12px;
   background: #2a2a2a;
   border: 1px solid #333;
   border-radius: 4px;
   color: #fff;
-  margin-top: 0.5rem;
+  margin-top: 8px;
 }
 
 .form-textarea {
@@ -180,25 +180,25 @@
 .price-info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .price-box {
   background: #2a2a2a;
-  padding: 1rem;
+  padding: 16px;
   border-radius: 4px;
   text-align: center;
 }
 
 .price-label {
-  font-size: 0.8rem;
+  font-size: 13px;
   color: #888;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .price-value {
-  font-size: 1.2rem;
+  font-size: 19px;
   font-weight: bold;
   color: #fff;
 }
@@ -208,17 +208,17 @@
 }
 
 .bid-section {
-  margin-top: 2rem;
+  margin-top: 32px;
 }
 
 .button-group {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .button {
-  padding: 0.75rem 1.5rem;
+  padding: 12px 24px;
   border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
