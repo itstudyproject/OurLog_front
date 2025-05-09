@@ -114,7 +114,9 @@ body {
   align-items: center;
 }
 
-.follow-button, .share-button {
+.follow-button,
+.share-button {
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,7 +128,7 @@ body {
   font-weight: 700;
   cursor: pointer;
   border: 2px solid;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
   letter-spacing: 0.5px;
 }
@@ -146,7 +148,7 @@ body {
 .follow-button:hover {
   background: #ffd36b;
   color: #111;
-  box-shadow: 0 4px 16px rgba(248,193,71,0.15);
+  box-shadow: 0 4px 16px rgba(248, 193, 71, 0.15);
   border-color: #ffd36b;
 }
 
@@ -160,7 +162,7 @@ body {
   background: #444;
   color: #fff;
   border-color: #444;
-  box-shadow: 0 4px 16px rgba(80,80,80,0.10);
+  box-shadow: 0 4px 16px rgba(80, 80, 80, 0.1);
 }
 
 .art-title {
@@ -313,7 +315,7 @@ body {
   border-radius: 18px;
   padding: 36px 36px 36px 36px;
   min-height: 260px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;

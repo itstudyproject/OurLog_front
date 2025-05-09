@@ -87,7 +87,7 @@ const PostModify = () => {
         if (reader.result) {
           newPreviewUrls.push(reader.result as string);
           if (newPreviewUrls.length === fileArray.length) {
-            setPreviewUrls(newPreviewUrls);
+            setPreviewUrl(newPreviewUrls);
           }
         }
       };
@@ -100,7 +100,7 @@ const PostModify = () => {
   };
 
   const handleRemoveThumbnail = () => {
-    setPreviewUrl(null);
+    setPreviewUrl([]);
     setFormData((prev) => ({ ...prev, thumbnail: null }));
   };
 
@@ -178,7 +178,7 @@ const PostModify = () => {
             />
             {previewUrl && (
               <div className="preview-img-wrapper">
-                <img src={previewUrl} alt="미리보기" className="preview-img" />
+                <img src={previewUrl[0]} alt="미리보기" className="preview-img" />
                 <button
                   type="button"
                   className="remove-thumbnail-btn"

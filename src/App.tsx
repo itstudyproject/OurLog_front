@@ -4,8 +4,6 @@ import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
-import AccountEdit from "./pages/AccountEdit";
-import AccountDelete from "./pages/AccountDelete";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
@@ -56,23 +54,14 @@ function App() {
 
       <Route path="/board/:boardId" element={<PostList />} />
       <Route path="mypage/*" element={<MyPage />} />
-      <Route path="/account/delete" element={<AccountDelete />} />
       <Route path="worker" element={<WorkerPage />} />
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
       </Route>
-      <Route
-        path="/profile-edit"
-        element={<ProfileEditPage onBack={() => window.history.back()} />}
-      />
-      <Route
-        path="/mypage-account"
-        element={<AccountEdit onBack={() => window.history.back()} />}
-      />
 
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile-edit" element={<ProfileEditPage />} />
+      <Route path="/profile-edit" element={<ProfileEditPage onBack={() => window.history.back()} />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
