@@ -106,6 +106,20 @@
   max-height: 90vh;
 }
 
+.go-to-payment {
+  padding: 8px 16px;
+  background-color: var(--highlight) !important; /* 검정색으로 설정 */
+  color: #000 !important; /* 텍스트는 흰색 */
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.go-to-payment:hover {
+  background-color: #e6b43e !important; /* hover시 어두운 회색 */
+}
+
 /* 헤더 */
 .chat-header {
   display: flex;

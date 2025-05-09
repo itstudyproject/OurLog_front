@@ -35,7 +35,8 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleOpenChat = () => {
-    navigate("/chat", { state: { fromWorkerPage: true } });
+    // 새 탭 또는 새 창에서 ChatPage 열기
+    window.open("/chat", "_blank", "noopener,noreferrer");
   };
 
   const handleCardClick = (id: number) => {

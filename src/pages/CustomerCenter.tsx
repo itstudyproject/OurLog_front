@@ -1,7 +1,99 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import "../styles/CustomerCenter.css";
+// import { useToken } from "../hooks/useToken";
+
+// const InquiryHistory: React.FC<{ token: string }> = ({ token }) => {
+//   const [inquiries, setInquiries] = useState<Question[]>([]);
+
+//   useEffect(() => {
+//     console.log("Token:", token); // token 값 출력
+//     if (token) {
+//       fetch("http://localhost:8080/ourlog/question/list", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       })
+//         .then((res) => res.json())
+//         .then(setInquiries)
+//         .catch(console.error);
+//     } else {
+//       console.error("❌ Token is undefined or null");
+//     }
+//   }, [token]);
+
+//   const handleEditInquiry = (inquiry: Question) => {
+//     // 수정 로직
+//   };
+
+//   const handleDeleteInquiry = (questionId: number) => {
+//     // 삭제 로직
+//   };
+
+//   const handleRestrictedAction = (type: "edit" | "delete") => {
+//     alert(
+//       `이미 답변이 완료되어 ${type === "edit" ? "수정" : "삭제"}할 수 없습니다.`
+//     );
+//   };
+
+//   return (
+//     <div>
+//       <h2 className="cc-section-title">1:1 문의내역</h2>
+//       <table className="table">
+//         <thead>
+//           <tr>
+//             <th className="th">번호</th>
+//             <th className="th">제목</th>
+//             <th className="th">작성일</th>
+//             <th className="th">상태</th>
+//             <th className="th">관리</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {inquiries.map((inquiry) => (
+//             <tr key={inquiry.questionId}>
+//               <td className="td">{inquiry.questionId}</td>
+//               <td className="td">{inquiry.title}</td>
+//               <td className="td">{inquiry.regDate}</td>
+//               <td className="td">
+//                 <span
+//                   className={`status-badge ${
+//                     inquiry.answerDTO ? "completed" : "waiting"
+//                   }`}
+//                 >
+//                   {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
+//                 </span>
+//               </td>
+//               <td className="td">
+//                 <div className="button-group">
+//                   <button
+//                     className="action-button"
+//                     // onClick={() =>
+//                     //   inquiry.answerDTO
+//                     //     ? handleRestrictedAction("edit")
+//                     //     : handleEditInquiry(inquiry)
+//                     // }
+//                   >
+//                     수정
+//                   </button>
+//                   <button
+//                     className="action-button delete"
+//                     onClick={() =>
+//                       inquiry.answerDTO
+//                         ? handleRestrictedAction("delete")
+//                         : handleDeleteInquiry(inquiry.questionId)
+//                     }
+//                   >
+//                     삭제
+//                   </button>
+//                 </div>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
 
 const CustomerCenter: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
@@ -320,7 +412,8 @@ const CustomerCenter: React.FC = () => {
               </section>
 
               <section id="history">
-                <h2 className="cc-section-title">1:1 문의내역</h2>
+                {/* <InquiryHistory token={useToken} /> */}
+                <h2 className="section-title">1:1 문의내역</h2>
                 <table className="table">
                   <thead>
                     <tr>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../styles/ChatPage.css";
 
-// 사용자 프로필 이미지 정보
 const userProfiles: { [key: string]: string } = {
   ann: "/images/ann_01.jpg",
   john: "/images/john_01.jpg",
@@ -10,7 +9,6 @@ const userProfiles: { [key: string]: string } = {
   제임스: "/images/제임스_01.jpg",
 };
 
-// 메시지 타입 정의
 interface ChatMessage {
   sender: string;
   message: string;
@@ -19,15 +17,19 @@ interface ChatMessage {
     itemName: string;
     price: number;
   };
+  isPaymentFormVisible?: boolean;
+  hidden?: boolean;
 }
 
 const ChatPage: React.FC = () => {
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messagesByUser, setMessagesByUser] = useState<{
+    [key: string]: ChatMessage[];
+  }>({});
   const [newMessage, setNewMessage] = useState<string>("");
-  const [isPaymentRequestVisible, setIsPaymentRequestVisible] = useState(false);
+  const [cardNumber, setCardNumber] = useState<string>("");
 
   const handleOpenChatModal = (user: string) => {
     const confirmChat = window.confirm(`${user}님과 채팅을 시작하시겠습니까?`);
@@ -36,7 +38,7 @@ const ChatPage: React.FC = () => {
     setCurrentUser(user);
     setIsListModalVisible(false);
     setIsChatModalVisible(true);
-    setMessages([]);
+    setMessagesByUser((prev) => ({ ...prev, [user]: prev[user] || [] }));
   };
 
   const handleCloseListModal = () => setIsListModalVisible(false);
@@ -45,18 +47,23 @@ const ChatPage: React.FC = () => {
     setIsChatModalVisible(false);
     setCurrentUser(null);
     setIsListModalVisible(true);
-    setIsPaymentRequestVisible(false);
+    setCardNumber("");
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim() !== "") {
-      const message: ChatMessage = {
-        sender: "Me",
-        message: newMessage,
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-    }
+    if (newMessage.trim() === "" || !currentUser) return;
+
+    const message: ChatMessage = {
+      sender: "Me",
+      message: newMessage,
+    };
+
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser]: [...(prev[currentUser] || []), message],
+    }));
+
+    setNewMessage("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -66,9 +73,24 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  // 토글되어 수락/거절 박스가 생겼다 사라졌다 합니다
   const handleSecurePaymentRequest = () => {
-    setIsPaymentRequestVisible((prev) => !prev);
+    if (!currentUser) return;
+
+    const message: ChatMessage = {
+      sender: currentUser, // 상대방이 보낸 것처럼 보이게
+      message: "상대방이 안전결제를 요청했습니다.",
+      paymentInfo: {
+        itemImage: "/images/파스타.jpg",
+        itemName: "디지털 아트워크",
+        price: 50000,
+      },
+      isPaymentFormVisible: false,
+    };
+
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser]: [...(prev[currentUser] || []), message],
+    }));
   };
 
   const handleAcceptPayment = () => {
@@ -80,9 +102,13 @@ const ChatPage: React.FC = () => {
         itemName: "디지털 아트워크",
         price: 50000,
       },
+      isPaymentFormVisible: false,
+      hidden: true,
     };
-    setMessages([...messages, message]);
-    setIsPaymentRequestVisible(false);
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser || ""]: [...(prev[currentUser || ""] || []), message],
+    }));
   };
 
   const handleRejectPayment = () => {
@@ -90,8 +116,48 @@ const ChatPage: React.FC = () => {
       sender: "Me",
       message: "안전결제를 거절하셨습니다.",
     };
-    setMessages([...messages, message]);
-    setIsPaymentRequestVisible(false);
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser || ""]: [...(prev[currentUser || ""] || []), message],
+    }));
+  };
+
+  const togglePaymentForm = (index: number) => {
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser || ""]: prev[currentUser || ""].map((msg, i) =>
+        i === index
+          ? { ...msg, isPaymentFormVisible: !msg.isPaymentFormVisible }
+          : msg
+      ),
+    }));
+  };
+
+  const handlePaymentSubmit = (index: number) => {
+    if (cardNumber.length !== 12) {
+      alert("카드 번호는 12자리여야 합니다.");
+      return;
+    }
+
+    alert("결제가 완료되었습니다.");
+
+    // 결제 완료 후 메시지 추가
+    const paymentSuccessMessage: ChatMessage = {
+      sender: "Me",
+      message: "결제가 완료되었습니다.",
+      hidden: false,
+    };
+
+    setMessagesByUser((prev) => ({
+      ...prev,
+      [currentUser || ""]: prev[currentUser || ""]
+        .map((msg, i) =>
+          i === index ? { ...msg, isPaymentFormVisible: false } : msg
+        )
+        .concat(paymentSuccessMessage), // 결제 완료 메시지 추가
+    }));
+
+    setCardNumber("");
   };
 
   return (
@@ -111,7 +177,12 @@ const ChatPage: React.FC = () => {
                   <img src={userProfiles[user]} alt={user} />
                   <div className="chat-info">
                     <strong>{user}</strong>
-                    <p>구매 확실하면 안전거래 이용해주세요</p>
+                    <p>
+                      {messagesByUser[user] && messagesByUser[user].length > 0
+                        ? messagesByUser[user][messagesByUser[user].length - 1]
+                            .message
+                        : "대화를 시작해보세요"}
+                    </p>
                   </div>
                 </li>
               ))}
@@ -135,48 +206,81 @@ const ChatPage: React.FC = () => {
             </button>
           </div>
 
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
-            >
-              {msg.sender !== "Me" && (
-                <img
-                  src={userProfiles[currentUser] || "/profile-placeholder.jpg"}
-                  alt="상대방"
-                  className="profile-icon"
-                />
-              )}
+          {messagesByUser[currentUser].map((msg, index) =>
+            msg.hidden ? null : (
               <div
-                className={`message ${
-                  msg.sender === "Me" ? "me-message" : "you-message"
-                }`}
+                key={index}
+                className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
               >
-                {msg.message.split("\n").map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
-                {msg.paymentInfo && (
-                  <div className="payment-card">
-                    <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />
-                    <div className="item-details">
-                      <strong>{msg.paymentInfo.itemName}</strong>
-                      <p>{msg.paymentInfo.price.toLocaleString()}원</p>
-                    </div>
-                    <button className="go-to-payment">결제하기</button>
-                  </div>
+                {msg.sender !== "Me" && (
+                  <img
+                    src={
+                      userProfiles[currentUser] || "/profile-placeholder.jpg"
+                    }
+                    alt="상대방"
+                    className="profile-icon"
+                  />
                 )}
+                <div
+                  className={`message ${
+                    msg.sender === "Me" ? "me-message" : "you-message"
+                  }`}
+                >
+                  {msg.message.split("\n").map((line, i) => (
+                    <div key={i}>{line}</div>
+                  ))}
+                  {msg.paymentInfo && (
+                    <div className="payment-card">
+                      <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />
+                      <div className="item-details">
+                        <strong>{msg.paymentInfo.itemName}</strong>
+                        <p>{msg.paymentInfo.price.toLocaleString()}원</p>
+                      </div>
+                      {!msg.isPaymentFormVisible ? (
+                        <button
+                          className="go-to-payment"
+                          onClick={() => togglePaymentForm(index)}
+                        >
+                          결제하기
+                        </button>
+                      ) : (
+                        <div className="payment-form">
+                          <p>
+                            <strong>결제 정보 확인</strong>
+                          </p>
+                          <label>
+                            카드 번호:
+                            <input
+                              type="text"
+                              placeholder="123456789012"
+                              value={cardNumber}
+                              onChange={(e) =>
+                                setCardNumber(
+                                  e.target.value.replace(/[^0-9]/g, "")
+                                )
+                              }
+                              maxLength={12}
+                            />
+                          </label>
+                          <p>
+                            최종 결제 금액:{" "}
+                            {msg.paymentInfo.price.toLocaleString()}원
+                          </p>
+                          <div className="payment-buttons">
+                            <button onClick={() => togglePaymentForm(index)}>
+                              돌아가기
+                            </button>
+                            <button onClick={() => handlePaymentSubmit(index)}>
+                              결제 진행
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-
-          {isPaymentRequestVisible && (
-            <div className="payment-request-message">
-              <p>안전결제를 하시겠습니까?</p>
-              <div className="payment-buttons">
-                <button onClick={handleAcceptPayment}>수락</button>
-                <button onClick={handleRejectPayment}>거절</button>
-              </div>
-            </div>
+            )
           )}
 
           <div className="chat-footer">

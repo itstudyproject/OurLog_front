@@ -1,211 +1,130 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
 import ProfileEditPage from "./ProfileEditPage";
 import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
-import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import DeleteAccountPage from "./DeleteAccountPage";
+import "../styles/WorkerPage.css";
+
+const cardData = [
+  { id: 1, image: "/images/mypage/Realization.jpg", title: "Realization" },
+  { id: 2, image: "/images/mypage/Andrew Loomis.jpg", title: "Andrew Loomis" },
+  { id: 3, image: "/images/mypage/White Roses.jpg", title: "White Roses" },
+  { id: 4, image: "/images/mypage/tangerine.jpg", title: "tangerine" },
+  { id: 5, image: "/images/mypage/Victoriaa.JPG", title: "Victoria" },
+  {
+    id: 6,
+    image: "/images/mypage/Goats and Girls.jpg",
+    title: "Goats and Girls",
+  },
+];
 
 const MyPage = () => {
+  const [followCount, setFollowCount] = useState(120);
+  const [isFollowing, setIsFollowing] = useState(false);
   const navigate = useNavigate();
 
+  const handleFollowToggle = () => {
+    const newFollowing = !isFollowing;
+    setIsFollowing(newFollowing);
+    setFollowCount((prev) => (newFollowing ? prev + 1 : prev - 1));
+  };
+
+  const handleCardClick = (id: number) => {
+    navigate(`/Art/${id}`);
+  };
+
   return (
-    <div className="bg-base-200 text-base-content flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-base-100 p-4 text-base-content shadow-md flex-shrink-0">
-        <div className="flex flex-col items-center mb-6">
-          <img
-            src="/images/mypage/Mari.jpg"
-            alt="profile"
-            className="w-24 h-24 rounded-full mb-2"
-          />
-          <h2 className="text-xl font-semibold">만수</h2>
-          <p className="text-sm">minsu@example.com</p>
-          <div className="mt-2 text-sm space-x-2">
-            <span>팔로워 30</span>
-            <span>팔로잉 30</span>
+    <div className="worker-container">
+      <div className="worker-header">
+        <img
+          src="/images/min.jpg"
+          alt="프로필 이미지"
+          className="worker-profile-img"
+        />
+        <div className="worker-info">
+          <div className="worker-meta-row">
+            <div className="worker-name">만수</div>
+            <div className="worker-stats">
+              <div className="stat">
+                <span className="label">팔로우</span>
+                <span>{followCount}</span>
+              </div>
+              <div className="stat">
+                <span className="label">팔로잉</span>
+                <span>340</span>
+              </div>
+            </div>
+          </div>
+          <div className="worker-buttons">
+            <button onClick={handleFollowToggle} className="btn">
+              {isFollowing ? "팔로잉" : "팔로우"}
+            </button>
+            <button className="btn" onClick={() => navigate("/chat")}>
+              채팅창
+            </button>
           </div>
         </div>
-        <ul className="menu flex flex-col items-center text-center">
-          <li>
-            <a onClick={() => navigate("/mypage/edit")}>프로필수정</a>
-          </li>
-          <li>
-            <a onClick={() => navigate("/mypage/account")}>회원정보수정</a>
-          </li>
-          <li>
-            <a>로그아웃</a>
-          </li>
-          <li>
-            <a
-              className="text-error"
-              onClick={() => navigate("/mypage/account/delete")}
-            >
-              회원탈퇴
-            </a>
-          </li>
-        </ul>
-
-        <button className="btn btn-outline mt-4 w-full">내 글 등록하기</button>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <h1 className="text-3xl font-bold mb-4">마이페이지</h1>
-
-                {/* 최근 본 게시물 */}
-                <Section title="최근 본 게시물">
-                  <RecentPostsCarousel
-                    posts={recentPosts.map((post, index) => ({
-                      id: index,
-                      title: post.title,
-                      price: Number(post.price.replace(/[^0-9]/g, "")),
-                      thumbnailUrl: post.image,
-                    }))}
-                  />
-                </Section>
-
-                {/* 내 구매/입찰 내역 */}
-                <Section title="내 구매/입찰 현황">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {purchaseHistory.map((post) => (
-                      <PostCard
-                        key={post.title}
-                        {...post}
-                        onClick={() => navigate("/mypage/purchase-bid")}
-                      />
-                    ))}
-                  </div>
-                </Section>
-
-                {/* 내 판매 내역 */}
-                <Section title="내 판매/판매 현황">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {purchaseHistory.map((post) => (
-                      <PostCard
-                        key={post.title}
-                        {...post}
-                        onClick={() => navigate("/mypage/sale")}
-                      />
-                    ))}
-                  </div>
-                </Section>
-
-                {/* 북마크한 작품들 */}
-                <Section title="북마크한 작품들">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {bookmarked.map((post) => (
-                      <PostCard
-                        key={post.title}
-                        {...post}
-                        onClick={() => navigate("/mypage/bookmark")}
-                      />
-                    ))}
-                  </div>
-                </Section>
-              </>
-            }
-          />
-          <Route
-            path="profile-edit"
-            element={<ProfileEditPage onBack={() => navigate("/mypage")} />}
-          />
-          <Route path="delete-account" element={<DeleteAccountPage />} />
-          <Route path="purchase-bid" element={<PurchaseBidPage />} />
-          <Route path="sale" element={<SalePage />} />
-          <Route path="bookmark" element={<BookmarkPage />} />
-        </Routes>
       </div>
+
+      <section className="worker-gallery">
+        {cardData.map((card) => (
+          <div
+            key={card.id}
+            className="worker-card"
+            onClick={() => handleCardClick(card.id)}
+            style={{ cursor: "pointer" }}
+          >
+            <figure className="card-image-wrapper">
+              <img
+                src={card.image || "/default-image.png"}
+                alt={`작품 ${card.id}`}
+                className="card-image"
+              />
+            </figure>
+            <div className="card-body">
+              <h2 className="card-title">{card.title}</h2>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="pagination">
+        <nav aria-label="페이지네이션">
+          <button
+            onClick={() => navigate("/mypage/profile-edit")}
+            className="page-btn"
+          >
+            프로필 수정
+          </button>
+          <button
+            onClick={() => navigate("/mypage/account")}
+            className="page-btn"
+          >
+            회원정보 수정
+          </button>
+          <button
+            onClick={() => navigate("/mypage/account/delete")}
+            className="page-btn text-error"
+          >
+            회원 탈퇴
+          </button>
+        </nav>
+      </div>
+
+      <Routes>
+        <Route
+          path="profile-edit"
+          element={<ProfileEditPage onBack={() => navigate("/mypage")} />}
+        />
+        <Route path="delete-account" element={<DeleteAccountPage />} />
+        <Route path="purchase-bid" element={<PurchaseBidPage />} />
+        <Route path="sale" element={<SalePage />} />
+        <Route path="bookmark" element={<BookmarkPage />} />
+      </Routes>
     </div>
   );
 };
-
-const Section = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div className="mb-8">
-    <h2 className="text-xl font-semibold mb-4">{title}</h2>
-    {children}
-  </div>
-);
-
-const PostCard = ({
-  image,
-  title,
-  price,
-  badge,
-  onClick,
-}: {
-  image: string;
-  title: string;
-  price: string;
-  badge?: string;
-  onClick?: () => void;
-}) => (
-  <div className="card bg-base-100 shadow-md">
-    <figure onClick={onClick} className="cursor-pointer">
-      <img src={image} alt={title} className="h-40 w-full object-cover" />
-    </figure>
-    <div className="card-body p-4">
-      <h3 className="card-title text-sm cursor-pointer" onClick={onClick}>
-        {title}
-      </h3>
-      <p className="text-sm">{price}</p>
-      {badge && <div className="badge badge-success mt-2">{badge}</div>}
-    </div>
-  </div>
-);
-
-// 임시 데이터
-const recentPosts = [
-  {
-    image: "/images/mypage/Realization.jpg",
-    title: "Realization",
-    price: "₩1,000,000",
-  },
-  {
-    image: "/images/mypage/Andrew Loomis.jpg",
-    title: "Andrew Loomis",
-    price: "₩800,000",
-  },
-  {
-    image: "/images/mypage/White Roses.jpg",
-    title: "White Roses",
-    price: "₩730,000",
-  },
-  {
-    image: "/images/mypage/tangerine.jpg",
-    title: "tangerine",
-    price: "₩3,000,000",
-  },
-];
-
-const purchaseHistory = [
-  {
-    image: "/images/mypage/Victoriaa.JPG",
-    title: "Victoria",
-    price: "₩1,000,000",
-  },
-  {
-    image: "/images/mypage/Goats and Girls.jpg",
-    title: "Goats and Girls",
-    price: "₩500,000",
-  },
-];
-
-const bookmarked = [
-  { image: "/src/images/77.jpg", title: "Cityscape", price: "₩400,000" },
-  { image: "/src/images/88.jpg", title: "Green Fields", price: "₩400,000" },
-];
 
 export default MyPage;

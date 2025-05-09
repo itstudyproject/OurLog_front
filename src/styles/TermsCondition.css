@@ -9,7 +9,7 @@
 }
 
 .terms-container h1 {
-  font-size: 2.5rem; /* 더 크게 */
+  font-size: 40px; /* 더 크게 (2.5rem -> 40px) */
   font-weight: 700;
   text-align: center;
   margin-bottom: 16px;
@@ -23,14 +23,14 @@
 }
 
 .terms-container h2 {
-  font-size: 1.4rem; /* 제목 글씨 키움 */
+  font-size: 22.4px; /* 제목 글씨 키움 (1.4rem -> 22.4px) */
   color: #f8f8f8;
   margin-bottom: 8px;
 }
 
 .terms-container p,
 .terms-container ol {
-  font-size: 1.05rem; /* 본문 글씨 키움 */
+  font-size: 16.8px; /* 본문 글씨 키움 (1.05rem -> 16.8px) */
   margin-bottom: 6px;
 }
 
