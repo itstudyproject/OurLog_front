@@ -1,18 +1,18 @@
 /* styles/SaleStatusList.css */
 .sale-status-list {
-    padding: 1rem;
+    padding: 16px;
   }
   
   .filter-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 16px;
   }
   
   .filter-row select,
   .filter-row .date-filter {
-    padding: 0.5rem 1rem;
+    padding: 8px 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
   }
@@ -26,11 +26,11 @@
   .status-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 16px;
     border: 1px solid #ddd;
-    padding: 1rem;
+    padding: 16px;
     border-radius: 8px;
-    margin-bottom: 1rem;
+    margin-bottom: 16px;
     background-color: #fff;
   }
   
@@ -47,14 +47,14 @@
   
   .sale-status-title {
     font-weight: bold;
-    font-size: 1.1rem;
-    margin-bottom: 0.3rem;
+    font-size: 17.6px;
+    margin-bottom: 4.8px;
   }
   
   .artist {
     color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+    font-size: 14.4px;
+    margin-bottom: 8px;
   }
   
   .status {
@@ -64,6 +64,6 @@
   
   .pagination {
     text-align: center;
-    margin-top: 2rem;
+    margin-top: 32px;
   }
   
