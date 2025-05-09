@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ArtDetail.css";
 
@@ -25,10 +25,6 @@ const ArtDetail = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [bidAmount, setBidAmount] = useState<string>("");
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
-  const [showShareOptions, setShowShareOptions] = useState<boolean>(false);
-  const shareBtnRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  
   const [countdown, setCountdown] = useState<string>("");
   useEffect(() => {
     const fetchArtPost = async () => {
@@ -86,23 +82,6 @@ const ArtDetail = () => {
     return () => clearInterval(timer);
   }, [id, post?.endTime]);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node) &&
-        shareBtnRef.current &&
-        !shareBtnRef.current.contains(e.target as Node)
-      ) {
-        setShowShareOptions(false);
-      }
-    }
-    if (showShareOptions) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showShareOptions]);
-
   const handleGoBack = () => {
     navigate("/Art");
   };
@@ -117,8 +96,7 @@ const ArtDetail = () => {
       alert("현재 입찰가보다 높은 금액을 입력해주세요.");
       return;
     }
-        const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
-    if (!confirmBid) return;
+
     alert(`${bidAmount}원 입찰이 완료되었습니다.`);
     if (post) {
       setPost({ ...post, currentBid: bid });
@@ -127,23 +105,15 @@ const ArtDetail = () => {
   };
 
   const handleBuyNow = () => {
-    const confirmBuy = window.confirm("정말 즉시 구매하시겠습니까?");
-    if (!confirmBuy) return;
     navigate(`/Art/payment/${post?.id}`);
-  }; 
-    const handleOpenChat = () => {
-    const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
-    if (confirmChat) {
-      window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
-    }
-
-  };  
-  const handleBidHistory = () => {
-    alert("입찰 내역을 확인합니다.");
   };
 
-  const handleShareToggle = () => {
-    setShowShareOptions(!showShareOptions);
+  const handleChat = () => {
+    alert("작가님과의 1:1 채팅이 시작됩니다.");
+  };
+
+  const handleBidHistory = () => {
+    alert("입찰 내역을 확인합니다.");
   };
 
   const handleFollow = () => {
@@ -155,13 +125,8 @@ const ArtDetail = () => {
       alert(followMsg);
     }
   };
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("링크가 복사되었습니다!");
-    } catch (err) {
-      alert("링크 복사에 실패했습니다.");
-    }
+  const handleShare = () => {
+    alert("작품 링크가 복사되었습니다.");
   };
 
   if (loading) {
@@ -209,52 +174,16 @@ const ArtDetail = () => {
               <h3>{post.author}</h3>
               <p>일러스트레이터</p>
             </div>
-            <div className="artist-buttons" style={{ position: 'relative' }}>
+            <div className="artist-buttons">
               <button
                 className={`follow-button ${isFollowing ? "following" : ""}`}
                 onClick={handleFollow}
               >
                 {isFollowing ? "팔로잉" : "팔로우"}
               </button>
-              <button
-                className="share-button"
-                onClick={() => setShowShareOptions((v) => !v)}
-                ref={shareBtnRef}
-              >
+              <button className="share-button" onClick={handleShare}>
                 공유
               </button>
-              {showShareOptions && (
-                <div className="share-popover" ref={popoverRef}>
-                  <button onClick={handleCopyLink} className="share-popover-btn">🔗</button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `https://twitter.com/intent/tweet?url=${window.location.href}`
-                      )
-                    }
-                    className="share-popover-btn"
-                  >
-                    🐦
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`
-                      )
-                    }
-                    className="share-popover-btn"
-                  >
-                    📘
-                  </button>
-                  <button
-                    onClick={() => alert("카카오톡 공유는 추후 구현 예정입니다.")}
-                    className="share-popover-btn"
-                  >
-                    💬
-                  </button>
-                  <div className="share-popover-arrow" />
-                </div>
-              )}
             </div>
           </div>
 
@@ -305,7 +234,7 @@ const ArtDetail = () => {
                 즉시구매
               </button>
             </div>
-            <button className="chat-button" onClick={handleOpenChat}>
+            <button className="chat-button" onClick={handleChat}>
               <span className="chat-icon">💬</span> 작가와 1:1 채팅
             </button>
             <button className="bid-history-button" onClick={handleBidHistory}>
