@@ -1,12 +1,11 @@
 import React from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
 import ProfileEditPage from "./ProfileEditPage";
-import AccountEdit from "./AccountEdit";
-import AccountDelete from "./AccountDelete";
 import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
 import RecentPostsCarousel from "./Post/RecentPostsCarousel";
+import DeleteAccountPage from "./DeleteAccountPage";
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -114,14 +113,10 @@ const MyPage = () => {
             }
           />
           <Route
-            path="edit"
+            path="profile-edit"
             element={<ProfileEditPage onBack={() => navigate("/mypage")} />}
           />
-          <Route
-            path="account"
-            element={<AccountEdit onBack={() => navigate("/mypage")} />}
-          />
-          <Route path="account/delete" element={<AccountDelete />} />
+          <Route path="delete-account" element={<DeleteAccountPage />} />
           <Route path="purchase-bid" element={<PurchaseBidPage />} />
           <Route path="sale" element={<SalePage />} />
           <Route path="bookmark" element={<BookmarkPage />} />

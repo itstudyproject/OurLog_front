@@ -49,7 +49,7 @@ const SaleList = () => {
           <li key={idx} className="purchase-item">
             <img src={item.image} alt={item.title} className="item-image" />
             <div className="item-info">
-              <p className="title">{item.title}</p>
+              <p className="sale-item-title">{item.title}</p>
               <p className="artist">{item.artist}</p>
               <p>판매횟수 {item.count}</p>
               <p>판매날짜 {item.date}</p>
