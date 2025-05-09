@@ -14,13 +14,15 @@ import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
-import RankingPage from "./pages/Ranking/RankingPage";
+import RankingPage from "./pages/Ranking/RankingPage"
 import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
+import ArtRegister from "./pages/Art/ArtRegister";
+
 function App() {
   return (
     <Routes>
@@ -33,6 +35,7 @@ function App() {
 
         <Route path="art">
           <Route index element={<ArtList />} />
+          <Route path="register" element={<ArtRegister />} />
           <Route path=":id" element={<ArtDetail />} />
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
@@ -42,8 +45,12 @@ function App() {
 
         <Route path="post">
           <Route index element={<PostList />} />
+          <Route path="news" element={<PostList />} />
+          <Route path="free" element={<PostList />} />
+          <Route path="promotion" element={<PostList />} />
+          <Route path="request" element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
-          <Route path="Register" element={<PostRegister />} />
+          <Route path="register" element={<PostRegister />} />
           <Route path="postModify/:id" element={<PostModify />} />
         </Route>
       </Route>
@@ -59,8 +66,10 @@ function App() {
         <Route path="register" element={<PostRegister />} />
       </Route>
 
+
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile-edit" element={<ProfileEditPage />} />
+      <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
       {/* <Route path="/terms-condition" element={<TermsCondition />} />
