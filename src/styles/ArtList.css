@@ -195,3 +195,9 @@ body {
   color: #ccc;
   font-size: 18px;
 }
+
+.main-search {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
