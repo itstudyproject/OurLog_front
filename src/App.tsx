@@ -27,7 +27,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
-        <Route index element={<WorkerPage />} />
+        <Route index element={<HomePage />} />
         <Route path="chat" element={<ChatPage />} />{" "}
         {/* ✅ 이거만 남기고 아래 중복 제거 */}
         <Route path="terms-condition" element={<TermsCondition />} />
