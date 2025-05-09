@@ -164,7 +164,17 @@ const PostList = () => {
   }, []);
 
   const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
-  const handleRegisterClick = () => navigate("/Post/Register");
+  const handleRegisterClick = () => {
+    let category = "";
+    switch (selectedBoardId) {
+      case 1: category = "새소식"; break;
+      case 2: category = "자유게시판"; break;
+      case 3: category = "홍보게시판"; break;
+      case 4: category = "요청게시판"; break;
+      default: category = "자유게시판";
+    }
+    navigate(`/Post/Register?category=${encodeURIComponent(category)}`);
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("검색어:", searchTerm);

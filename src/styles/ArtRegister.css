@@ -31,6 +31,9 @@
   grid-column: span 4;
   aspect-ratio: 16/9;
   min-height: 300px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .image-item {
@@ -115,6 +118,9 @@
   justify-content: center;
   color: #888;
   transition: all 0.2s;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .image-upload-placeholder:hover {

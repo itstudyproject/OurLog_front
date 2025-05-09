@@ -6,6 +6,12 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import '../../styles/ArtRegister.css';
 
+interface ImageFile {
+  file: File;
+  preview: string;
+  id: string;
+}
+
 interface ArtworkForm {
   title: string;
   description: string;
@@ -13,12 +19,12 @@ interface ArtworkForm {
   instantPrice: string;
   startTime: Date;
   endTime: Date;
-  image: File | null;
+  images: ImageFile[];
+  thumbnailId: string | null;
 }
 
 const ArtRegister = () => {
   const navigate = useNavigate();
-  const [preview, setPreview] = useState<string>('');
   const [form, setForm] = useState<ArtworkForm>({
     title: '',
     description: '',
@@ -26,19 +32,62 @@ const ArtRegister = () => {
     instantPrice: '',
     startTime: new Date(),
     endTime: new Date(),
-    image: null,
+    images: [],
+    thumbnailId: null,
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setForm(prev => ({ ...prev, image: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files) {
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const newImage: ImageFile = {
+            file,
+            preview: reader.result as string,
+            id: Math.random().toString(36).substring(7),
+          };
+          setForm(prev => ({
+            ...prev,
+            images: [...prev.images, newImage],
+            thumbnailId: prev.thumbnailId || newImage.id
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const handleThumbnailSelect = (imageId: string) => {
+    setForm(prev => {
+      // 선택된 이미지 찾기
+      const selectedImageIndex = prev.images.findIndex(img => img.id === imageId);
+      if (selectedImageIndex === -1) return prev;
+
+      // 이미지 배열 복사
+      const newImages = [...prev.images];
+      // 선택된 이미지를 배열에서 제거
+      const [selectedImage] = newImages.splice(selectedImageIndex, 1);
+      // 선택된 이미지를 배열의 첫 번째 위치에 추가
+      newImages.unshift(selectedImage);
+
+      return {
+        ...prev,
+        images: newImages,
+        thumbnailId: imageId
+      };
+    });
+  };
+
+  const handleImageDelete = (imageId: string) => {
+    setForm(prev => {
+      const newImages = prev.images.filter(img => img.id !== imageId);
+      return {
+        ...prev,
+        images: newImages,
+        thumbnailId: prev.thumbnailId === imageId ? (newImages[0]?.id || null) : prev.thumbnailId
+      };
+    });
   };
 
   const formatPrice = (value: string) => {
@@ -56,8 +105,16 @@ const ArtRegister = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: API 연동
-    console.log(form);
+    
+    if (form.images.length === 0) {
+      alert("최소 한 개의 이미지를 업로드해주세요.");
+      return;
+    }
+
+    // TODO: API 연동 후에는 실제 생성된 작품의 ID를 받아서 이동
+    const dummyArtId = "1";
+    alert("작품이 성공적으로 등록되었습니다!");
+    navigate(`/art/${dummyArtId}`);
   };
 
   return (
@@ -65,34 +122,119 @@ const ArtRegister = () => {
       <div className="art-register-grid">
         {/* 왼쪽 섹션: 이미지 업로드 */}
         <div className="image-upload-section">
-          {preview ? (
-            <div className="relative">
-              <img src={preview} alt="미리보기" className="image-preview" />
-              <button
-                type="button"
-                onClick={() => {
-                  setPreview('');
-                  setForm(prev => ({ ...prev, image: null }));
-                }}
-                className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full"
+          <div className="image-grid">
+            {/* 첫 번째 슬롯: 메인 이미지 업로드 또는 미리보기 */}
+            {form.images.length > 0 ? (
+              <div 
+                className={`image-item ${form.thumbnailId === form.images[0].id ? 'thumbnail-selected' : ''}`}
               >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <div className="image-upload-placeholder">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="artwork-image"
-              />
-              <label htmlFor="artwork-image">
-                <span>이미지를 업로드해주세요</span>
-                <span className="text-sm mt-2">(클릭하여 파일 선택)</span>
-              </label>
-            </div>
+                <img 
+                  src={form.images[0].preview} 
+                  alt="메인 이미지" 
+                  className="uploaded-image"
+                  onClick={() => handleThumbnailSelect(form.images[0].id)}
+                />
+                <div className="image-overlay">
+                  <button
+                    type="button"
+                    onClick={() => handleImageDelete(form.images[0].id)}
+                    className="delete-button"
+                  >
+                    ✕
+                  </button>
+                  {form.thumbnailId === form.images[0].id && (
+                    <span className="thumbnail-badge">썸네일</span>
+                  )}
+                  {form.thumbnailId !== form.images[0].id && (
+                    <button
+                      type="button"
+                      onClick={() => handleThumbnailSelect(form.images[0].id)}
+                      className="thumbnail-button"
+                    >
+                      썸네일로 설정
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="image-upload-placeholder">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="artwork-image-main"
+                  multiple
+                />
+                <label htmlFor="artwork-image-main">
+                  <span>메인 이미지를 업로드해주세요</span>
+                  <span className="text-sm mt-2">
+                    (클릭하여 파일 선택)
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {/* 나머지 이미지들 */}
+            {form.images.slice(1).map((image) => (
+              <div 
+                key={image.id} 
+                className={`image-item ${form.thumbnailId === image.id ? 'thumbnail-selected' : ''}`}
+              >
+                <img 
+                  src={image.preview} 
+                  alt="업로드 이미지" 
+                  className="uploaded-image"
+                  onClick={() => handleThumbnailSelect(image.id)}
+                />
+                <div className="image-overlay">
+                  <button
+                    type="button"
+                    onClick={() => handleImageDelete(image.id)}
+                    className="delete-button"
+                  >
+                    ✕
+                  </button>
+                  {form.thumbnailId === image.id && (
+                    <span className="thumbnail-badge">썸네일</span>
+                  )}
+                  {form.thumbnailId !== image.id && (
+                    <button
+                      type="button"
+                      onClick={() => handleThumbnailSelect(image.id)}
+                      className="thumbnail-button"
+                    >
+                      썸네일로 설정
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* 추가 이미지 업로드 플레이스홀더 */}
+            {form.images.length < 10 && (
+              <div className="image-upload-placeholder small">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="artwork-image-additional"
+                  multiple
+                />
+                <label htmlFor="artwork-image-additional">
+                  <span>추가 이미지</span>
+                  <span className="text-sm mt-1">
+                    ({form.images.length}/10)
+                  </span>
+                </label>
+              </div>
+            )}
+          </div>
+          {form.images.length > 0 && (
+            <p className="image-help-text">
+              * 이미지를 클릭하여 썸네일로 설정할 수 있습니다.
+            </p>
           )}
         </div>
 

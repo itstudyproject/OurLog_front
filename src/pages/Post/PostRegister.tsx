@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
 
@@ -19,6 +19,9 @@ interface FormData {
 
 const PostRegister = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
@@ -26,7 +29,7 @@ const PostRegister = () => {
     content: "",
     images: [],
     thumbnailId: null,
-    category: "자유게시판",
+    category: initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
