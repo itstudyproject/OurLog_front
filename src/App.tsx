@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
@@ -22,6 +21,8 @@ import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
+import ProfileEdit from "./pages/ProfileEdit";
+
 function App() {
   return (
     <Routes>
@@ -40,6 +41,8 @@ function App() {
         </Route>
 
         <Route path="ranking" element={<RankingPage />} />
+              <Route path="mypage/*" element={<MyPage />} />
+      <Route path="worker" element={<WorkerPage />} />
 
         <Route path="post">
           <Route index element={<PostList />} />
@@ -53,17 +56,14 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
-      <Route path="mypage/*" element={<MyPage />} />
-      <Route path="worker" element={<WorkerPage />} />
+
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
       </Route>
 
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile-edit" element={<ProfileEditPage onBack={() => window.history.back()} />} />
-      <Route path="/mypage" element={<MyPage />} />
-      <Route path="/worker" element={<WorkerPage />} />
+      <Route path="/profile-edit" element={<ProfileEdit onBack={() => window.history.back()} />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />
     </Routes>
   );

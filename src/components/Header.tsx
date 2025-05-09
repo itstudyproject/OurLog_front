@@ -83,7 +83,7 @@ const Header: React.FC = () => {
                 <>
                   <Link to={"/mypage"}>
                     <img
-                      src={userInfo?.profileImage || "/images/mypage.png"}
+                      src={userInfo?.profileImage ?? "/images/mypage.png"}
                       alt="마이페이지"
                       className="mypage-icon"
                     />
