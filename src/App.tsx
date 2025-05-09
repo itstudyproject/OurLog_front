@@ -44,6 +44,9 @@ function App() {
 
         <Route path="ranking" element={<RankingPage />} />
 
+        <Route path="mypage" element={<MyPage />} />
+        <Route path="worker" element={<WorkerPage />} />
+
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
@@ -56,8 +59,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
-      <Route path="mypage/*" element={<MyPage />} />
-      <Route path="worker" element={<WorkerPage />} />
+
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
@@ -68,8 +70,7 @@ function App() {
         path="/profile-edit"
         element={<ProfileEditPage onBack={() => window.history.back()} />}
       />
-      <Route path="/mypage" element={<MyPage />} />
-      <Route path="/worker" element={<WorkerPage />} />
+
       <Route path="/delete-account" element={<DeleteAccountPage />} />
     </Routes>
   );

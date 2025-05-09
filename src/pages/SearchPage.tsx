@@ -7,6 +7,7 @@ interface ArtWork {
   id: number;
   title: string;
   author: string;
+  artistProfileImg: string;
   contents?: string;
   price: number;
   likes: number;
@@ -18,6 +19,7 @@ interface Post {
   id: number;
   title: string;
   author: string;
+  artistProfileImg: string;
   contents?: string;
   createdAt: string;
   thumbnail?: string;
@@ -30,6 +32,7 @@ const dummyArtworks: ArtWork[] = [
     id: 1,
     title: "작품 제목 1",
     author: "작가1",
+    artistProfileImg: "/images/avatar.png",
     contents: "파스타를 주제로 한 일러스트입니다.",
     price: 30000,
     likes: 128,
@@ -40,6 +43,7 @@ const dummyArtworks: ArtWork[] = [
     id: 2,
     title: "풍경화",
     author: "작가2",
+    artistProfileImg: "/images/avatar.png",
     contents: "자연 풍경을 담은 평화로운 그림입니다.",
     price: 40000,
     likes: 80,
@@ -53,6 +57,7 @@ const dummyPosts: Post[] = [
     id: 1,
     title: "지금부터 마카오 환타지아 클라이맥스 썸머...",
     author: "판타지스트",
+    artistProfileImg: "/images/avatar.png",
     contents: "여름 시즌 이벤트 소식입니다.",
     createdAt: "2023.03.26.14:22",
     thumbnail: "/images/post1.jpg",
@@ -63,6 +68,7 @@ const dummyPosts: Post[] = [
     id: 2,
     title: "파스타 맛집 추천",
     author: "맛집러버",
+    artistProfileImg: "/images/avatar.png",
     contents: "정말 맛있는 파스타 가게 추천합니다!",
     createdAt: "2023.04.01.10:00",
     thumbnail: "/images/post2.jpg",
@@ -73,6 +79,7 @@ const dummyPosts: Post[] = [
     id: 3,
     title: "홍보게시판 파스타 이벤트",
     author: "홍보왕",
+    artistProfileImg: "/images/avatar.png",
     contents: "홍보용 파스타 이벤트 진행합니다.",
     createdAt: "2023.04.02.09:30",
     thumbnail: "/images/post3.jpg",
@@ -133,11 +140,27 @@ const SearchPage = () => {
             <div className="author-list">
               {Array.from(
                 new Set(filteredArtworks.map((art) => art.author))
-              ).map((author, index) => (
-                <div key={index} className="main-search">
-                  {author}
-                </div>
-              ))}
+              ).map((author, index) => {
+                const authorArt = filteredArtworks.find(
+                  (art) => art.author === author
+                );
+                const profileImg =
+                  authorArt?.artistProfileImg || "/images/avatar.png";
+
+                return (
+                  <div key={index}>
+                    <div className="artist-info">
+                      <div className="artist-avatar">
+                        <img src={profileImg} alt={`${author} 프로필`} />
+                      </div>
+                      <div className="artist-detail">
+                        <h3>{author}</h3>
+                        <p>일러스트레이터</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 

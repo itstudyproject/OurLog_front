@@ -413,6 +413,60 @@ const CustomerCenter: React.FC = () => {
 
               <section id="history">
                 {/* <InquiryHistory token={useToken} /> */}
+                <h2 className="section-title">1:1 문의내역</h2>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th className="th">번호</th>
+                      <th className="th">제목</th>
+                      <th className="th">작성일</th>
+                      <th className="th">상태</th>
+                      <th className="th">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inquiries.map((inquiry) => (
+                      <tr key={inquiry.questionId}>
+                        <td className="td">{inquiry.questionId}</td>
+                        <td className="td">{inquiry.title}</td>
+                        <td className="td">{inquiry.regDate}</td>
+                        <td className="td">
+                          <span
+                            className={`status-badge ${
+                              inquiry.answerDTO ? "completed" : "waiting"
+                            }`}
+                          >
+                            {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
+                          </span>
+                        </td>
+                        <td className="td">
+                          <div className="button-group">
+                            <button
+                              className="action-button"
+                              onClick={() =>
+                                inquiry.answerDTO
+                                  ? handleRestrictedAction("edit")
+                                  : handleEditInquiry(inquiry)
+                              }
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="action-button delete"
+                              onClick={() =>
+                                inquiry.answerDTO
+                                  ? handleRestrictedAction("delete")
+                                  : handleDeleteInquiry(inquiry.questionId)
+                              }
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </section>
             </>
           )}
