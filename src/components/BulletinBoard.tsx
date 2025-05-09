@@ -1,4 +1,4 @@
-import "../styles/BulletinBoard.css"; // CSS 파일 임포트
+import "../styles/BulletinBoard.css";
 
 type CategoryKey = "news" | "free" | "promotion" | "request";
 
@@ -38,30 +38,26 @@ const BulletinBoard: React.FC = () => {
   };
 
   return (
-    <section className="bulletin-section">
-      {/* 왼쪽 썸네일 */}
-      <div className="left-thumbnail">
+    <section className="bulletin-board-section">
+      <div className="bulletin-left">
         <img
           src="/images/bulletinboard.png"
           alt="카테고리 관련 썸네일 이미지"
-          className="thumbnail-image"
+          className="bulletin-thumbnail"
         />
       </div>
 
-      {/* 오른쪽 4개 카테고리 */}
-      <div className="right-categories category-container">
+      <div className="category-container">
         {Object.entries(categories).map(([key, items]) => {
           const typedKey = key as CategoryKey;
           return (
             <div key={typedKey}>
-              <h3 className="category-heading">
-                {categoryLabels[typedKey]}
-              </h3>
+              <h3 className="category-header">{categoryLabels[typedKey]}</h3>
               <ul className="category-list">
                 {items.map((item) => (
                   <li key={item.id} className="category-item">
                     <div className="category-thumbnail" />
-                    <div className="flex-1">
+                    <div className="category-text">
                       <p className="category-title">{item.title}</p>
                       <p className="category-description">{item.description}</p>
                       <p className="category-date">{item.date}</p>
