@@ -13,6 +13,7 @@
 /* 정렬 기준 탭 버튼 영역 */
 .ranking-type-tab {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 32px;
   margin-bottom: 32px;
@@ -39,6 +40,7 @@
 /* podium(1~3등) 영역 */
 .ranking-podium-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: flex-end;
   gap: 48px;
