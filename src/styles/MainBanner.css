@@ -31,7 +31,7 @@
   min-width: 30%;
 }
 
-.title {
+.banner-title {
   line-height: 1.5;
   font-family: "NanumSquareNeo";
 }
@@ -56,5 +56,59 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@media (max-width: 1024px) {
+  .text-content {
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .highlight {
+    font-size: 60px;
+  }
+
+  .subtitle {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-banner {
+    height: 60vh;
+    margin-bottom: 80px;
+  }
+
+  .text-content {
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 1rem;
+  }
+
+  .highlight {
+    font-size: 40px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-banner {
+    height: 50vh;
+    margin-bottom: 60px;
+  }
+
+  .highlight {
+    font-size: 32px;
+  }
+
+  .subtitle {
+    font-size: 14px;
   }
 }

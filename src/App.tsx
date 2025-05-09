@@ -20,9 +20,7 @@ import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
-import ArtList from "./pages/Art/ArtList";
-import ArtRegister from "./pages/Art/ArtRegister";
-
+import SearchPage from "./pages/SearchPage";
 function App() {
   return (
     <Routes>
@@ -32,6 +30,8 @@ function App() {
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
+
+        <Route path="/search" element={<SearchPage />} />
 
         <Route path="art">
           <Route index element={<ArtList />} />
@@ -66,9 +66,11 @@ function App() {
         <Route path="register" element={<PostRegister />} />
       </Route>
 
-
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/profile-edit" element={<ProfileEditPage />} />
+      <Route
+        path="/profile-edit"
+        element={<ProfileEditPage onBack={() => window.history.back()} />}
+      />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/worker" element={<WorkerPage />} />
       <Route path="/delete-account" element={<DeleteAccountPage />} />

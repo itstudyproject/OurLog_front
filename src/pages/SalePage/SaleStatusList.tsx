@@ -51,7 +51,7 @@ const SaleStatusList = () => {
           <li key={idx} className="purchase-item">
             <img src={item.image} alt={item.title} className="item-image" />
             <div className="item-info">
-              <p className="title">{item.title}</p>
+              <p className="sale-status-title">{item.title}</p>
               <p className="artist">{item.artist}</p>
               <p>등록일 {item.regDate}</p>
               <p>경매시작일 {item.auctionStart}</p>

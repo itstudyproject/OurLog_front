@@ -1,12 +1,58 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ 추가
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 // @ts-ignore
 import "../styles/header.css";
 
 const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // ✅ 임시 로그인 상태
-  const navigate = useNavigate(); // ✅ 추가
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 처음엔 로그아웃 상태
+  const [userInfo, setUserInfo] = useState<{
+    email: string;
+    profileImage?: string;
+  } | null>(null);
+
+  const [keyword, setKeyword] = useState(""); // ✅ 검색어 상태 추가
+
+  const navigate = useNavigate();
+
+  // 로그인 상태 및 유저 정보 확인
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (token && storedUser) {
+      try {
+        setUserInfo(JSON.parse(storedUser));
+        setIsLoggedIn(true);
+      } catch (err) {
+        console.error("user 정보 파싱 오류:", err);
+      }
+    } else {
+      setIsLoggedIn(false);
+      setUserInfo(null);
+    }
+
+    const handleAuthChange = () => {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        setIsLoggedIn(true);
+        setUserInfo(JSON.parse(storedUser));
+      } else {
+        setIsLoggedIn(false);
+        setUserInfo(null);
+      }
+    };
+
+    window.addEventListener("login", handleAuthChange);
+    window.addEventListener("logout", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("login", handleAuthChange);
+      window.removeEventListener("logout", handleAuthChange);
+    };
+  }, []);
 
   return (
     <>
@@ -21,7 +67,7 @@ const Header: React.FC = () => {
             />
           </div>
 
-          <div className="logo-container">
+          <div className="logo-container" onClick={() => navigate("/")}>
             <img
               src="/images/OurLog.png"
               alt="OurLog 로고"
@@ -32,26 +78,47 @@ const Header: React.FC = () => {
           <div className="right-section">
             <div className="search-label">SEARCH</div>
             <div className="search-box">
-              <input type="text" placeholder="검색" className="search-input" />
-              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="검색"
+                className="search-input"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    navigate(`/search?query=${encodeURIComponent(keyword)}`);
+                  }
+                }}
+              />
+              <span
+                className="search-icon"
+                onClick={() =>
+                  navigate(`/search?query=${encodeURIComponent(keyword)}`)
+                }
+              >
+                🔍
+              </span>
             </div>
             <div className="user-menu">
               {isLoggedIn ? (
                 <>
                   <Link to={"/mypage"}>
                     <img
-                      src="/images/mypage.png"
+                      src={userInfo?.profileImage || "/images/mypage.png"}
                       alt="마이페이지"
                       className="mypage-icon"
                     />
                   </Link>
-
                   <div
                     className="logout"
                     onClick={() => {
-                      localStorage.removeItem("token"); // ✅ 토큰 삭제
-                      setIsLoggedIn(false); // ✅ 상태 변경
-                      navigate("/"); // ✅ 메인으로 이동
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user");
+                      localStorage.removeItem("autoLoginUser");
+                      setIsLoggedIn(false);
+                      setUserInfo(null);
+                      window.dispatchEvent(new Event("logout"));
+                      navigate("/");
                     }}
                   >
                     LOGOUT

@@ -21,7 +21,7 @@ const MainBanner: React.FC = () => {
     <div className="main-banner">
       <div className="overlay" />
       <div className="text-content">
-        <h1 className="highlight title">OurLog</h1>
+        <h1 className="highlight banner-title">OurLog</h1>
         <p className="subtitle">당신의 이야기가 작품이 되는 곳</p>
         <p className="subtitle">아티스트와 컬렉터가 만나는 특별한 공간</p>
         <br />
