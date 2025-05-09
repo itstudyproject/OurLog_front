@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/PostList.css";
 
 interface Post {
@@ -11,15 +11,29 @@ interface Post {
   thumbnail?: string;
 }
 
+const boardIdMap = {
+  "/post": 1,
+  "/post/news": 1,
+  "/post/free": 2,
+  "/post/promotion": 3,
+  "/post/request": 4,
+};
+
 const PostList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedBoardId, setSelectedBoardId] = useState<number>(1);
+  const [selectedBoardId, setSelectedBoardId] = useState<number>(boardIdMap[location.pathname as keyof typeof boardIdMap] || 1);
 
   const postsPerPage = 10;
+
+  useEffect(() => {
+    const currentBoardId = boardIdMap[location.pathname as keyof typeof boardIdMap] || 1;
+    setSelectedBoardId(currentBoardId);
+  }, [location.pathname]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -150,7 +164,17 @@ const PostList = () => {
   }, []);
 
   const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
-  const handleRegisterClick = () => navigate("/Post/Register");
+  const handleRegisterClick = () => {
+    let category = "";
+    switch (selectedBoardId) {
+      case 1: category = "새소식"; break;
+      case 2: category = "자유게시판"; break;
+      case 3: category = "홍보게시판"; break;
+      case 4: category = "요청게시판"; break;
+      default: category = "자유게시판";
+    }
+    navigate(`/Post/Register?category=${encodeURIComponent(category)}`);
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("검색어:", searchTerm);
@@ -160,6 +184,22 @@ const PostList = () => {
   const handleTabClick = (boardId: number) => {
     setSelectedBoardId(boardId);
     setCurrentPage(1);
+    switch (boardId) {
+      case 1:
+        navigate("/post/news");
+        break;
+      case 2:
+        navigate("/post/free");
+        break;
+      case 3:
+        navigate("/post/promotion");
+        break;
+      case 4:
+        navigate("/post/request");
+        break;
+      default:
+        navigate("/post");
+    }
   };
 
   const filteredPosts = posts
@@ -181,7 +221,7 @@ const PostList = () => {
   }
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-4">
+    <div className="w-full max-w-screen-xl px-4 mx-auto">
       <div className="tab-menu">
         <div
           className={selectedBoardId === 1 ? "active" : ""}
@@ -238,7 +278,7 @@ const PostList = () => {
             </button>
           </form>
           <button onClick={handleRegisterClick} className="register-button">
-            게시글/작품 등록
+             게시글 등록 
           </button>
         </div>
       </div>
