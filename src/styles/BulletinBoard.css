@@ -1,12 +1,12 @@
 .bulletin-board-section {
   display: flex;
-  margin-bottom: 2.5rem; /* 약 40px */
-  padding: 0 1rem;
+  margin-bottom: 40px; /* 약 40px (2.5rem -> 40px) */
+  padding: 0 16px; /* (1rem -> 16px) */
 }
 
 .bulletin-left {
   width: 50%;
-  padding-right: 1.5rem;
+  padding-right: 24px; /* (1.5rem -> 24px) */
   min-height: 400px;
   display: flex;
   justify-content: center;
@@ -17,7 +17,7 @@
   width: 700px;
   height: 450px;
   object-fit: cover;
-  border-radius: 0.5rem;
+  border-radius: 8px; /* (0.5rem -> 8px) */
 }
 
 /* 오른쪽 카테고리 영역 */
@@ -25,31 +25,31 @@
   width: 50%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
+  gap: 8px; /* (0.5rem -> 8px) */
 }
 
 .category-header {
-  font-size: 1.125rem; /* 약 text-lg */
+  font-size: 18px; /* 약 text-lg (1.125rem -> 18px) */
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px; /* (0.5rem -> 8px) */
 }
 
 .category-list {
-  margin-bottom: 1rem;
+  margin-bottom: 16px; /* (1rem -> 16px) */
 }
 
 .category-item {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px; /* (0.5rem -> 8px) */
 }
 
 .category-thumbnail {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 56px; /* (3.5rem -> 56px) */
+  height: 56px; /* (3.5rem -> 56px) */
   background-color: #e0e0e0;
-  border-radius: 0.25rem;
-  margin-right: 1rem;
+  border-radius: 4px; /* (0.25rem -> 4px) */
+  margin-right: 16px; /* (1rem -> 16px) */
 }
 
 .category-text {
@@ -57,12 +57,12 @@
 }
 
 .category-title {
-  font-size: 0.875rem;
+  font-size: 14px; /* (0.875rem -> 14px) */
   font-weight: 500;
 }
 
 .category-description {
-  font-size: 0.75rem;
+  font-size: 12px; /* (0.75rem -> 12px) */
   color: #6b7280;
   white-space: nowrap;
   overflow: hidden;
@@ -70,7 +70,7 @@
 }
 
 .category-date {
-  font-size: 0.75rem;
+  font-size: 12px; /* (0.75rem -> 12px) */
   color: #9ca3af;
 }
 
