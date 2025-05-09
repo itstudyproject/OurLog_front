@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/PostList.css";
+import "../styles/ArtList.css";
 
 interface ArtWork {
   id: number;
@@ -121,7 +122,7 @@ const SearchPage = () => {
       </div>
 
       {query.trim() === "" ? (
-        <p style={{ color: "#ccc" }}>검색어를 입력해주세요.</p>
+        <p className="main-search">검색어를 입력해주세요.</p>
       ) : (
         <>
           <div className="section-title">
@@ -133,16 +134,18 @@ const SearchPage = () => {
               {Array.from(
                 new Set(filteredArtworks.map((art) => art.author))
               ).map((author, index) => (
-                <div key={index} className="author-name">
+                <div key={index} className="main-search">
                   {author}
                 </div>
               ))}
             </div>
           )}
+
           <div className="section-title">
             <h2>아트 ({filteredArtworks.length})</h2>
           </div>
-          {filteredArtworks.length > 0 ? (
+
+          {filteredArtworks.length > 0 && (
             <div className="popular-artworks">
               {filteredArtworks.map((art) => (
                 <div key={art.id} className="artwork-card">
@@ -160,17 +163,14 @@ const SearchPage = () => {
                 </div>
               ))}
             </div>
-          ) : (
-            <p style={{ color: "#ccc" }}>
-              "{query}"에 대한 아트 작품이 없습니다.
-            </p>
           )}
 
           <div style={{ marginBottom: "100px" }}>
             <div className="section-title">
               <h2>커뮤니티 ({filteredPosts.length})</h2>
             </div>
-            {filteredPosts.length > 0 ? (
+
+            {filteredPosts.length > 0 && (
               <table>
                 <thead>
                   <tr>
@@ -194,10 +194,6 @@ const SearchPage = () => {
                   ))}
                 </tbody>
               </table>
-            ) : (
-              <p style={{ color: "#ccc" }}>
-                "{query}"에 대한 커뮤니티 게시글이 없습니다.
-              </p>
             )}
           </div>
         </>
