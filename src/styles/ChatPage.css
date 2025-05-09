@@ -120,6 +120,11 @@
   background-color: #e6b43e !important; /* hover시 어두운 회색 */
 }
 
+.go-to-payment:disabled {
+  background-color: #555; /* 비활성화된 버튼 색상 */
+  cursor: not-allowed;
+}
+
 /* 헤더 */
 .chat-header {
   display: flex;
