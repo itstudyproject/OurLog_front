@@ -5,7 +5,7 @@ import '../../styles/BidStatusList.css';
 const dummyData = [
   {
     image: '/images/sample4.jpg',
-    title: '천경자 “자화상” 일러스트',
+    title: '천경자 "자화상" 일러스트',
     startTime: '2025.03.15 PM 15:00',
     endTime: '2025.03.18 PM 19:00',
     bidPrice: '20,000원',
@@ -53,7 +53,7 @@ const BidStatusList = () => {
           <li key={idx} className="bid-item">
             <img src={item.image} alt={item.title} className="item-image" />
             <div className="item-info">
-              <p className="title">{item.title}</p>
+              <p className="bid-item-title">{item.title}</p>
               <p>시작시간 {item.startTime}</p>
               <p>종료시간 {item.endTime}</p>
               <p>입찰금 {item.bidPrice}</p>
