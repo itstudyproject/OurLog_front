@@ -118,37 +118,69 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  table-layout: fixed; /* 컬럼 고정 */
 }
 
-thead {
-  background-color: #2a2a2a;
-}
-
-thead th {
-  padding: 12px 8px;
-  text-align: center;
-  border-bottom: 1px solid #444;
-  color: #fff;
-}
-
-tbody tr {
-  border-bottom: 1px solid #333;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-tbody tr:hover {
-  background-color: #2f2f2f;
-}
-
+thead th,
 tbody td {
-  padding: 12px 8px;
-  color: #ccc;
   text-align: center;
+  vertical-align: middle;
+}
+thead th:nth-child(1),
+tbody td:nth-child(1) {
+  width: 7%;
+  min-width: 50px;
+  max-width: 80px;
+}
+
+thead th:nth-child(2)
+{
+  width: 50%;
+  min-width: 200px;
+  text-align: center;
+  padding-left: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 tbody td:nth-child(2) {
+  width: 50%;
+  min-width: 200px;
   text-align: left;
+  padding-left: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+thead th:nth-child(3) {
+  width: 10%;
+  min-width: 60px;
+  max-width: 90px;
+}
+
+tbody td:nth-child(3) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  padding: 0;
+}
+
+thead th:nth-child(4),
+tbody td:nth-child(4) {
+  width: 15%;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+thead th:nth-child(5),
+tbody td:nth-child(5) {
+  width: 18%;
+  min-width: 100px;
+  max-width: 150px;
 }
 
 /* 썸네일 */
