@@ -1,9 +1,24 @@
 // src/pages/PurchaseBidPage/BidStatusList.tsx
-import React from 'react';
-import '../../styles/BidStatusList.css';
 
-const dummyData = [
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/BidHistory.css';  // BidHistory 스타일을 재활용
+
+interface BidStatus {
+  id: number;
+  image: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  bidPrice: string;
+  status: string;
+  participants: number;
+  isParticipating: boolean;
+}
+
+const dummyData: BidStatus[] = [
   {
+    id: 1,
     image: '/images/sample4.jpg',
     title: '천경자 "자화상" 일러스트',
     startTime: '2025.03.15 PM 15:00',
@@ -14,6 +29,7 @@ const dummyData = [
     isParticipating: true,
   },
   {
+    id: 2,
     image: '/images/sample5.jpg',
     title: '작품명',
     startTime: '2025.04.01 PM 13:00',
@@ -24,6 +40,7 @@ const dummyData = [
     isParticipating: false,
   },
   {
+    id: 3,
     image: '/images/sample5.jpg',
     title: '작품명',
     startTime: '2025.04.01 PM 13:00',
@@ -35,45 +52,61 @@ const dummyData = [
   },
 ];
 
-const BidStatusList = () => {
+const BidStatusList: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleCardClick = (id: number) => {
+    navigate(`/Art/${id}`);
+  };
+
   return (
-    <div className="bid-status-list">
-      {/* 정렬 필터 */}
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      {/* 섹션 타이틀 */}
+      <div className="bid-history-title">
+        <h2>입찰 현황</h2>
+        <p className="bid-date">2025.03.15 - 2025.04.03</p>
       </div>
 
       {/* 리스트 */}
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="bid-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="bid-item-title">{item.title}</p>
-              <p>시작시간 {item.startTime}</p>
-              <p>종료시간 {item.endTime}</p>
-              <p>입찰금 {item.bidPrice}</p>
-              <p>입찰상태 {item.status}</p>
-              <p>현재참여자수 {item.participants}</p>
+      <div className="bid-list">
+        {dummyData.map(item => (
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => handleCardClick(item.id)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.title} />
             </div>
-            <div className="button-col">
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p>시작시간: {item.startTime}</p>
+              <p>종료시간: {item.endTime}</p>
+              <p className="bid-amount">입찰금: {item.bidPrice}</p>
+              <p>입찰상태: {item.status}</p>
+              <p>참여자: {item.participants}</p>
+            </div>
+            <div className="bid-actions">
               {item.isParticipating ? (
-                <button className="btn active">입찰참여중</button>
+                <button className="detail-button">상세 ▶</button>
               ) : (
-                <button className="btn">입찰참여</button>
+                <button className="bid-now-button">입찰참여</button>
               )}
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      {/* 페이지네이션 */}
-      <div className="pagination">
-        {'<'} 1 2 3 4 5 {'>'}
+      {/* 뒤로가기 버튼 */}
+      <div className="bid-history-footer">
+        <button onClick={handleGoBack} className="back-button">
+          뒤로 가기
+        </button>
       </div>
     </div>
   );

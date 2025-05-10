@@ -1,10 +1,23 @@
 // src/pages/SalePage/SaleList.tsx
+
 import React from 'react';
-import '../../styles/SaleList.css';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/BidHistory.css';  // BidHistory 스타일을 재활용
 
+interface Sale {
+  id: number;
+  image: string;
+  title: string;
+  artist: string;
+  count: number;
+  date: string;
+  price: string;
+  method: string;
+}
 
-const dummyData = [
+const dummyData: Sale[] = [
   {
+    id: 1,
     image: '/images/sample6.jpg',
     title: 'coconut',
     artist: 'coco',
@@ -14,6 +27,7 @@ const dummyData = [
     method: '개인의뢰',
   },
   {
+    id: 2,
     image: '/images/sample6.jpg',
     title: 'coconut',
     artist: 'coco',
@@ -23,6 +37,7 @@ const dummyData = [
     method: '개인의뢰',
   },
   {
+    id: 3,
     image: '/images/sample6.jpg',
     title: 'coconut',
     artist: 'coco',
@@ -33,34 +48,50 @@ const dummyData = [
   },
 ];
 
-const SaleList = () => {
+const SaleList: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="purchase-list">
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      {/* 섹션 타이틀 */}
+      <div className="bid-history-title">
+        <h2>판매 내역</h2>
+        <p className="bid-date">2025.03.01 - 2025.03.31</p>
       </div>
 
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="sale-item-title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>판매횟수 {item.count}</p>
-              <p>판매날짜 {item.date}</p>
-              <p>판매금액 {item.price}</p>
-              <p>판매방식 {item.method}</p>
+      {/* 판매 리스트 */}
+      <div className="bid-list">
+        {dummyData.map(item => (
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => navigate(`/Art/${item.id}`)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.title} />
             </div>
-          </li>
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p>작가: {item.artist}</p>
+              <p>판매횟수: {item.count}</p>
+              <p className="bid-amount">판매금액: {item.price}</p>
+              <p>판매방식: {item.method}</p>
+              <p>판매날짜: {item.date}</p>
+            </div>
+            <div className="bid-actions">
+              <button className="detail-button">상세 ▶</button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <div className="pagination">{'<'} 1 2 3 4 5 {'>'}</div>
+      {/* 뒤로가기 버튼 */}
+      <div className="bid-history-footer">
+        <button onClick={() => navigate(-1)} className="back-button">
+          뒤로 가기
+        </button>
+      </div>
     </div>
   );
 };

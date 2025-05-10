@@ -1,45 +1,31 @@
 // src/pages/MyPage.tsx
 
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
 import ProfileEdit from "./ProfileEdit";
 import AccountEditPage from "./AccountEdit";
 import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
+import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import DeleteAccountPage from "./DeleteAccountPage";
-import "../styles/WorkerPage.css";  // WorkerPage.css를 그대로 재활용
+import "../styles/WorkerPage.css"; // 기존 스타일 그대로 재활용
 
-// 임시 데이터
+// ── 임시 데이터 ───────────────────────────────────────────────────
 const recentPosts = [
   { id: 1, image: "/images/mypage/Realization.jpg", title: "Realization", price: "₩1,000,000" },
   { id: 2, image: "/images/mypage/Andrew Loomis.jpg", title: "Andrew Loomis", price: "₩800,000" },
   { id: 3, image: "/images/mypage/White Roses.jpg", title: "White Roses", price: "₩730,000" },
-  { id: 4, image: "/images/mypage/tangerine.jpg", title: "tangerine", price: "₩3,000,000" },
+  // { id: 4, image: "/images/mypage/tangerine.jpg", title: "tangerine", price: "₩3,000,000" },
 ];
-const purchaseHistory = [
-  { id: 5, image: "/images/mypage/Victoriaa.JPG", title: "Victoria", price: "₩1,000,000" },
-  { id: 6, image: "/images/mypage/Goats and Girls.jpg", title: "Goats and Girls", price: "₩500,000" },
-];
-const bookmarked = [
-  { id: 7, image: "/images/77.jpg", title: "Cityscape", price: "₩400,000" },
-  { id: 8, image: "/images/88.jpg", title: "Green Fields", price: "₩400,000" },
-];
+// ────────────────────────────────────────────────────────────────
 
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"recent" | "purchase" | "sale" | "bookmark">("recent");
-
-  const dataMap = {
-    recent: recentPosts,
-    purchase: purchaseHistory,
-    sale: purchaseHistory,       // 예시로 동일 데이터 사용
-    bookmark: bookmarked,
-  };
 
   return (
     <div className="worker-container">
-      {/* 프로필 헤더 */}
+      {/* ── 프로필 헤더 ─────────────────────────────────────────── */}
       <div className="worker-header">
         <img
           src="/images/mypage/Mari.jpg"
@@ -48,7 +34,7 @@ const MyPage: React.FC = () => {
         />
         <div className="worker-info">
           <div className="worker-meta-row">
-            <div className="worker-name">만수</div>
+            <div className="worker-name">xoxo</div>
             <div className="worker-stats">
               <div className="stat">
                 <span className="label">팔로워</span>
@@ -61,89 +47,71 @@ const MyPage: React.FC = () => {
             </div>
           </div>
           <div className="worker-buttons">
-<button className="btn" onClick={() => navigate("edit")}>              프로필수정
+            <button className="btn" onClick={() => navigate("/mypage/edit")}>
+              프로필수정
             </button>
-<button className="btn" onClick={() => navigate("account/edit")}>
-    회원정보수정
-  </button>
+            <button className="btn" onClick={() => navigate("/mypage/account/edit")}>
+              회원정보수정
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 탭 선택 */}
-      <nav className="pagination" style={{ marginTop: "2rem" }}>
-        {(["recent", "purchase", "sale", "bookmark"] as const).map((key) => (
-          <button
-            key={key}
-            className={`page-btn ${tab === key ? "active" : ""}`}
-            onClick={() => setTab(key)}
-          >
-            {key === "recent"
-              ? "최근 본 게시물"
-              : key === "purchase"
-              ? "구매목록/입찰목록"
-              : key === "sale"
-              ? "판매목록/판매현황"
-              : "북마크한 작품들"}
-          </button>
-        ))}
+      {/* ── 탭 네비게이션 (언제나 보임) ─────────────────────────────── */}
+      <nav className="pagination" style={{ margin: "2rem 0" }}>
+        <button className="page-btn" onClick={() => navigate("/mypage")}>
+          최근 본 게시물
+        </button>
+        <button className="page-btn" onClick={() => navigate("/mypage/purchase-bid")}>
+          구매목록/입찰목록
+        </button>
+        <button className="page-btn" onClick={() => navigate("/mypage/sale")}>
+          판매목록/판매현황
+        </button>
+        <button className="page-btn" onClick={() => navigate("/mypage/bookmark")}>
+          북마크한 작품들
+        </button>
       </nav>
 
-      {/* 그리드 갤러리 */}
-      <section className="worker-gallery" style={{ marginTop: "1rem" }}>
-        {dataMap[tab].map((card) => (
-          <div
-            key={card.id}
-            className="worker-card"
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              if (tab === "recent") navigate(`/art/${card.id}`);
-              else if (tab === "purchase") navigate("/mypage/purchase-bid");
-              else if (tab === "sale") navigate("/mypage/sale");
-              else navigate("/mypage/bookmark");
-            }}
-          >
-            <figure className="card-image-wrapper">
-              <img
-                src={card.image}
-                alt={card.title}
-                className="card-image"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">{card.title}</h2>
-              <p style={{ color: "#fff", marginTop: "0.5rem" }}>{card.price}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* 자식 경로 렌더링용 Routes */}
+      {/* ── 탭별 콘텐츠 교체 영역 ─────────────────────────────────── */}
       <Routes>
+        {/* 1) 인덱스: /mypage */}
         <Route
-          path="edit"
-          element={<ProfileEdit onBack={() => navigate("/mypage")} />}
+          index
+          element={
+            <section className="worker-gallery">
+              <RecentPostsCarousel
+                posts={recentPosts.map((post) => ({
+                  id: post.id,
+                  title: post.title,
+                  price: Number(post.price.replace(/[^0-9]/g, "")),
+                  thumbnailUrl: post.image,
+                }))}
+              />
+            </section>
+          }
         />
+
+        {/* 2) 프로필 수정 */}
+        <Route path="edit" element={<ProfileEdit onBack={() => navigate(-1)} />} />
+
+        {/* 3) 회원정보 수정 */}
         <Route
           path="account/edit"
-          element={<AccountEditPage onBack={() => navigate("/mypage")} />}
+          element={<AccountEditPage onBack={() => navigate(-1)} />}
         />
-        <Route
-          path="account/delete"
-          element={<DeleteAccountPage />}
-        />
-        <Route
-          path="purchase-bid"
-          element={<PurchaseBidPage />}
-        />
-        <Route
-          path="sale"
-          element={<SalePage />}
-        />
-        <Route
-          path="bookmark"
-          element={<BookmarkPage />}
-        />
+
+        {/* 4) 회원탈퇴 */}
+        <Route path="account/delete" element={<DeleteAccountPage />} />
+
+        {/* 5) 구매/입찰 페이지 */}
+        <Route path="purchase-bid/*" element={<PurchaseBidPage />} />
+
+        {/* 6) 판매/판매현황 페이지 */}
+        <Route path="sale/*" element={<SalePage />} />
+
+        {/* 7) 북마크 페이지 */}
+        <Route path="bookmark" element={<BookmarkPage />} />
       </Routes>
     </div>
   );

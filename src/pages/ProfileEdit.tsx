@@ -84,10 +84,10 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1 className="header-title">프로필수정정</h1>
-        <button className="back-button" onClick={onBack}>
+        <h1 className="header-title">프로필수정</h1>
+        {/* <button className="back-button" onClick={onBack}>
           <ArrowLeftIcon /> 돌아가기
-        </button>
+        </button> */}
 
       </div>
 
