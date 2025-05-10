@@ -23,11 +23,20 @@ import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
+<<<<<<< HEAD
+=======
+import ChatPage from "./pages/ChatPage";
+>>>>>>> dev/sin-tae
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
+<<<<<<< HEAD
+=======
+        <Route path="chat" element={<ChatPage />} />{" "}
+
+>>>>>>> dev/sin-tae
 
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
