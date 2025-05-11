@@ -98,7 +98,7 @@ const MyPage: React.FC = () => {
         {/* 3) 회원정보 수정 */}
         <Route
           path="account/edit"
-          element={<AccountEditPage onBack={() => navigate(-1)} />}
+          element={<AccountEditPage />}
         />
 
         {/* 4) 회원탈퇴 */}

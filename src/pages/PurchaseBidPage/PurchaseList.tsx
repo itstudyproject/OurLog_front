@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/BidHistory.css';  // BidHistory 스타일을 재활용
+import '../../styles/BidHistory.css';  // 기존 스타일 재활용
 
 interface Purchase {
   id: number;
@@ -14,10 +14,13 @@ interface Purchase {
   method: string;
 }
 
+const itemsPerPage = 4; // 한 페이지에 보여줄 아이템 개수
+
 const PurchaseList: React.FC = () => {
   const navigate = useNavigate();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     // TODO: 실제 API 호출로 대체
@@ -49,15 +52,62 @@ const PurchaseList: React.FC = () => {
         price: '10,000원',
         method: '경매로 입찰',
       },
+      {
+        id: 4,
+        image: '/images/sample4.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 5,
+        image: '/images/sample5.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 6,
+        image: '/images/sample6.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 7,
+        image: '/images/sample7.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 8,
+        image: '/images/sample8.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
     ];
     setPurchases(dummy);
     setLoading(false);
   }, []);
 
-  const handleGoBack = () => {
-    navigate(-1);
-  };
+  // 페이지네이션 로직
+  const totalPages = Math.ceil(purchases.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const currentItems = purchases.slice(startIdx, startIdx + itemsPerPage);
 
+  // 로딩 상태
   if (loading) {
     return (
       <div className="loading">
@@ -68,22 +118,19 @@ const PurchaseList: React.FC = () => {
 
   return (
     <div className="bid-history-container">
-
       {/* 구매 목록 타이틀 */}
       <div className="bid-history-title">
         <h2>구매 목록</h2>
-        {/* 필요에 따라 기간을 동적으로 표시하세요 */}
         <p className="bid-date">2025.03.01 - 2025.03.07</p>
       </div>
 
-      {/* 구매 아이템 리스트 */}
+      {/* 현재 페이지만큼의 아이템 리스트 */}
       <div className="bid-list">
-        {purchases.map((item) => (
+        {currentItems.map(item => (
           <div
             key={item.id}
             className="bid-item"
             onClick={() => navigate(`/Art/${item.id}`)}
-            style={{ cursor: 'pointer' }}
           >
             <div className="bid-artwork">
               <img src={item.image} alt={item.title} />
@@ -101,11 +148,18 @@ const PurchaseList: React.FC = () => {
         ))}
       </div>
 
-      {/* 뒤로가기 버튼 */}
-      <div className="bid-history-footer">
-        <button onClick={handleGoBack} className="back-button">
-          뒤로 가기
-        </button>
+      {/* 페이지네이션 버튼 */}
+      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          <button
+            key={page}
+            className={`page-btn${page === currentPage ? ' active' : ''}`}
+            onClick={() => setCurrentPage(page)}
+            style={{ margin: '0 4px' }}
+          >
+            {page}
+          </button>
+        ))}
       </div>
     </div>
   );

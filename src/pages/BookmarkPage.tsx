@@ -1,8 +1,8 @@
 // src/pages/BookmarkPage.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/BidHistory.css'; // BidHistory.css 를 그대로 재활용
+import '../styles/BidHistory.css'; // BidHistory.css를 그대로 재활용
 
 interface Bookmark {
   id: number;
@@ -14,51 +14,32 @@ interface Bookmark {
   status: string;
 }
 
+const bookmarkData: Bookmark[] = [
+  { id: 1, imageSrc: '/images/bookmark1.jpg', title: 'Peach Garden',  artist: 'Minji', bookmarkedDate: '2025.05.01', method: '경매',   status: '입찰중'   },
+  { id: 2, imageSrc: '/images/bookmark2.jpg', title: 'Summer Breeze', artist: 'Yuna', bookmarkedDate: '2025.04.22', method: '개인의뢰', status: '판매완료' },
+  { id: 3, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+  { id: 4, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+  { id: 5, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+  { id: 6, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+  { id: 7, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+  { id: 8, imageSrc: '/images/bookmark3.jpg', title: 'Silent Night',  artist: 'Jisoo', bookmarkedDate: '2025.04.10', method: '경매',   status: '대기중'   },
+
+];
+
 const BookmarkPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const bookmarkData: Bookmark[] = [
-    {
-      id: 1,
-      imageSrc: '/images/bookmark1.jpg',
-      title: 'Peach Garden',
-      artist: 'Minji',
-      bookmarkedDate: '2025.05.01',
-      method: '경매',
-      status: '입찰중',
-    },
-    {
-      id: 2,
-      imageSrc: '/images/bookmark2.jpg',
-      title: 'Summer Breeze',
-      artist: 'Yuna',
-      bookmarkedDate: '2025.04.22',
-      method: '개인의뢰',
-      status: '판매완료',
-    },
-    {
-      id: 3,
-      imageSrc: '/images/bookmark3.jpg',
-      title: 'Silent Night',
-      artist: 'Jisoo',
-      bookmarkedDate: '2025.04.10',
-      method: '경매',
-      status: '대기중',
-    },
-  ];
+  // 페이징 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
 
-  const handleGoBack = () => {
-    navigate(-1);
-  };
+  // 현재 페이지 아이템
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = bookmarkData.slice(indexOfFirst, indexOfLast);
 
-  const handleDetail = (id: number) => {
-    navigate(`/art/${id}`);
-  };
-
-  const handleUnbookmark = (id: number) => {
-    // TODO: 실제 언북마크 로직
-    alert(`${id}번 작품 북마크 해제`);
-  };
+  // 전체 페이지 수
+  const totalPages = Math.ceil(bookmarkData.length / itemsPerPage);
 
   return (
     <div className="bid-history-container">
@@ -70,11 +51,11 @@ const BookmarkPage: React.FC = () => {
 
       {/* 리스트 영역 */}
       <div className="bid-list">
-        {bookmarkData.map((item) => (
+        {currentItems.map(item => (
           <div
             key={item.id}
             className="bid-item"
-            onClick={() => handleDetail(item.id)}
+            onClick={() => navigate(`/art/${item.id}`)}
             style={{ cursor: 'pointer' }}
           >
             <div className="bid-artwork">
@@ -90,18 +71,18 @@ const BookmarkPage: React.FC = () => {
             <div className="bid-actions">
               <button
                 className="detail-button"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  handleDetail(item.id);
+                  navigate(`/art/${item.id}`);
                 }}
               >
                 자세히 ▶
               </button>
               <button
                 className="bid-now-button"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation();
-                  handleUnbookmark(item.id);
+                  alert(`${item.id}번 작품 북마크 해제`);
                 }}
               >
                 북마크 해제
@@ -111,11 +92,21 @@ const BookmarkPage: React.FC = () => {
         ))}
       </div>
 
-      {/* 뒤로 가기 버튼 */}
-      <div className="bid-history-footer">
-        <button onClick={handleGoBack} className="back-button">
-          뒤로 가기
-        </button>
+      {/* 페이지네이션 */}
+      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          <button
+            key={page}
+            className={`page-btn${page === currentPage ? ' active' : ''}`}
+            onClick={() => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{ margin: '0 4px' }}
+          >
+            {page}
+          </button>
+        ))}
       </div>
     </div>
   );

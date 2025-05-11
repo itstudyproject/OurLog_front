@@ -1,30 +1,16 @@
+// src/pages/ProfileEditPage.tsx
+
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../styles/ProfileEdit.css';
 
-// 체크 아이콘 컴포넌트
-const CheckIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
-
-// 화살표 아이콘 컴포넌트
-const ArrowLeftIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="19" y1="12" x2="5" y2="12"></line>
-    <polyline points="12 19 5 12 12 5"></polyline>
-  </svg>
-);
-
 interface ProfileEditPageProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
-  // 사용자 정보 상태
   const [profileData, setProfileData] = useState({
     username: 'art_lover',
     email: 'user@example.com',
@@ -33,19 +19,20 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     location: '서울특별시',
     website: 'https://myartblog.com',
     profilePicture: '/images/Logo.png',
-    isSpotifyConnected: false
   });
 
   // 입력 필드 변경 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // 프로필 이미지 변경 핸들러
+ // 프로필 이미지 변경 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
@@ -61,37 +48,50 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     }
   };
 
-  // Spotify 연결 토글
-  const toggleSpotifyConnection = () => {
-    setProfileData(prev => ({
-      ...prev,
-      isSpotifyConnected: !prev.isSpotifyConnected
-    }));
-  };
+
 
   // 폼 제출 핸들러
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 실제 애플리케이션에서는 API로 데이터 전송
-    console.log('프로필 데이터 저장:', profileData);
+    try {
+      // 실제 API 엔드포인트에 맞게 URL을 수정
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/update-profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(profileData),
+      });
+      if (!res.ok) throw new Error('Network response was not ok');
 
-    // 성공 메시지와 함께 프로필 페이지로 리디렉션
-    alert('프로필이 성공적으로 업데이트되었습니다.');
-    navigate('/profile');
+      //  응답으로 받은 최신 프로필 데이터로 상태 갱신 가능
+      // const updated = await res.json();
+      // setProfileData(updated);
+
+      // 성공 알림 후 돌아가기
+      alert('프로필이 성공적으로 업데이트되었습니다.');
+      if (onBack) {
+        onBack();
+      } else {
+        navigate('/mypage');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
     <div className="profile-container">
       <div className="profile-header">
         <h1 className="header-title">프로필수정</h1>
-        {/* <button className="back-button" onClick={onBack}>
-          <ArrowLeftIcon /> 돌아가기
-        </button> */}
-
       </div>
 
       <form onSubmit={handleSubmit} className="profile-content">
+        {/* 사이드바: 프로필 사진 */}
         <div className="profile-sidebar">
           <div className="profile-photo-container">
             <img
@@ -114,12 +114,15 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
           </div>
         </div>
 
+        {/* 메인 폼 */}
         <div className="profile-main">
           <div className="form-section">
             <h2 className="section-title">기본 정보</h2>
 
             <div className="form-group">
-              <label htmlFor="username" className="form-label">사용자 이름</label>
+              <label htmlFor="username" className="form-label">
+                사용자 이름
+              </label>
               <input
                 type="text"
                 id="username"
@@ -131,7 +134,9 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">이메일</label>
+              <label htmlFor="email" className="form-label">
+                이메일
+              </label>
               <input
                 type="email"
                 id="email"
@@ -143,7 +148,9 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="fullName" className="form-label">실명</label>
+              <label htmlFor="fullName" className="form-label">
+                실명
+              </label>
               <input
                 type="text"
                 id="fullName"
@@ -155,7 +162,9 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="bio" className="form-label">소개</label>
+              <label htmlFor="bio" className="form-label">
+                소개
+              </label>
               <textarea
                 id="bio"
                 name="bio"
@@ -171,7 +180,9 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             <h2 className="section-title">추가 정보</h2>
 
             <div className="form-group">
-              <label htmlFor="location" className="form-label">위치</label>
+              <label htmlFor="location" className="form-label">
+                위치
+              </label>
               <input
                 type="text"
                 id="location"
@@ -183,7 +194,9 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="website" className="form-label">웹사이트</label>
+              <label htmlFor="website" className="form-label">
+                웹사이트
+              </label>
               <input
                 type="url"
                 id="website"
@@ -195,15 +208,15 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
           </div>
 
+          {/* 액션 버튼 */}
           <div className="action-buttons">
             <button
               type="button"
               className="cancel-button"
-              onClick={onBack}
+              onClick={onBack || (() => navigate(-1))}
             >
               취소
             </button>
-
             <button type="submit" className="save-button">
               변경사항 저장
             </button>
@@ -214,4 +227,4 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   );
 };
 
-export default ProfileEditPage; 
+export default ProfileEditPage;

@@ -1,6 +1,6 @@
 // src/pages/AccountEdit.tsx
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/AccountEdit.css';
 
 const ArrowLeftIcon = () => (
@@ -13,18 +13,20 @@ interface AccountEditProps {
   onBack: () => void;
 }
 
-const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
+
+const AccountEdit: React.FC = () => {
+  const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('xoxo');
   const [email] = useState('xoxo@example.com');
   const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
 
+  // 비밀번호 변경
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      setMessage('새 비밀번호가 일치하지 않습니다.');
+      alert('새 비밀번호가 일치하지 않습니다.');
       return;
     }
     try {
@@ -37,14 +39,15 @@ const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
         },
         body: JSON.stringify({ currentPassword, newPassword })
       });
-      if (!res.ok) throw new Error('Network response was not ok');
-      setMessage('비밀번호가 변경되었습니다.');
-    } catch (error) {
-      console.error(error);
-      setMessage('비밀번호 변경 실패.');
+      if (!res.ok) throw new Error();
+      alert('비밀번호가 변경되었습니다.');
+      navigate(-1); // 또는 원하는 경로로
+    } catch {
+      alert('비밀번호 변경에 실패했습니다.');
     }
   };
 
+  // 연락처 변경
   const handlePhoneUpdate = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -56,11 +59,11 @@ const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
         },
         body: JSON.stringify({ phone })
       });
-      if (!res.ok) throw new Error('Network response was not ok');
-      setMessage('연락처가 변경되었습니다.');
-    } catch (error) {
-      console.error(error);
-      setMessage('연락처 변경 실패.');
+      if (!res.ok) throw new Error();
+      alert('연락처가 변경되었습니다.');
+      navigate(-1); // 또는 원하는 경로로
+    } catch {
+      alert('연락처 변경에 실패했습니다.');
     }
   };
 
@@ -68,13 +71,14 @@ const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
     <div className="account-edit-container">
       <div className="header-row">
         <h1 className="title">회원정보수정</h1>
-        {/* <button onClick={onBack} className="back-button">
-          <ArrowLeftIcon />
-          뒤로가기
+        {/* 뒤로가기 버튼을 살리고 싶으면 주석 해제하세요 */}
+        {/* <button onClick={() => navigate(-1)} className="back-button">
+          <ArrowLeftIcon /> 뒤로가기
         </button> */}
       </div>
 
       <form className="form-grid" onSubmit={e => e.preventDefault()}>
+        {/* 비밀번호 변경 섹션 */}
         <div className="form-group">
           <label>현재 비밀번호</label>
           <input
@@ -112,6 +116,7 @@ const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
           </button>
         </div>
 
+        {/* 프로필 정보 섹션 */}
         <div className="form-group">
           <label>이름</label>
           <input
@@ -144,12 +149,6 @@ const AccountEdit: React.FC<AccountEditProps> = ({ onBack }) => {
             연락처 변경하기
           </button>
         </div>
-
-        {message && (
-          <div className="form-group full-width">
-            <p className="message">{message}</p>
-          </div>
-        )}
       </form>
     </div>
   );
