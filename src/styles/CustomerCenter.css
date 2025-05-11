@@ -92,18 +92,18 @@
   color: #666;
 }
 
-.faq-list {
+.cc-faq-list {
   margin-top: 32px; /* 2rem -> 32px */
 }
 
-.faq-item {
+.cc-faq-item {
   border: 1px solid #333;
   border-radius: 6px;
   margin-bottom: 16px; /* 1rem -> 16px */
   overflow: hidden;
 }
 
-.question-box {
+.cc-question-box {
   padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
   cursor: pointer;
   font-weight: 500;
@@ -113,21 +113,21 @@
   justify-content: space-between;
 }
 
-.question-box:hover {
+.cc-question-box:hover {
   background-color: #333333;
 }
 
-.question-box::after {
+.cc-question-box::after {
   content: "▼";
   font-size: 12px; /* 0.8rem -> 12px */
   transition: transform 0.2s ease;
 }
 
-.question-box[aria-expanded="true"]::after {
+.cc-question-box[aria-expanded="true"]::after {
   transform: rotate(180deg);
 }
 
-.answer {
+.cc-answer {
   padding: 0 24px; /* 1.5rem -> 24px */
   background-color: #111111;
   max-height: 0;
@@ -136,13 +136,13 @@
   overflow: hidden;
 }
 
-.answer.open {
+.cc-answer.open {
   padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
   max-height: 500px;
   opacity: 1;
 }
 
-.info-text {
+.cc-info-text {
   margin-top: 16px; /* 1rem -> 16px */
   font-size: 15px; /* 0.95rem -> 15px */
   color: #ccc;
@@ -150,7 +150,7 @@
   white-space: pre-line;
 }
 
-.warning-box {
+.cc-warning-box {
   border: 1px solid #ff6b6b;
   color: #ff9999;
   border-radius: 8px;
@@ -161,14 +161,14 @@
   background-color: rgba(255, 107, 107, 0.1);
 }
 
-.table {
+.cc-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 16px; /* 1rem -> 16px */
   color: #ffffff;
 }
 
-.th {
+.cc-th {
   background-color: #222222;
   padding: 16px; /* 1rem -> 16px */
   text-align: center;
@@ -177,38 +177,38 @@
   font-weight: 600;
 }
 
-.td {
+.cc-td {
   padding: 16px; /* 1rem -> 16px */
   text-align: center;
   border-bottom: 1px solid #333;
   color: #ffffff;
 }
 
-.status-badge {
+.cc-status-badge {
   padding: 4px 12px; /* 0.25rem 0.75rem -> 4px 12px */
   border-radius: 20px;
   font-size: 14px; /* 0.875rem -> 14px */
 }
 
-.status-badge.waiting {
+.cc-status-badge.waiting {
   background-color: #2c3e50;
   color: #f1c40f;
   border: 1px solid #f1c40f;
 }
 
-.status-badge.completed {
+.cc-status-badge.completed {
   background-color: #2c4a3e;
   color: #2ecc71;
   border: 1px solid #2ecc71;
 }
 
-.button-group {
+.cc-button-group {
   display: flex;
   gap: 8px; /* 0.5rem -> 8px */
   justify-content: center;
 }
 
-.action-button {
+.cc-action-button {
   padding: 8px 16px; /* 0.5rem 1rem -> 8px 16px */
   border: none;
   border-radius: 4px;
@@ -219,19 +219,19 @@
   transition: background-color 0.2s;
 }
 
-.action-button:hover {
+.cc-action-button:hover {
   background-color: #357abd;
 }
 
-.action-button.delete {
+.cc-action-button.delete {
   background-color: #e74c3c;
 }
 
-.action-button.delete:hover {
+.cc-action-button.delete:hover {
   background-color: #c0392b;
 }
 
-.overlay {
+.cc-overlay {
   top: 0;
   left: 0;
   right: 0;
@@ -242,7 +242,7 @@
   justify-content: center;
 }
 
-.modal {
+.cc-modal {
   position: relative;
   background-color: #111111;
   padding: 32px; /* 2rem -> 32px */
@@ -254,7 +254,7 @@
   text-align: center;
 }
 
-.modal-header {
+.cc-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -264,13 +264,13 @@
   text-align: left;
 }
 
-.modal-header h2 {
+.cc-modal-header h2 {
   margin: 0;
   font-size: 24px; /* 1.5rem -> 24px */
   color: #ffffff;
 }
 
-.close-button {
+.cc-close-button {
   background: none;
   border: none;
   color: #ffffff;
@@ -284,24 +284,24 @@
   margin-left: auto;
 }
 
-.close-button:hover {
+.cc-close-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
-.form-group {
+.cc-form-group {
   margin-bottom: 24px; /* 1.5rem -> 24px */
   text-align: left;
 }
 
-.form-group label {
+.cc-form-group label {
   display: block;
   margin-bottom: 8px; /* 0.5rem -> 8px */
   color: #cccccc;
 }
 
-.form-group input,
-.form-group textarea {
+.cc-form-group input,
+.cc-form-group textarea {
   width: 100%;
   padding: 12px; /* 0.75rem -> 12px */
   border: 1px solid #333;
@@ -311,12 +311,12 @@
   font-size: 16px; /* 1rem -> 16px */
 }
 
-.form-group textarea {
+.cc-form-group textarea {
   min-height: 150px;
   resize: vertical;
 }
 
-.button {
+.cc-button {
   margin-top: 16px; /* 10px -> 16px */
   display: inline-block;
   padding: 12px 24px; /* 0.75rem 1.5rem -> 12px 24px */
@@ -329,18 +329,18 @@
   transition: background-color 0.2s;
 }
 
-.button:hover {
+.cc-button:hover {
   background-color: #357abd;
 }
 
-.modal-button-group {
+.cc-modal-button-group {
   display: flex;
   justify-content: center;
   gap: 16px; /* 1rem -> 16px */
   margin-top: 24px; /* 1.5rem -> 24px */
 }
 
-.modal-button {
+.cc-modal-button {
   padding: 8px 24px; /* 0.5rem 1.5rem -> 8px 24px */
   border: none;
   border-radius: 4px;
@@ -351,35 +351,35 @@
   transition: background-color 0.2s;
 }
 
-.modal-button:hover {
+.cc-modal-button:hover {
   background-color: #357abd;
 }
 
-.modal-button.cancel {
+.cc-modal-button.cancel {
   background-color: #666;
 }
 
-.modal-button.cancel:hover {
+.cc-modal-button.cancel:hover {
   background-color: #555;
 }
 
-.no-results {
+.cc-no-results {
   text-align: center;
   color: #666;
   margin: 32px 0; /* 2rem -> 32px */
   font-size: 18px; /* 1.1rem -> 18px */
 }
 
-.modal form {
+.cc-modal form {
   text-align: center;
 }
 
-.modal form .button {
+.cc-modal form .button {
   margin-top: 24px; /* 1.5rem -> 24px */
 }
 
 #faq,
-#inquiry,
-#history {
+#register,
+#list {
   scroll-margin-top: 120px;
 }

@@ -1,15 +1,23 @@
-import {useState, useEffect} from 'react'
+import { useState, useEffect } from "react";
 
 export const useToken = () => {
-  const [token, setToken] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const sessionToken = sessionStorage.getItem('token')
-    if (sessionToken) {
-      setToken(sessionToken)
-    } else {
-      setToken(null)
-    }
-  }, [])
-  return token
-}
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
+
+    const handleLogin = () => {
+      const newToken = localStorage.getItem("token");
+      setToken(newToken);
+    };
+
+    window.addEventListener("login", handleLogin);
+
+    return () => {
+      window.removeEventListener("login", handleLogin);
+    };
+  }, []);
+
+  return token;
+};
