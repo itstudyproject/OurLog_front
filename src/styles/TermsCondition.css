@@ -1,0 +1,51 @@
+.terms-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 12px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5; /* 읽기 좋은 줄간격 */
+  color: #f1f1f1;
+  background-color: #121212;
+}
+
+.terms-container h1 {
+  font-size: 40px; /* 더 크게 (2.5rem -> 40px) */
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.terms-container section {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 12px;
+}
+
+.terms-container h2 {
+  font-size: 22.4px; /* 제목 글씨 키움 (1.4rem -> 22.4px) */
+  color: #f8f8f8;
+  margin-bottom: 8px;
+}
+
+.terms-container p,
+.terms-container ol {
+  font-size: 16.8px; /* 본문 글씨 키움 (1.05rem -> 16.8px) */
+  margin-bottom: 6px;
+}
+
+.terms-container ol {
+  padding-left: 18px;
+}
+
+.terms-container ol li {
+  margin-bottom: 6px;
+}
+
+.terms-container section:last-child {
+  border-bottom: none;
+  font-weight: bold;
+  color: #ccc;
+  text-align: right;
+  margin-top: 8px;
+}
