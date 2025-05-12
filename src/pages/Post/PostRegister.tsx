@@ -4,9 +4,9 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
 
 interface ImageFile {
-  file: File;
+  file: File | null;
   preview: string;
-  id: string;
+  id: string; // 서버에 저장된 파일명
 }
 
 interface FormData {
@@ -33,6 +33,8 @@ const PostRegister = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState<string>("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -60,10 +62,26 @@ const PostRegister = () => {
       return "이미지 파일만 업로드 가능합니다.";
     }
     if (file.size > 10 * 1024 * 1024) {
-      // 10MB
       return "파일 크기는 10MB 이하여야 합니다.";
     }
     return null;
+  };
+
+  // 이미지 업로드 API 호출
+  const uploadImage = async (file: File) => {
+    const fd = new FormData();
+    fd.append("files", file);
+    const token = localStorage.getItem('token');
+    const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
+      method: "POST",
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      },
+      body: fd
+    });
+    if (!res.ok) throw new Error("이미지 업로드 실패");
+    const data = await res.json();
+    return data[0];
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,23 +95,19 @@ const PostRegister = () => {
       const processedImages = await Promise.all(
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
-          if (error) {
-            throw new Error(error);
-          }
+          if (error) throw new Error(error);
 
-          return new Promise<ImageFile>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              resolve({
-                file,
-                preview: reader.result as string,
-                id: Math.random().toString(36).substring(7),
-              });
-            };
-            reader.onerror = () =>
-              reject(new Error("이미지 로드 중 오류가 발생했습니다."));
-            reader.readAsDataURL(file);
-          });
+          // 서버에 업로드
+          const uploaded = await uploadImage(file);
+          return {
+            file: null, // 업로드 후에는 필요 없음
+            preview: `/uploads/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
+            id: uploaded.uuid, // 또는 picId 등
+            picId: uploaded.picId,
+            uuid: uploaded.uuid,
+            picName: uploaded.picName,
+            path: uploaded.path,
+          };
         })
       );
 
@@ -106,9 +120,7 @@ const PostRegister = () => {
           prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
-      if (error instanceof Error) {
-        alert(error instanceof Error ? error.message : "이미지 업로드 오류");
-      }
+      alert(error instanceof Error ? error.message : "이미지 업로드 오류");
     }
   };
 
@@ -174,50 +186,89 @@ const PostRegister = () => {
       content: newContent,
     }));
   };
+  
+  const getBoardNo = (category: string): number => {
+    switch (category) {
+      case "새소식":
+        return 1;
+      case "자유게시판":
+        return 2;
+      case "홍보게시판":
+        return 3;
+      case "요청게시판":
+        return 4;
+      default:
+        return 2;
+    }
+  };
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+      e.preventDefault();
+      if (!tags.includes(tagInput.trim())) {
+        setTags([...tags, tagInput.trim()]);
+      }
+      setTagInput("");
+    }
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (removeTag: string) => {
+    setTags(tags.filter((tag) => tag !== removeTag));
+  };
 
   const handleSubmit = async () => {
-  if (!formData.title || !formData.content) {
-    alert("제목과 내용을 모두 입력해주세요.");
-    return;
-  }
+    if (!formData.title || !formData.content) {
+      alert("제목과 내용을 모두 입력해주세요.");
+      return;
+    }
 
-  setIsSubmitting(true);
+    setIsSubmitting(true);
 
-  try {
-    const fd = new FormData();
-    fd.append("title", formData.title);
-    fd.append("content", formData.content);
-    fd.append("category", formData.category);
-    fd.append("thumbnailId", formData.thumbnailId || "");
+    try {
+      const postDTO = {
+        title: formData.title,
+        content: formData.content,
+        boardNo: getBoardNo(formData.category),
+        fileName: formData.thumbnailId,
+        images: formData.images.map((img) => img.id),
+        userDTO: {
+          "userId": 5,
+          "nickname": "테스트유저"
+        },
+        tags,
+      };
 
-    if (formData.images && formData.images.length > 0) {
-      formData.images.forEach((image: File) => {
-        fd.append("images", image); // 서버에서 List<MultipartFile>로 받음
+      const response = await fetch("http://localhost:8080/ourlog/post/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+         },
+        body: JSON.stringify(postDTO),
       });
+
+      if (!response.ok) throw new Error("게시물 등록에 실패했습니다.");
+      alert("게시물이 성공적으로 등록되었습니다.");
+      navigate("/post");
+    } catch (error) {
+      alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const response = await fetch("http://localhost:8080/api/post/register", {
-      method: "POST",
-      body: fd, // ✅ FormData는 JSON.stringify 하면 안 됩니다
-      // ❌ headers에 'Content-Type'을 넣지 마세요!
-    });
-
-    if (!response.ok) {
-      throw new Error("게시물 등록에 실패했습니다.");
-    }
-
-    const result = await response.json();
-    alert("게시물이 성공적으로 등록되었습니다.");
-    navigate("/post");
-  } catch (error) {
-    alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const handleCancel = () => {
-    if (confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
+    if (window.confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
       navigate("/post");
     }
   };
@@ -384,8 +435,47 @@ const PostRegister = () => {
             value={formData.content}
             onChange={handleInputChange}
             placeholder="내용을 입력하세요"
+            className="content-textarea"
+            rows={8}
           />
           <div className="char-count">{characterCount}자</div>
+
+          {/* 태그 입력 UI */}
+          <div className="tag-input-area">
+            <div className="tag-list">
+              {tags.map((tag) => (
+                <span className="tag-pill" key={tag}>
+                  {tag}
+                  <button
+                    type="button"
+                    className="tag-remove-btn"
+                    onClick={() => handleRemoveTag(tag)}
+                    aria-label="태그 삭제"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="tag-input-row">
+              <input
+                type="text"
+                className="tag-input-box"
+                value={tagInput}
+                onChange={handleTagInputChange}
+                onKeyDown={handleTagInputKeyDown}
+                placeholder="태그"
+                maxLength={15}
+              />
+              <button
+                type="button"
+                className="tag-add-btn"
+                onClick={handleAddTag}
+              >
+                추가
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

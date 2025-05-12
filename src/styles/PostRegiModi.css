@@ -290,3 +290,97 @@ body {
 .content-image-wrapper:hover .content-image {
   border-color: #2563eb;
 }
+
+/* 태그 입력 영역 */
+.tag-input-area {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 12px;
+  background: #181e2a;
+  border-radius: 8px;
+  border: 1px solid #232946;
+}
+
+.tag-pill {
+  display: flex;
+  align-items: center;
+  background: #312e81;
+  color: #c7d2fe;
+  border-radius: 9999px;
+  padding: 4px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.tag-pill:hover {
+  background: #4338ca;
+}
+
+.tag-remove-btn {
+  background: none;
+  border: none;
+  margin-left: 8px;
+  cursor: pointer;
+  color: #818cf8;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.tag-remove-btn:hover {
+  color: #f87171;
+}
+
+.tag-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.tag-input-box {
+  width: 120px;
+  padding: 7px 12px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #111827;
+  color: #cbd5e1;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.tag-input-box:focus {
+  border-color: #6366f1;
+}
+
+.tag-add-btn {
+  padding: 7px 20px;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.tag-add-btn:hover {
+  background: #4338ca;
+}
