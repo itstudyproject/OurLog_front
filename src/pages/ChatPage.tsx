@@ -14,8 +14,6 @@ const userProfiles: { [key: string]: string } = {
 interface ChatMessage {
   sender: string;
   message: string;
-<<<<<<< HEAD
-=======
   paymentInfo?: {
     itemImage: string;
     itemName: string;
@@ -24,7 +22,6 @@ interface ChatMessage {
   isPaymentFormVisible?: boolean;
   hidden?: boolean;
   isPaymentComplete?: boolean;
->>>>>>> dev/sin-tae
 }
 
 const ChatPage: React.FC = () => {
@@ -32,20 +29,6 @@ const ChatPage: React.FC = () => {
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
-<<<<<<< HEAD
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState<string>("");
-
-  const handleOpenChatModal = (user: string) => {
-    setCurrentUser(user);
-    setIsListModalVisible(false);
-    setIsChatModalVisible(true);
-    setMessages([]);
-  };
-
-  const handleCloseListModal = () => {
-    navigate("/worker");
-=======
   const [messagesByUser, setMessagesByUser] = useState<{
     [key: string]: ChatMessage[];
   }>({});
@@ -63,26 +46,12 @@ const ChatPage: React.FC = () => {
 
   const handleCloseListModal = () => {
     navigate("/"); // 전체 창 닫기
->>>>>>> dev/sin-tae
   };
 
   const handleExitClick = () => {
     setIsChatModalVisible(false);
     setCurrentUser(null);
     setIsListModalVisible(true);
-<<<<<<< HEAD
-  };
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() !== "") {
-      const message: ChatMessage = {
-        sender: "Me",
-        message: newMessage,
-      };
-      setMessages([...messages, message]);
-      setNewMessage("");
-    }
-=======
     setCardNumber("");
   };
 
@@ -97,7 +66,6 @@ const ChatPage: React.FC = () => {
       [currentUser]: [...(prev[currentUser] || []), message],
     }));
     setNewMessage("");
->>>>>>> dev/sin-tae
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -105,8 +73,6 @@ const ChatPage: React.FC = () => {
       e.preventDefault();
       handleSendMessage();
     }
-<<<<<<< HEAD
-=======
   };
 
   const handleSecurePaymentRequest = () => {
@@ -186,16 +152,18 @@ const ChatPage: React.FC = () => {
       ...prev,
       [currentUser || ""]: prev[currentUser || ""]
         .map((msg, i) =>
-          i === index ? {
-            ...msg, isPaymentFormVisible: false,
-            isPaymentComplete: true,
-          } : msg
+          i === index
+            ? {
+                ...msg,
+                isPaymentFormVisible: false,
+                isPaymentComplete: true,
+              }
+            : msg
         )
         .concat(paymentSuccessMessage),
     }));
 
     setCardNumber("");
->>>>>>> dev/sin-tae
   };
 
   return (
@@ -218,7 +186,7 @@ const ChatPage: React.FC = () => {
                     <p>
                       {messagesByUser[user] && messagesByUser[user].length > 0
                         ? messagesByUser[user][messagesByUser[user].length - 1]
-                          .message
+                            .message
                         : "대화를 시작해보세요"}
                     </p>
                   </div>
@@ -244,13 +212,8 @@ const ChatPage: React.FC = () => {
             </button>
           </div>
 
-<<<<<<< HEAD
-          <div className="messages">
-            {messages.map((msg, index) => (
-=======
           {messagesByUser[currentUser].map((msg, index) =>
             msg.hidden ? null : (
->>>>>>> dev/sin-tae
               <div
                 key={index}
                 className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
@@ -265,24 +228,13 @@ const ChatPage: React.FC = () => {
                   />
                 )}
                 <div
-<<<<<<< HEAD
                   className={`message ${
                     msg.sender === "Me" ? "me-message" : "you-message"
                   }`}
-=======
-                  className={`message ${msg.sender === "Me" ? "me-message" : "you-message"
-                    }`}
->>>>>>> dev/sin-tae
                 >
                   {msg.message.split("\n").map((line, i) => (
                     <div key={i}>{line}</div>
                   ))}
-<<<<<<< HEAD
-                </div>
-              </div>
-            ))}
-          </div>
-=======
                   {msg.paymentInfo && (
                     <div className="payment-card">
                       <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />
@@ -337,7 +289,6 @@ const ChatPage: React.FC = () => {
               </div>
             )
           )}
->>>>>>> dev/sin-tae
 
           <div className="chat-footer">
             <textarea
@@ -349,16 +300,12 @@ const ChatPage: React.FC = () => {
             />
             <button onClick={handleSendMessage}>보내기</button>
             <div className="secure-payment-box">
-<<<<<<< HEAD
-              <button className="secure-payment-btn">안전결제 요청</button>
-=======
               <button
                 className="secure-payment-btn"
                 onClick={handleSecurePaymentRequest}
               >
                 안전결제 요청
               </button>
->>>>>>> dev/sin-tae
             </div>
           </div>
         </div>

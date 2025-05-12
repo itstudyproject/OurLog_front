@@ -23,27 +23,17 @@ import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
-<<<<<<< HEAD
-=======
 import ChatPage from "./pages/ChatPage";
->>>>>>> dev/sin-tae
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
-<<<<<<< HEAD
-=======
         <Route path="chat" element={<ChatPage />} />{" "}
-
->>>>>>> dev/sin-tae
-
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-
         <Route path="/search" element={<SearchPage />} />
-
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
@@ -51,12 +41,9 @@ function App() {
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
         </Route>
-
         <Route path="ranking" element={<RankingPage />} />
-
         <Route path="mypage" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
-
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path="news" element={<PostList />} />
