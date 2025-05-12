@@ -1,5 +1,5 @@
 export interface UserDTO {
-  id: number;
+  userId: number;
   email: string;
   nickname: string;
 }
@@ -11,7 +11,7 @@ export interface AnswerDTO {
   modDate: string;
 }
 
-export interface Question {
+export interface QuestionDTO {
   questionId: number;
   title: string;
   content: string;
@@ -25,4 +25,21 @@ export interface Question {
 export interface QuestionFormData {
   title: string;
   content: string;
+}
+
+export interface PageResultDTO<T> {
+  dtoList: T[];   // 제네릭 타입으로 변경
+  page: number;
+  start: number;
+  end: number;
+  pageList: number[];
+  prev: boolean;
+  next: boolean;
+}
+
+export interface PageRequestDTO {
+  page: string;
+  size: string;
+  type: string;
+  keyword: string;
 }
