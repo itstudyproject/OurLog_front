@@ -1,65 +1,165 @@
 // src/pages/PurchaseBidPage/PurchaseList.tsx
-import React from 'react';
-import '../../styles/PurchaseList.css';
 
-const dummyData = [
-  {
-    image: '/images/sample1.jpg',
-    title: '자화상 - 일러스트',
-    artist: 'Allen Doichi',
-    date: '2025.03.07',
-    price: '20,000원',
-    method: '경매로 입찰',
-  },
-  {
-    image: '/images/sample2.jpg',
-    title: '작품명',
-    artist: '작가명',
-    date: '2025.03.07',
-    price: '25,000원',
-    method: '경매로 입찰',
-  },
-  {
-    image: '/images/sample3.jpg',
-    title: '작품명',
-    artist: '작가명',
-    date: '2025.03.07',
-    price: '10,000원',
-    method: '경매로 입찰',
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../../styles/BidHistory.css';  // 기존 스타일 재활용
 
-const PurchaseList = () => {
+interface Purchase {
+  id: number;
+  image: string;
+  title: string;
+  artist: string;
+  date: string;
+  price: string;
+  method: string;
+}
+
+const itemsPerPage = 4; // 한 페이지에 보여줄 아이템 개수
+
+const PurchaseList: React.FC = () => {
+  const navigate = useNavigate();
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    // TODO: 실제 API 호출로 대체
+    const dummy: Purchase[] = [
+      {
+        id: 1,
+        image: '/images/sample1.jpg',
+        title: '자화상 - 일러스트',
+        artist: 'Allen Doichi',
+        date: '2025.03.07',
+        price: '20,000원',
+        method: '경매로 입찰',
+      },
+      {
+        id: 2,
+        image: '/images/sample2.jpg',
+        title: '작품명',
+        artist: '작가명',
+        date: '2025.03.07',
+        price: '25,000원',
+        method: '경매로 입찰',
+      },
+      {
+        id: 3,
+        image: '/images/sample3.jpg',
+        title: '작품명',
+        artist: '작가명',
+        date: '2025.03.07',
+        price: '10,000원',
+        method: '경매로 입찰',
+      },
+      {
+        id: 4,
+        image: '/images/sample4.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 5,
+        image: '/images/sample5.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 6,
+        image: '/images/sample6.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 7,
+        image: '/images/sample7.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+      {
+        id: 8,
+        image: '/images/sample8.jpg',
+        title: '추가 작품명',
+        artist: '작가명',
+        date: '2025.03.08',
+        price: '30,000원',
+        method: '즉시 구매',
+      },
+    ];
+    setPurchases(dummy);
+    setLoading(false);
+  }, []);
+
+  // 페이지네이션 로직
+  const totalPages = Math.ceil(purchases.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const currentItems = purchases.slice(startIdx, startIdx + itemsPerPage);
+
+  // 로딩 상태
+  if (loading) {
+    return (
+      <div className="loading">
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="purchase-list">
-      {/* 정렬 필터 */}
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      {/* 구매 목록 타이틀 */}
+      <div className="bid-history-title">
+        <h2>구매 목록</h2>
+        <p className="bid-date">2025.03.01 - 2025.03.07</p>
       </div>
 
-      {/* 리스트 */}
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="purchase-item-title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>구매날짜 {item.date}</p>
-              <p>구매금액 {item.price}</p>
-              <p>구매방식 {item.method}</p>
+      {/* 현재 페이지만큼의 아이템 리스트 */}
+      <div className="bid-list">
+        {currentItems.map(item => (
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => navigate(`/Art/${item.id}`)}
+          >
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.title} />
             </div>
-          </li>
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p className="bid-amount">구매금액 {item.price}</p>
+              <p>구매방식: {item.method}</p>
+              <p>구매날짜: {item.date}</p>
+            </div>
+            <div className="bid-actions">
+              <button className="detail-button">상세 ▶</button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      {/* 페이지네이션 */}
-      <div className="pagination">
-        {'<'} 1 2 3 4 5 6 7 {'>'}
+      {/* 페이지네이션 버튼 */}
+      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          <button
+            key={page}
+            className={`page-btn${page === currentPage ? ' active' : ''}`}
+            onClick={() => setCurrentPage(page)}
+            style={{ margin: '0 4px' }}
+          >
+            {page}
+          </button>
+        ))}
       </div>
     </div>
   );

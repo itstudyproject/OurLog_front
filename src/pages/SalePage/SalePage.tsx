@@ -1,31 +1,32 @@
-import React, { useState } from 'react';
-import SaleList from './SaleList';
-import SaleStatusList from './SaleStatusList';
-import '../../styles/SalePage.css';
+// src/pages/SalePage/SalePage.tsx
+import React, { useState } from "react";
+import SaleList from "./SaleList";
+import SaleStatusList from "./SaleStatusList";
+import "../../styles/SalePage.css"; // 아래에 새로 만들 CSS를 import
 
-const SalePage = () => {
-  const [activeTab, setActiveTab] = useState<'list' | 'status'>('list');
+const SalePage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<"list" | "status">("list");
 
   return (
     <div className="sale-page">
-      <div className="tab-buttons">
-        <button
-          className={activeTab === 'list' ? 'active' : ''}
-          onClick={() => setActiveTab('list')}
+      {/* ─── Sub-Tab Navigation ─── */}
+      <div className="sub-tab-nav">
+        <div
+          className={`sub-tab ${activeTab === "list" ? "active" : ""}`}
+          onClick={() => setActiveTab("list")}
         >
-          내 판매목록
-        </button>
-        <button
-          className={activeTab === 'status' ? 'active' : ''}
-          onClick={() => setActiveTab('status')}
+          판매목록
+        </div>
+        <div
+          className={`sub-tab ${activeTab === "status" ? "active" : ""}`}
+          onClick={() => setActiveTab("status")}
         >
           판매현황
-        </button>
+        </div>
       </div>
 
-      <div className="tab-content">
-        {activeTab === 'list' ? <SaleList /> : <SaleStatusList />}
-      </div>
+      {/* ─── 실제 콘텐츠(판매목록 or 판매현황) ─── */}
+      {activeTab === "list" ? <SaleList /> : <SaleStatusList />}
     </div>
   );
 };

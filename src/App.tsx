@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
@@ -24,6 +23,7 @@ import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
 import ChatPage from "./pages/ChatPage";
+import ProfileEdit from "./pages/ProfileEdit";
 function App() {
   return (
     <Routes>
