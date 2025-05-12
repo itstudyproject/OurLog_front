@@ -24,20 +24,17 @@ import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
 import ChatPage from "./pages/ChatPage";
+//
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="chat" element={<ChatPage />} />{" "}
-
-
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-
         <Route path="/search" element={<SearchPage />} />
-
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
@@ -45,12 +42,9 @@ function App() {
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
         </Route>
-
         <Route path="ranking" element={<RankingPage />} />
-
         <Route path="mypage" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
-
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path="news" element={<PostList />} />
