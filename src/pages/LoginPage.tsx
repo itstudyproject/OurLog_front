@@ -66,7 +66,6 @@ const LoginPage: React.FC = () => {
             if (token.startsWith('{"code"')) {
               navigate("/login");
             } else {
-              localStorage.setItem("token", token); // ✅ 여기에 토큰 저장
               const userData = {
                 email,
                 token,
