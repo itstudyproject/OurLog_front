@@ -68,7 +68,7 @@
   transform: scale(1.05);
 }
 
-.artworkslider-card:hover .artwork-overlay {
+.artworkslider-card:hover .artworkslider-overlay {
   opacity: 1;
 }
 
@@ -84,12 +84,4 @@
 
 .artworkslider-price {
   font-size: 16px; /* 가격 글자 크기 조정 */
-}
-.slider-wrapper {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  flex-wrap: nowrap; /* ❗ 중요: 수평으로만 정렬되게 */
-  margin: 0 auto;
-  padding: 0 10px;
 }

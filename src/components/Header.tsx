@@ -10,6 +10,9 @@ const Header: React.FC = () => {
     email: string;
     profileImage?: string;
   } | null>(null);
+
+  const [keyword, setKeyword] = useState(""); // ✅ 검색어 상태 추가
+
   const navigate = useNavigate();
 
   // 로그인 상태 및 유저 정보 확인
@@ -75,8 +78,26 @@ const Header: React.FC = () => {
           <div className="right-section">
             <div className="search-label">SEARCH</div>
             <div className="search-box">
-              <input type="text" placeholder="검색" className="search-input" />
-              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="검색"
+                className="search-input"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    navigate(`/search?query=${encodeURIComponent(keyword)}`);
+                  }
+                }}
+              />
+              <span
+                className="search-icon"
+                onClick={() =>
+                  navigate(`/search?query=${encodeURIComponent(keyword)}`)
+                }
+              >
+                🔍
+              </span>
             </div>
             <div className="user-menu">
               {isLoggedIn ? (
@@ -142,14 +163,14 @@ const Header: React.FC = () => {
           </div>
 
           {/* 커뮤니티 섹션 */}
-          <Link to="/community" className="sidebar-section-title">
+          <Link to="/post" className="sidebar-section-title">
             커뮤니티
           </Link>
           <div className="sidebar-section-sub">
-            <Link to="/board">새소식</Link>
-            <Link to="/board/free">자유게시판</Link>
-            <Link to="/board/promo">홍보 게시판</Link>
-            <Link to="/board/request">요청 게시판</Link>
+            <Link to="/post/news">새소식</Link>
+            <Link to="/post/free">자유게시판</Link>
+            <Link to="/post/promotion">홍보 게시판</Link>
+            <Link to="/post/request">요청 게시판</Link>
           </div>
 
           {/* 랭킹 섹션 */}

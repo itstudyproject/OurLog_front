@@ -195,3 +195,138 @@ body {
   color: #ccc;
   font-size: 18px;
 }
+
+.art-list-header {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  margin-bottom: 24px;
+}
+
+.art-list-tabs {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.art-list-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.art-search-bar-wrapper {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 387px;
+  max-width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.art-search-bar {
+  display: flex;
+  align-items: center;
+  background: #222;
+  border-radius: 6px;
+  padding: 0 10px;
+  border: 1px solid #444;
+  min-width: 280px;
+  max-width: 300px;
+  width: 100%;
+}
+
+.art-search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ccc;
+  font-size: 16px;
+  padding: 10px 0;
+  flex: 1;
+}
+
+.art-search-input::placeholder {
+  color: #888;
+}
+
+.art-search-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+}
+
+.art-search-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0.8);
+}
+
+.art-list-tab-btn {
+  padding: 8px 32px;
+  border-radius: 6px;
+  background: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.art-list-tab-btn.active,
+.art-list-tab-btn:hover {
+  background: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+@media (max-width: 1200px) {
+  .art-search-bar-wrapper {
+    width: 32vw;
+    min-width: 200px;
+  }
+}
+@media (max-width: 900px) {
+  .art-list-header {
+    grid-template-columns: 1fr 1.2fr 1fr;
+  }
+  .art-search-bar-wrapper {
+    width: 100%;
+    min-width: 0;
+  }
+}
+@media (max-width: 768px) {
+  .art-list-header {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    min-height: unset;
+  }
+  .art-list-tabs,
+  .art-list-title,
+  .art-search-bar-wrapper {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    justify-content: stretch;
+    text-align: left;
+  }
+}

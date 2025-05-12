@@ -92,6 +92,7 @@
 }
 
 .form-section {
+
   background-color: #232323;
   padding: 20px;
   border-radius: 8px;
@@ -113,6 +114,7 @@
 
 .form-label {
   display: block;
+
   font-size: 14px;
   color: #999;
   margin-bottom: 6px;
@@ -136,6 +138,7 @@
   border-color: #f8c147;        /* 강조색 포커스 */
 }
 
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;
@@ -144,6 +147,7 @@
 /* 액션 버튼 */
 .action-buttons {
   display: flex;
+
   justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;

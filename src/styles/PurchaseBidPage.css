@@ -4,6 +4,7 @@
   padding-top: 1rem; /* MyPage 네비 아래 여유 */
 }
 
+
 /* 탭 컨테이너 */
 .sub-tab-nav {
   display: flex;
@@ -23,6 +24,7 @@
 .sub-tab:hover {
   color: #ffb74d;
 }
+
 
 /* 활성 탭 밑줄 */
 .sub-tab.active::after {

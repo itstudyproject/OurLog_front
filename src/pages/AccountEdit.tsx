@@ -70,6 +70,7 @@ const AccountEdit: React.FC = () => {
   return (
     <div className="account-edit-container">
       <div className="header-row">
+
         <h1 className="title">회원정보수정</h1>
         {/* 뒤로가기 버튼을 살리고 싶으면 주석 해제하세요 */}
         {/* <button onClick={() => navigate(-1)} className="back-button">
@@ -86,10 +87,12 @@ const AccountEdit: React.FC = () => {
             value={currentPassword}
             onChange={e => setCurrentPassword(e.target.value)}
           />
+
         </div>
 
         <div className="form-group">
           <label>새 비밀번호</label>
+
           <input
             type="password"
             value={newPassword}
@@ -99,6 +102,7 @@ const AccountEdit: React.FC = () => {
 
         <div className="form-group full-width">
           <label>새 비밀번호 확인</label>
+
           <input
             type="password"
             value={confirmPassword}
@@ -115,6 +119,7 @@ const AccountEdit: React.FC = () => {
             비밀번호 변경하기
           </button>
         </div>
+
 
         {/* 프로필 정보 섹션 */}
         <div className="form-group">
@@ -133,6 +138,7 @@ const AccountEdit: React.FC = () => {
 
         <div className="form-group full-width">
           <label>연락처</label>
+
           <input
             type="tel"
             value={phone}
