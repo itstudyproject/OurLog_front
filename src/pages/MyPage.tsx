@@ -105,7 +105,7 @@ const MyPage: React.FC = () => {
         <Route path="account/delete" element={<DeleteAccountPage />} />
 
         {/* 5) 구매/입찰 페이지 */}
-        <Route path="purchase-bid/*" element={<PurchaseBidPage />} />
+        <Route path="purchase-bid" element={<PurchaseBidPage />} />
 
         {/* 6) 판매/판매현황 페이지 */}
         <Route path="sale/*" element={<SalePage />} />
