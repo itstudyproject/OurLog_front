@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css"; // PostRegister와 동일한 CSS 사용
+// npm install @hello-pangea/dnd 설치할 것
 
 interface ImageFile {
   file: File;
@@ -42,7 +43,7 @@ const dummyData: DummyData = {
       {
         preview: "/images/post1.jpg",
         id: "dummy1",
-      }
+      },
     ],
     thumbnailId: "dummy1",
     category: "자유게시판",
@@ -71,9 +72,9 @@ const PostModify = () => {
       setFormData({
         title: data.title,
         content: data.content,
-        images: data.images.map(img => ({
+        images: data.images.map((img) => ({
           ...img,
-          file: new File([], img.id, { type: 'image/jpeg' })
+          file: new File([], img.id, { type: "image/jpeg" }),
         })),
         thumbnailId: data.thumbnailId,
         category: data.category,
@@ -107,11 +108,12 @@ const PostModify = () => {
   };
 
   const validateImage = (file: File): string | null => {
-    if (!file.type.startsWith('image/')) {
-      return '이미지 파일만 업로드 가능합니다.';
+    if (!file.type.startsWith("image/")) {
+      return "이미지 파일만 업로드 가능합니다.";
     }
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      return '파일 크기는 10MB 이하여야 합니다.';
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB
+      return "파일 크기는 10MB 이하여야 합니다.";
     }
     return null;
   };
@@ -140,24 +142,26 @@ const PostModify = () => {
                 id: Math.random().toString(36).substring(7),
               });
             };
-            reader.onerror = () => reject(new Error('이미지 로드 중 오류가 발생했습니다.'));
+            reader.onerror = () =>
+              reject(new Error("이미지 로드 중 오류가 발생했습니다."));
             reader.readAsDataURL(file);
           });
         })
       );
 
       const newImages = [...formData.images, ...processedImages];
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        thumbnailId:
+          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       if (error instanceof Error) {
         alert(error.message);
       } else {
-        alert('이미지 업로드 중 오류가 발생했습니다.');
+        alert("이미지 업로드 중 오류가 발생했습니다.");
       }
     }
   };
@@ -167,20 +171,23 @@ const PostModify = () => {
   };
 
   const handleRemoveImage = (id: string) => {
-    setFormData(prev => {
-      const newImages = prev.images.filter(img => img.id !== id);
+    setFormData((prev) => {
+      const newImages = prev.images.filter((img) => img.id !== id);
       return {
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId === id 
-          ? (newImages.length > 0 ? newImages[0].id : null)
-          : prev.thumbnailId,
+        thumbnailId:
+          prev.thumbnailId === id
+            ? newImages.length > 0
+              ? newImages[0].id
+              : null
+            : prev.thumbnailId,
       };
     });
   };
 
   const handleThumbnailSelect = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       thumbnailId: id,
     }));
@@ -224,7 +231,7 @@ const PostModify = () => {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       images: items,
     }));
@@ -234,19 +241,21 @@ const PostModify = () => {
     if (!result.destination) return;
 
     const content = formData.content;
-    const lines = content.split('\n');
-    const imageLines = lines.filter(line => line.startsWith('!['));
+    const lines = content.split("\n");
+    const imageLines = lines.filter((line) => line.startsWith("!["));
     const [movedImage] = imageLines.splice(result.source.index, 1);
     imageLines.splice(result.destination.index, 0, movedImage);
 
-    const newContent = lines.map(line => {
-      if (line.startsWith('![')) {
-        return imageLines.shift() || line;
-      }
-      return line;
-    }).join('\n');
+    const newContent = lines
+      .map((line) => {
+        if (line.startsWith("![")) {
+          return imageLines.shift() || line;
+        }
+        return line;
+      })
+      .join("\n");
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       content: newContent,
     }));
@@ -297,15 +306,15 @@ const PostModify = () => {
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
-                  <div 
+                  <div
                     className="image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
                     {formData.images.map((image, index) => (
-                      <Draggable 
-                        key={image.id} 
-                        draggableId={image.id} 
+                      <Draggable
+                        key={image.id}
+                        draggableId={image.id}
                         index={index}
                       >
                         {(provided, snapshot) => (
@@ -313,11 +322,17 @@ const PostModify = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${snapshot.isDragging ? 'dragging' : ''} ${formData.thumbnailId === image.id ? 'thumbnail-selected' : ''}`}
+                            className={`image-item ${
+                              snapshot.isDragging ? "dragging" : ""
+                            } ${
+                              formData.thumbnailId === image.id
+                                ? "thumbnail-selected"
+                                : ""
+                            }`}
                           >
-                            <img 
-                              src={image.preview} 
-                              alt="업로드 이미지" 
+                            <img
+                              src={image.preview}
+                              alt="업로드 이미지"
                               className="preview-img"
                               onClick={() => handleThumbnailSelect(image.id)}
                             />
@@ -335,7 +350,9 @@ const PostModify = () => {
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => handleThumbnailSelect(image.id)}
+                                  onClick={() =>
+                                    handleThumbnailSelect(image.id)
+                                  }
                                   className="thumbnail-button"
                                 >
                                   썸네일로 설정
@@ -352,8 +369,8 @@ const PostModify = () => {
               </Droppable>
             </DragDropContext>
             <p className="file-guide">
-              {formData.images.length === 0 
-                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)" 
+              {formData.images.length === 0
+                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)"
                 : `${formData.images.length}/10개 이미지 업로드됨`}
             </p>
           </div>
@@ -361,15 +378,15 @@ const PostModify = () => {
           <DragDropContext onDragEnd={handleContentImageDragEnd}>
             <Droppable droppableId="content-images" direction="horizontal">
               {(provided) => (
-                <div 
+                <div
                   className="content-images"
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
                   {formData.images.map((image, index) => (
-                    <Draggable 
-                      key={image.id} 
-                      draggableId={`content-${image.id}`} 
+                    <Draggable
+                      key={image.id}
+                      draggableId={`content-${image.id}`}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -377,11 +394,13 @@ const PostModify = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${snapshot.isDragging ? 'dragging' : ''}`}
+                          className={`content-image-wrapper ${
+                            snapshot.isDragging ? "dragging" : ""
+                          }`}
                         >
-                          <img 
-                            src={image.preview} 
-                            alt="내용 이미지" 
+                          <img
+                            src={image.preview}
+                            alt="내용 이미지"
                             className="content-image"
                           />
                         </div>

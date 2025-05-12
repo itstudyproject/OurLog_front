@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   grid-template-columns: repeat(1, 1fr); /* 기본적으로 1열로 설정 */
-  gap: 32px; /* 각 항목 간 간격을 늘림 */
+  gap: 32px;   /* 각 항목 간 간격을 늘림 */
 }
 
 @media (min-width: 768px) {

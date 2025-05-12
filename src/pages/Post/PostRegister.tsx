@@ -56,11 +56,12 @@ const PostRegister = () => {
   };
 
   const validateImage = (file: File): string | null => {
-    if (!file.type.startsWith('image/')) {
-      return '이미지 파일만 업로드 가능합니다.';
+    if (!file.type.startsWith("image/")) {
+      return "이미지 파일만 업로드 가능합니다.";
     }
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      return '파일 크기는 10MB 이하여야 합니다.';
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB
+      return "파일 크기는 10MB 이하여야 합니다.";
     }
     return null;
   };
@@ -89,24 +90,24 @@ const PostRegister = () => {
                 id: Math.random().toString(36).substring(7),
               });
             };
-            reader.onerror = () => reject(new Error('이미지 로드 중 오류가 발생했습니다.'));
+            reader.onerror = () =>
+              reject(new Error("이미지 로드 중 오류가 발생했습니다."));
             reader.readAsDataURL(file);
           });
         })
       );
 
       const newImages = [...formData.images, ...processedImages];
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        thumbnailId:
+          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('이미지 업로드 중 오류가 발생했습니다.');
+        alert(error instanceof Error ? error.message : "이미지 업로드 오류");
       }
     }
   };
@@ -116,20 +117,23 @@ const PostRegister = () => {
   };
 
   const handleRemoveImage = (id: string) => {
-    setFormData(prev => {
-      const newImages = prev.images.filter(img => img.id !== id);
+    setFormData((prev) => {
+      const newImages = prev.images.filter((img) => img.id !== id);
       return {
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId === id 
-          ? (newImages.length > 0 ? newImages[0].id : null)
-          : prev.thumbnailId,
+        thumbnailId:
+          prev.thumbnailId === id
+            ? newImages.length > 0
+              ? newImages[0].id
+              : null
+            : prev.thumbnailId,
       };
     });
   };
 
   const handleThumbnailSelect = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       thumbnailId: id,
     }));
@@ -137,12 +141,11 @@ const PostRegister = () => {
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
-
     const items = Array.from(formData.images);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       images: items,
     }));
@@ -152,43 +155,66 @@ const PostRegister = () => {
     if (!result.destination) return;
 
     const content = formData.content;
-    const lines = content.split('\n');
-    const imageLines = lines.filter(line => line.startsWith('!['));
+    const lines = content.split("\n");
+    const imageLines = lines.filter((line) => line.startsWith("!["));
     const [movedImage] = imageLines.splice(result.source.index, 1);
     imageLines.splice(result.destination.index, 0, movedImage);
 
-    const newContent = lines.map(line => {
-      if (line.startsWith('![')) {
-        return imageLines.shift() || line;
-      }
-      return line;
-    }).join('\n');
+    const newContent = lines
+      .map((line) => {
+        if (line.startsWith("![")) {
+          return imageLines.shift() || line;
+        }
+        return line;
+      })
+      .join("\n");
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       content: newContent,
     }));
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.content) {
-      alert("제목과 내용을 모두 입력해주세요.");
-      return;
+  if (!formData.title || !formData.content) {
+    alert("제목과 내용을 모두 입력해주세요.");
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const fd = new FormData();
+    fd.append("title", formData.title);
+    fd.append("content", formData.content);
+    fd.append("category", formData.category);
+    fd.append("thumbnailId", formData.thumbnailId || "");
+
+    if (formData.images && formData.images.length > 0) {
+      formData.images.forEach((image: File) => {
+        fd.append("images", image); // 서버에서 List<MultipartFile>로 받음
+      });
     }
 
-    setIsSubmitting(true);
+    const response = await fetch("http://localhost:8080/api/post/register", {
+      method: "POST",
+      body: fd, // ✅ FormData는 JSON.stringify 하면 안 됩니다
+      // ❌ headers에 'Content-Type'을 넣지 마세요!
+    });
 
-    try {
-      console.log("제출할 데이터:", formData);
-      alert("게시물이 성공적으로 등록되었습니다.");
-      navigate("/post");
-    } catch (error) {
-      console.error("게시물 등록 중 오류:", error);
-      alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsSubmitting(false);
+    if (!response.ok) {
+      throw new Error("게시물 등록에 실패했습니다.");
     }
-  };
+
+    const result = await response.json();
+    alert("게시물이 성공적으로 등록되었습니다.");
+    navigate("/post");
+  } catch (error) {
+    alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleCancel = () => {
     if (confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
@@ -232,7 +258,9 @@ const PostRegister = () => {
       <div className="post-register-container">
         <div className="content-box">
           <div className="file-upload">
-            <button type="button" onClick={handleFileButtonClick}>이미지 업로드</button>
+            <button type="button" onClick={handleFileButtonClick}>
+              이미지 업로드
+            </button>
             <input
               type="file"
               ref={fileInputRef}
@@ -244,15 +272,15 @@ const PostRegister = () => {
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
-                  <div 
+                  <div
                     className="image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
                     {formData.images.map((image, index) => (
-                      <Draggable 
-                        key={image.id} 
-                        draggableId={image.id} 
+                      <Draggable
+                        key={image.id}
+                        draggableId={image.id}
                         index={index}
                       >
                         {(provided, snapshot) => (
@@ -260,11 +288,17 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${snapshot.isDragging ? 'dragging' : ''} ${formData.thumbnailId === image.id ? 'thumbnail-selected' : ''}`}
+                            className={`image-item ${
+                              snapshot.isDragging ? "dragging" : ""
+                            } ${
+                              formData.thumbnailId === image.id
+                                ? "thumbnail-selected"
+                                : ""
+                            }`}
                           >
-                            <img 
-                              src={image.preview} 
-                              alt="업로드 이미지" 
+                            <img
+                              src={image.preview}
+                              alt="업로드 이미지"
                               className="preview-img"
                               onClick={() => handleThumbnailSelect(image.id)}
                             />
@@ -282,7 +316,9 @@ const PostRegister = () => {
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => handleThumbnailSelect(image.id)}
+                                  onClick={() =>
+                                    handleThumbnailSelect(image.id)
+                                  }
                                   className="thumbnail-button"
                                 >
                                   썸네일로 설정
@@ -299,8 +335,8 @@ const PostRegister = () => {
               </Droppable>
             </DragDropContext>
             <p className="file-guide">
-              {formData.images.length === 0 
-                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)" 
+              {formData.images.length === 0
+                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)"
                 : `${formData.images.length}/10개 이미지 업로드됨`}
             </p>
           </div>
@@ -308,15 +344,15 @@ const PostRegister = () => {
           <DragDropContext onDragEnd={handleContentImageDragEnd}>
             <Droppable droppableId="content-images" direction="horizontal">
               {(provided) => (
-                <div 
+                <div
                   className="content-images"
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
                   {formData.images.map((image, index) => (
-                    <Draggable 
-                      key={image.id} 
-                      draggableId={`content-${image.id}`} 
+                    <Draggable
+                      key={image.id}
+                      draggableId={`content-${image.id}`}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -324,11 +360,13 @@ const PostRegister = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${snapshot.isDragging ? 'dragging' : ''}`}
+                          className={`content-image-wrapper ${
+                            snapshot.isDragging ? "dragging" : ""
+                          }`}
                         >
-                          <img 
-                            src={image.preview} 
-                            alt="내용 이미지" 
+                          <img
+                            src={image.preview}
+                            alt="내용 이미지"
                             className="content-image"
                           />
                         </div>
