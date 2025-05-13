@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
@@ -23,30 +22,27 @@ import ArtDetail from "./pages/Art/ArtDetail";
 import BidHistory from "./pages/Art/BidHistory";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
+import ChatPage from "./pages/ChatPage";
+import ProfileEdit from "./pages/ProfileEdit";
 function App() {
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
-
+        <Route path="chat" element={<ChatPage />} />{" "}
         <Route path="terms-condition" element={<TermsCondition />} />
         <Route path="customer-center" element={<CustomerCenter />} />
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
-
         <Route path="/search" element={<SearchPage />} />
-
         <Route path="art">
           <Route index element={<ArtList />} />
           <Route path=":id" element={<ArtDetail />} />
           <Route path="payment/:id" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
         </Route>
-
         <Route path="ranking" element={<RankingPage />} />
-
-        <Route path="mypage" element={<MyPage />} />
+        <Route path="mypage/*" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
-
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
@@ -66,10 +62,7 @@ function App() {
       </Route>
 
       <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/profile-edit"
-        element={<ProfileEditPage onBack={() => window.history.back()} />}
-      />
+    <Route path="/profile-edit" element={<ProfileEdit onBack={() => window.history.back()} />} />
 
       <Route path="/delete-account" element={<DeleteAccountPage />} />
     </Routes>

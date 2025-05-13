@@ -1,64 +1,29 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../styles/ProfileEdit.css";
+// src/pages/ProfileEditPage.tsx
 
-// 체크 아이콘 컴포넌트
-const CheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
-
-// 화살표 아이콘 컴포넌트
-const ArrowLeftIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="19" y1="12" x2="5" y2="12"></line>
-    <polyline points="12 19 5 12 12 5"></polyline>
-  </svg>
-);
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/ProfileEdit.css';
 
 interface ProfileEditPageProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   const navigate = useNavigate();
 
-  // 사용자 정보 상태
   const [profileData, setProfileData] = useState({
-    username: "art_lover",
-    email: "user@example.com",
-    fullName: "김예술",
-    bio: "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
-    location: "서울특별시",
-    website: "https://myartblog.com",
-    profilePicture: "/images/Logo.png",
-    isSpotifyConnected: false,
+    username: 'art_lover',
+    email: 'user@example.com',
+    fullName: '김예술',
+    bio: '현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.',
+    location: '서울특별시',
+    website: 'https://myartblog.com',
+    profilePicture: '/images/Logo.png',
   });
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({
@@ -67,15 +32,15 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     }));
   };
 
-  // 프로필 이미지 변경 핸들러
+ // 프로필 이미지 변경 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setProfileData((prev) => ({
+          setProfileData(prev => ({
             ...prev,
-            profilePicture: event.target?.result as string,
+            profilePicture: event.target?.result as string
           }));
         }
       };
@@ -83,39 +48,50 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     }
   };
 
-  // Spotify 연결 토글
-  const toggleSpotifyConnection = () => {
-    setProfileData((prev) => ({
-      ...prev,
-      isSpotifyConnected: !prev.isSpotifyConnected,
-    }));
-  };
+
 
   // 폼 제출 핸들러
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 실제 애플리케이션에서는 API로 데이터 전송
-    console.log('프로필 데이터 저장:', profileData);
+    try {
+      // 실제 API 엔드포인트에 맞게 URL을 수정
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/update-profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(profileData),
+      });
+      if (!res.ok) throw new Error('Network response was not ok');
 
-    console.log("프로필 데이터 저장:", profileData);
+      //  응답으로 받은 최신 프로필 데이터로 상태 갱신 가능
+      // const updated = await res.json();
+      // setProfileData(updated);
 
-    // 성공 메시지와 함께 프로필 페이지로 리디렉션
-    alert("프로필이 성공적으로 업데이트되었습니다.");
-    navigate("/profile");
+      // 성공 알림 후 돌아가기
+      alert('프로필이 성공적으로 업데이트되었습니다.');
+      if (onBack) {
+        onBack();
+      } else {
+        navigate('/mypage');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1 className="header-title">회원정보수정</h1>
-        <button className="back-button" onClick={onBack}>
-          <ArrowLeftIcon /> 돌아가기
-        </button>
-
+        <h1 className="header-title">프로필수정</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="profile-content">
+        {/* 사이드바: 프로필 사진 */}
         <div className="profile-sidebar">
           <div className="profile-photo-container">
             <img
@@ -124,10 +100,7 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
               className="profile-photo"
             />
             <div className="photo-overlay">
-              <label
-                htmlFor="profile-photo-input"
-                className="change-photo-button"
-              >
+              <label htmlFor="profile-photo-input" className="change-photo-button">
                 사진 변경
               </label>
               <input
@@ -135,12 +108,13 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
               />
             </div>
           </div>
         </div>
 
+        {/* 메인 폼 */}
         <div className="profile-main">
           <div className="form-section">
             <h2 className="section-title">기본 정보</h2>
@@ -234,15 +208,15 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
             </div>
           </div>
 
+          {/* 액션 버튼 */}
           <div className="action-buttons">
             <button
               type="button"
               className="cancel-button"
-              onClick={onBack}
+              onClick={onBack || (() => navigate(-1))}
             >
               취소
             </button>
-
             <button type="submit" className="save-button">
               변경사항 저장
             </button>

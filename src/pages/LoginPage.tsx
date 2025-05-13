@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
       "user",
       JSON.stringify({
         email: userData.email,
-        profileImage: "/images/default-profile.png", // 실제 API 응답에서 받아오면 수정 가능
+        profileImage: "/images/profile.png", // 실제 API 응답에서 받아오면 수정 가능
       })
     );
     window.dispatchEvent(new Event("login"));
