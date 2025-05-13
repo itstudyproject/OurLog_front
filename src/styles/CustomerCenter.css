@@ -1,47 +1,33 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #000000;
-}
-
 .cc-container {
   display: flex;
-  gap: 2rem;
-  padding: 2rem;
+  align-items: flex-start;
+  gap: 32px; /* 2rem -> 32px */
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #000000;
-  min-height: 100vh;
-  position: relative;
-  color: #ffffff;
-  scroll-margin-top: 0;
 }
 
 .cc-sidebar {
-  width: 240px;
-  background: #111111;
-  border-radius: 8px;
-  padding: 1rem;
   position: sticky;
-  top: 120px;
-  height: calc(100vh - 100px);
-  overflow-y: auto;
-  margin-top: 150px;
+  top: 80px; /* 60px + 20px adjustment */
+  background: #111;
+  padding: 16px; /* 1rem -> 16px */
+  border-radius: 8px;
+  width: 240px;
 }
 
 .cc-sidebar-title {
-  font-size: 1.25rem;
+  font-size: 20px; /* 1.25rem -> 20px */
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 16px; /* 1rem -> 16px */
   text-align: center;
   color: #ffffff;
 }
 
 .cc-nav-item {
-  padding: 1rem 1.5rem;
+  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
   cursor: pointer;
   border-radius: 6px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px; /* 0.5rem -> 8px */
   font-weight: 500;
   transition: all 0.2s ease;
   color: #cccccc;
@@ -64,61 +50,61 @@ body {
   flex: 1;
   background: #111111;
   border-radius: 8px;
-  padding: 2rem;
+  padding: 32px; /* 2rem -> 32px */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .cc-styled-h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px; /* 1.5rem -> 24px */
   color: #ffffff;
 }
 
 .cc-section-title {
-  font-size: 1.5rem;
+  font-size: 24px; /* 1.5rem -> 24px */
   color: #ffffff;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 24px; /* 1.5rem -> 24px */
+  padding-bottom: 8px; /* 0.5rem -> 8px */
   border-bottom: 2px solid #333;
-  padding-top: 2rem;
+  padding-top: 32px; /* 2rem -> 32px */
 }
 
 .cc-search-wrapper {
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 32px; /* 2rem -> 32px */
 }
 
 .cc-search-input {
   width: 100%;
-  padding: 1rem 3rem 1rem 1rem;
+  padding: 16px 48px 16px 16px; /* 1rem 3rem 1rem 1rem -> 16px 48px 16px 16px */
   border: 1px solid #333;
   border-radius: 6px;
   background-color: #222222;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 16px; /* 1rem -> 16px */
 }
 
 .cc-search-icon {
   position: absolute;
-  right: 1rem;
+  right: 16px; /* 1rem -> 16px */
   top: 50%;
   transform: translateY(-50%);
   color: #666;
 }
 
 .faq-list {
-  margin-top: 2rem;
+  margin-top: 32px; /* 2rem -> 32px */
 }
 
 .faq-item {
   border: 1px solid #333;
   border-radius: 6px;
-  margin-bottom: 1rem;
+  margin-bottom: 16px; /* 1rem -> 16px */
   overflow: hidden;
 }
 
 .question-box {
-  padding: 1rem 1.5rem;
+  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
   cursor: pointer;
   font-weight: 500;
   background-color: #222222;
@@ -133,7 +119,7 @@ body {
 
 .question-box::after {
   content: "▼";
-  font-size: 0.8rem;
+  font-size: 12px; /* 0.8rem -> 12px */
   transition: transform 0.2s ease;
 }
 
@@ -142,7 +128,7 @@ body {
 }
 
 .answer {
-  padding: 0 1.5rem;
+  padding: 0 24px; /* 1.5rem -> 24px */
   background-color: #111111;
   max-height: 0;
   opacity: 0;
@@ -151,14 +137,14 @@ body {
 }
 
 .answer.open {
-  padding: 1rem 1.5rem;
+  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
   max-height: 500px;
   opacity: 1;
 }
 
 .info-text {
-  margin-top: 1rem;
-  font-size: 0.95rem;
+  margin-top: 16px; /* 1rem -> 16px */
+  font-size: 15px; /* 0.95rem -> 15px */
   color: #ccc;
   line-height: 1.6;
   white-space: pre-line;
@@ -168,9 +154,9 @@ body {
   border: 1px solid #ff6b6b;
   color: #ff9999;
   border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-  font-size: 0.875rem;
+  padding: 16px; /* 1rem -> 16px */
+  margin-top: 16px; /* 1rem -> 16px */
+  font-size: 14px; /* 0.875rem -> 14px */
   line-height: 1.6;
   background-color: rgba(255, 107, 107, 0.1);
 }
@@ -178,13 +164,13 @@ body {
 .table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  margin-top: 16px; /* 1rem -> 16px */
   color: #ffffff;
 }
 
 .th {
   background-color: #222222;
-  padding: 1rem;
+  padding: 16px; /* 1rem -> 16px */
   text-align: center;
   border-bottom: 2px solid #333;
   color: #ffffff;
@@ -192,16 +178,16 @@ body {
 }
 
 .td {
-  padding: 1rem;
+  padding: 16px; /* 1rem -> 16px */
   text-align: center;
   border-bottom: 1px solid #333;
   color: #ffffff;
 }
 
 .status-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 4px 12px; /* 0.25rem 0.75rem -> 4px 12px */
   border-radius: 20px;
-  font-size: 0.875rem;
+  font-size: 14px; /* 0.875rem -> 14px */
 }
 
 .status-badge.waiting {
@@ -218,18 +204,18 @@ body {
 
 .button-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px; /* 0.5rem -> 8px */
   justify-content: center;
 }
 
 .action-button {
-  padding: 0.5rem 1rem;
+  padding: 8px 16px; /* 0.5rem 1rem -> 8px 16px */
   border: none;
   border-radius: 4px;
   background-color: #4a90e2;
   color: white;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 14px; /* 0.875rem -> 14px */
   transition: background-color 0.2s;
 }
 
@@ -257,30 +243,34 @@ body {
 }
 
 .modal {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: #111111;
-  padding: 2rem;
+  padding: 32px; /* 2rem -> 32px */
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
   width: 500px;
   max-width: 90vw;
   color: #ffffff;
   text-align: center;
+  z-index: 1000; /* 다른 요소 위에 표시되도록 */
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px; /* 1.5rem -> 24px */
   border-bottom: 1px solid #333;
-  padding-bottom: 1rem;
+  padding-bottom: 16px; /* 1rem -> 16px */
   text-align: left;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 24px; /* 1.5rem -> 24px */
   color: #ffffff;
 }
 
@@ -289,7 +279,7 @@ body {
   border: none;
   color: #ffffff;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 8px; /* 0.5rem -> 8px */
   width: 32px;
   height: 32px;
   display: flex;
@@ -304,25 +294,25 @@ body {
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px; /* 1.5rem -> 24px */
   text-align: left;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px; /* 0.5rem -> 8px */
   color: #cccccc;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
+  padding: 12px; /* 0.75rem -> 12px */
   border: 1px solid #333;
   border-radius: 4px;
   background-color: #222222;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 16px; /* 1rem -> 16px */
 }
 
 .form-group textarea {
@@ -331,13 +321,14 @@ body {
 }
 
 .button {
+  margin-top: 16px; /* 10px -> 16px */
   display: inline-block;
-  padding: 0.75rem 1.5rem;
+  padding: 12px 24px; /* 0.75rem 1.5rem -> 12px 24px */
   border: none;
   border-radius: 4px;
   background-color: #4a90e2;
   color: white;
-  font-size: 1rem;
+  font-size: 16px; /* 1rem -> 16px */
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -349,18 +340,18 @@ body {
 .modal-button-group {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 16px; /* 1rem -> 16px */
+  margin-top: 24px; /* 1.5rem -> 24px */
 }
 
 .modal-button {
-  padding: 0.5rem 1.5rem;
+  padding: 8px 24px; /* 0.5rem 1.5rem -> 8px 24px */
   border: none;
   border-radius: 4px;
   background-color: #4a90e2;
   color: white;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 14px; /* 0.875rem -> 14px */
   transition: background-color 0.2s;
 }
 
@@ -379,8 +370,8 @@ body {
 .no-results {
   text-align: center;
   color: #666;
-  margin: 2rem 0;
-  font-size: 1.1rem;
+  margin: 32px 0; /* 2rem -> 32px */
+  font-size: 18px; /* 1.1rem -> 18px */
 }
 
 .modal form {
@@ -388,14 +379,11 @@ body {
 }
 
 .modal form .button {
-  margin-top: 1.5rem;
+  margin-top: 24px; /* 1.5rem -> 24px */
 }
 
-#faq {
-  scroll-margin-top: 2rem;
-}
-
+#faq,
 #inquiry,
 #history {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 120px;
 }

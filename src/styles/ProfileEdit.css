@@ -1,60 +1,57 @@
+/* ProfileEdit.css */
+
+/* 페이지 전체 배경 & 기본 텍스트 */
 .profile-container {
   min-height: 100vh;
+  background-color: #1a1a1a;    /* BidHistory 와 동일 */
+  color: #ccc;                  /* 입찰 리스트 텍스트 색 */
   display: flex;
   flex-direction: column;
-  background-color: black;
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 20px;
+  max-width: 800px;             /* BidHistory는 800px, 프로필도 통일 */
   margin: 0 auto;
 }
 
+/* 헤더 */
 .profile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
   border-bottom: 1px solid #333;
 }
 
-.back-button {
-  background: none;
-  border: none;
-  color: #9bcabf;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.profile-header .header-title {
+  font-size: 24px;              /* BidHistory h2 크기와 동일 */
+  color: #fff;
+  margin: 0;
+  font-weight: 600;
 }
 
-.back-button:hover {
-  text-decoration: underline;
-}
-
+/* 폼 레이아웃 */
 .profile-content {
   display: flex;
-  gap: 2rem;
+  gap: 20px;
   flex: 1;
 }
 
+/* 사진 섹션 */
 .profile-sidebar {
-  width: 250px;
   flex-shrink: 0;
 }
 
 .profile-photo-container {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;           /* 입찰 카드 모서리 반경 */
   overflow: hidden;
-  margin-bottom: 1.5rem;
+  background-color: #232323;
+  margin-bottom: 20px;
   position: relative;
-  background-color: #1a1a1a;
-  border: 2px solid #333;
 }
 
-.profile-photo {
+.profile-photo-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -62,16 +59,13 @@
 
 .photo-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity .2s;
 }
 
 .profile-photo-container:hover .photo-overlay {
@@ -79,165 +73,109 @@
 }
 
 .change-photo-button {
-  background-color: transparent;
-  border: 2px solid white;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  background-color: #333;
+  color: #ccc;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
-  font-size: 0.875rem;
+  transition: background-color .2s;
 }
 
 .change-photo-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #444;
 }
 
+/* 입력 폼 섹션 */
 .profile-main {
   flex: 1;
 }
 
 .form-section {
-  margin-bottom: 2rem;
+
+  background-color: #232323;
+  padding: 20px;
   border-radius: 8px;
-  background-color: #1a1a1a;
-  padding: 1.5rem;
+  margin-bottom: 30px;
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 18px;
   color: #fff;
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-}
-
-.form-row {
-  display: flex;
-  gap: a 2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f8c147;  /* 강조색 통일 */
+  display: inline-block;
+  padding-bottom: 4px;
 }
 
 .form-group {
-  flex: 1;
-  margin-bottom: 1.5rem;
+  margin-bottom: 15px;
 }
 
 .form-label {
   display: block;
-  font-size: 0.9rem;
-  color: #d1d5db;
-  margin-bottom: 0.5rem;
+
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 6px;
 }
 
-.form-input {
+.form-input,
+.form-textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 10px;
+  font-size: 14px;
+  color: #ccc;
   background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  color: #e5e7eb;
+  border: 1px solid #333;
+  border-radius: 8px;          /* 모서리 반경 통일 */
+  transition: border-color .2s;
 }
 
-.form-input::placeholder {
-  color: #8b8b8b;
-}
-
-.form-input:focus {
+.form-input:focus,
+.form-textarea:focus {
   outline: none;
-  border-color: #9bcabf;
+  border-color: #f8c147;        /* 강조색 포커스 */
 }
 
-.form-select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  color: #e5e7eb;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239bcabf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
-.spotify-connect {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.spotify-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.spotify-text {
-  color: #d1d5db;
-  font-size: 0.9rem;
-}
-
-.connect-button {
-  padding: 0.5rem 1rem;
-  background-color: #1db954;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.connect-button:hover {
-  background-color: #1ed760;
-}
-
-.connected-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #9bcabf;
-}
-
-.connected-status svg {
-  width: 20px;
-  height: 20px;
-}
-
+/* 액션 버튼 */
 .action-buttons {
   display: flex;
+
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel-button,
+.save-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background-color .2s, opacity .2s;
 }
 
 .cancel-button {
-  padding: 0.75rem 1.5rem;
-  background-color: transparent;
-  border: 1px solid #9bcabf;
-  color: #9bcabf;
-  border-radius: 9999px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  background-color: #333;
+  color: #ccc;
 }
 
 .cancel-button:hover {
-  background-color: rgba(155, 202, 191, 0.1);
+  background-color: #444;
 }
 
 .save-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #8bd7b5;
-  border: 1px solid #a7ecd6;
-  color: #23332c;
-  border-radius: 9999px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.3s;
+  background-color: #f8c147;
+  color: #111;
+  font-weight: bold;
 }
 
 .save-button:hover {

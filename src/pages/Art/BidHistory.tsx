@@ -78,9 +78,6 @@ const BidHistory = () => {
 
   return (
     <div className="bid-history-container">
-      <div className="header">
-        <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div>
       
       <div className="bid-history-title">
         <h2>{artTitle}</h2>

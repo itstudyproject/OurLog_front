@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../styles/artworkSlider.css";
+import "../styles/ArtworkSlider.css";
 
 interface Artwork {
   imageUrl: string;
