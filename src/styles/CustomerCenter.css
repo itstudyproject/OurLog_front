@@ -182,12 +182,16 @@
   text-align: center;
   border-bottom: 1px solid #333;
   color: #ffffff;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .status-badge {
   padding: 4px 12px; /* 0.25rem 0.75rem -> 4px 12px */
   border-radius: 20px;
   font-size: 14px; /* 0.875rem -> 14px */
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .status-badge.waiting {
@@ -206,6 +210,9 @@
   display: flex;
   gap: 8px; /* 0.5rem -> 8px */
   justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 0;
 }
 
 .action-button {
@@ -341,7 +348,7 @@
   display: flex;
   justify-content: center;
   gap: 16px; /* 1rem -> 16px */
-  margin-top: 24px; /* 1.5rem -> 24px */
+  margin-top: 24px;
 }
 
 .modal-button {
@@ -379,7 +386,7 @@
 }
 
 .modal form .button {
-  margin-top: 24px; /* 1.5rem -> 24px */
+  margin-top: 24px;
 }
 
 #faq,
