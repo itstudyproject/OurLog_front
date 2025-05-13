@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
 import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
+import { useToken } from "../hooks/useToken";
 
 // 원본 FAQ 데이터
 const originalFaqs: Question[] = [
@@ -142,17 +143,83 @@ const CustomerCenter: React.FC = () => {
     setShowInquiryModal(true);
   };
 
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    console.log("token", token);
+
+    if (editingInquiry) {
+      // 수정
+      await fetch("http://localhost:8080/ourlog/question/editingInquiry", {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          questionId: editingInquiry.questionId,
+          title: inquiryForm.title,
+          content: inquiryForm.content,
+        }),
+      });
+    } else {
+      // 등록
+      await fetch("http://localhost:8080/ourlog/question/inquiry", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: inquiryForm.title,
+          content: inquiryForm.content,
+        }),
+      });
+    }
+
+    // 등록/수정 후 내 문의 목록 새로고침
+    fetchMyQuestions();
+    setInquiryForm({ title: "", content: "" });
+    setEditingInquiry(null);
+    setShowInquiryModal(false);
+  };
+  const fetchMyQuestions = async () => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    const res = await fetch(
+      "http://localhost:8080/ourlog/question/my-questions",
+      { headers }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      setInquiries(data); // 문의 목록 갱신
+    }
+  };
+
+  useEffect(() => {
+    fetchMyQuestions();
+  }, []);
+
   const handleDeleteInquiry = (questionId: number) => {
     setSelectedQuestionId(questionId);
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (selectedQuestionId) {
-      setInquiries(
-        inquiries.filter((q) => q.questionId !== selectedQuestionId)
-      );
+      const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
+      await fetch("http://localhost:8080/ourlog/question/deleteQuestion", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ questionId: selectedQuestionId }),
+      });
       setShowDeleteModal(false);
+      fetchMyQuestions(); // 삭제 후 목록 갱신
     }
   };
 
@@ -163,46 +230,6 @@ const CustomerCenter: React.FC = () => {
       }할 수 없습니다.`
     );
     setShowAlertModal(true);
-  };
-
-  const handleInquirySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (editingInquiry) {
-      // 수정 로직
-      setInquiries(
-        inquiries.map((q) =>
-          q.questionId === editingInquiry.questionId
-            ? {
-                ...q,
-                title: inquiryForm.title,
-                content: inquiryForm.content,
-                modDate: new Date().toISOString().split("T")[0],
-              }
-            : q
-        )
-      );
-    } else {
-      // 새 문의 작성 로직
-      const newInquiry: Question = {
-        questionId: Math.max(...inquiries.map((q) => q.questionId), 0) + 1,
-        title: inquiryForm.title,
-        content: inquiryForm.content,
-        regDate: new Date().toISOString().split("T")[0],
-        modDate: new Date().toISOString().split("T")[0],
-        userDTO: {
-          id: 2,
-          email: "user@example.com",
-          nickname: "사용자",
-        },
-        isOpen: false,
-      };
-      setInquiries([...inquiries, newInquiry]);
-    }
-
-    setInquiryForm({ title: "", content: "" });
-    setEditingInquiry(null);
-    setShowInquiryModal(false);
   };
 
   return (
