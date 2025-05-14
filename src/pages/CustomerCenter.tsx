@@ -1,103 +1,71 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
-// import { useToken } from "../hooks/useToken";
 
-// const InquiryHistory: React.FC<{ token: string }> = ({ token }) => {
-//   const [inquiries, setInquiries] = useState<Question[]>([]);
-
-//   useEffect(() => {
-//     console.log("Token:", token); // token 값 출력
-//     if (token) {
-//       fetch("http://localhost:8080/ourlog/question/list", {
-//         headers: { Authorization: `Bearer ${token}` },
-//       })
-//         .then((res) => res.json())
-//         .then(setInquiries)
-//         .catch(console.error);
-//     } else {
-//       console.error("❌ Token is undefined or null");
-//     }
-//   }, [token]);
-
-//   const handleEditInquiry = (inquiry: Question) => {
-//     // 수정 로직
-//   };
-
-//   const handleDeleteInquiry = (questionId: number) => {
-//     // 삭제 로직
-//   };
-
-//   const handleRestrictedAction = (type: "edit" | "delete") => {
-//     alert(
-//       `이미 답변이 완료되어 ${type === "edit" ? "수정" : "삭제"}할 수 없습니다.`
-//     );
-//   };
-
-//   return (
-//     <div>
-//       <h2 className="cc-section-title">1:1 문의내역</h2>
-//       <table className="table">
-//         <thead>
-//           <tr>
-//             <th className="th">번호</th>
-//             <th className="th">제목</th>
-//             <th className="th">작성일</th>
-//             <th className="th">상태</th>
-//             <th className="th">관리</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {inquiries.map((inquiry) => (
-//             <tr key={inquiry.questionId}>
-//               <td className="td">{inquiry.questionId}</td>
-//               <td className="td">{inquiry.title}</td>
-//               <td className="td">{inquiry.regDate}</td>
-//               <td className="td">
-//                 <span
-//                   className={`status-badge ${
-//                     inquiry.answerDTO ? "completed" : "waiting"
-//                   }`}
-//                 >
-//                   {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
-//                 </span>
-//               </td>
-//               <td className="td">
-//                 <div className="button-group">
-//                   <button
-//                     className="action-button"
-//                     // onClick={() =>
-//                     //   inquiry.answerDTO
-//                     //     ? handleRestrictedAction("edit")
-//                     //     : handleEditInquiry(inquiry)
-//                     // }
-//                   >
-//                     수정
-//                   </button>
-//                   <button
-//                     className="action-button delete"
-//                     onClick={() =>
-//                       inquiry.answerDTO
-//                         ? handleRestrictedAction("delete")
-//                         : handleDeleteInquiry(inquiry.questionId)
-//                     }
-//                   >
-//                     삭제
-//                   </button>
-//                 </div>
-//               </td>
-//             </tr>
-//           ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   );
-// };
+// 원본 FAQ 데이터
+const originalFaqs: Question[] = [
+  {
+    questionId: 1,
+    title: "로그인이 안 돼요.",
+    content:
+      "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 2,
+    title: "비밀번호를 잊어버렸어요.",
+    content:
+      "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 3,
+    title: "회원가입은 어떻게 하나요?",
+    content:
+      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 4,
+    title: "회원탈퇴는 어떻게 하나요?",
+    content:
+      "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+];
 
 const CustomerCenter: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
-    "faq" | "inquiry" | "history"
+    "faq" | "inquiry" | "questionlist"
   >("faq");
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -108,75 +76,145 @@ const CustomerCenter: React.FC = () => {
     null
   );
   const [editingInquiry, setEditingInquiry] = useState<Question | null>(null);
-  const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(
-    null
-  );
   const [inquiryForm, setInquiryForm] = useState<QuestionFormData>({
     title: "",
     content: "",
   });
 
-  // 원본 FAQ 데이터
-  const originalFaqs: Question[] = [
-    {
-      questionId: 1,
-      title: "로그인이 안 돼요.",
-      content:
-        "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 1,
-        email: "admin@example.com",
-        nickname: "관리자",
-      },
-      isOpen: false,
-    },
-    {
-      questionId: 2,
-      title: "비밀번호를 잊어버렸어요.",
-      content:
-        "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 1,
-        email: "admin@example.com",
-        nickname: "관리자",
-      },
-      isOpen: false,
-    },
-    {
-      questionId: 3,
-      title: "회원가입은 어떻게 하나요?",
-      content:
-        "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 1,
-        email: "admin@example.com",
-        nickname: "관리자",
-      },
-      isOpen: false,
-    },
-    {
-      questionId: 4,
-      title: "회원탈퇴는 어떻게 하나요?",
-      content:
-        "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 1,
-        email: "admin@example.com",
-        nickname: "관리자",
-      },
-      isOpen: false,
-    },
-  ];
+  const [selectedInquiry, setSelectedInquiry] = useState<Question | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
+
+  // 운영자(Admin) 답글 달기
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [answerContent, setAnswerContent] = useState<Record<number, string>>(
+    {}
+  );
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+
+  // 사용자 권한 확인 함수 추가
+  const checkAdminStatus = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/user/check-admin",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsAdmin(data.isAdmin); // true면 관리자, false면 일반유저
+      } else {
+        setIsAdmin(false); // 인증 실패시 일반유저로 처리(혹은 로그아웃 처리)
+      }
+    } catch (error) {
+      setIsAdmin(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 호출
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin === null) return; // 아직 확인 전이면 아무것도 안 함
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    if (isAdmin) {
+      console.log("token : ", token);
+      fetchAllQuestions();
+    } else {
+      console.log("token : ", token);
+      fetchMyQuestions();
+    }
+    console.log("isAdmin 값 변경됨:", isAdmin);
+  }, [isAdmin]);
+
+  // 관리자용 전체 질문 목록 가져오기
+  const fetchAllQuestions = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/question/questionList",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+      console.log("📥 응답 상태 코드:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📦 전체 질문 목록 응답 데이터:", data);
+        data.dtoList.forEach((q) => console.log(q));
+        setAllQuestions(data.dtoList);
+      } else {
+        console.error("전체 질문 목록 조회 실패:", response.status);
+      }
+    } catch (error) {
+      console.error("전체 질문 목록 조회 실패:", error);
+    }
+  };
+
+  const fetchMyQuestions = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/question/my-questions",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setInquiries(data);
+      } else if (response.status === 401) {
+        console.error("인증이 만료되었습니다.");
+        localStorage.removeItem("token"); // 토큰 제거
+        // 로그인 페이지로 리다이렉트 또는 다른 처리
+      } else {
+        console.error("문의 목록 조회 실패:", response.status);
+      }
+    } catch (error) {
+      console.error("문의 목록 조회 실패:", error);
+    }
+  };
 
   // 검색어에 따른 FAQ 필터링
   const filteredFaqs = searchTerm
@@ -187,39 +225,14 @@ const CustomerCenter: React.FC = () => {
       )
     : faqs;
 
-  const [inquiries, setInquiries] = useState<Question[]>([
-    {
-      questionId: 5,
-      title: "로그인 오류",
-      content: "로그인이 계속 안 되는데 어떻게 해야 하나요?",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 2,
-        email: "user@example.com",
-        nickname: "사용자",
-      },
-      answerDTO: {
-        answerId: 1,
-        contents:
-          "안녕하세요. 불편을 드려 죄송합니다. 로그인 시 발생하는 구체적인 오류 메시지와 함께 사용하시는 브라우저 정보를 알려주시면 확인 후 도움드리도록 하겠습니다.",
-        regDate: "2024-01-20",
-        modDate: "2024-01-20",
-      },
-      isOpen: false,
-    },
-  ]);
+  const [inquiries, setInquiries] = useState<Question[]>([]);
 
-  const faqRef = useRef<HTMLDivElement>(null);
-  const inquiryRef = useRef<HTMLDivElement>(null);
-  const historyRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSection = (section: "faq" | "inquiry" | "history") => {
+  const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
     setActiveSection(section);
     const sectionRefs = {
       faq: document.getElementById("faq"),
       inquiry: document.getElementById("inquiry"),
-      history: document.getElementById("history"),
+      questionlist: document.getElementById("questionlist"),
     };
     sectionRefs[section]?.scrollIntoView({ behavior: "smooth" });
   };
@@ -241,17 +254,93 @@ const CustomerCenter: React.FC = () => {
     setShowInquiryModal(true);
   };
 
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+    console.log("token", token);
+
+    if (editingInquiry) {
+      // 수정
+      await fetch("http://localhost:8080/ourlog/question/editingInquiry", {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          questionId: editingInquiry.questionId,
+          title: inquiryForm.title,
+          content: inquiryForm.content,
+        }),
+      });
+    } else {
+      // 등록
+      await fetch("http://localhost:8080/ourlog/question/inquiry", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          title: inquiryForm.title,
+          content: inquiryForm.content,
+        }),
+      });
+    }
+
+    // 등록/수정 후 내 문의 목록 새로고침
+    fetchMyQuestions();
+    setInquiryForm({ title: "", content: "" });
+    setEditingInquiry(null);
+    setShowInquiryModal(false);
+  };
+
   const handleDeleteInquiry = (questionId: number) => {
     setSelectedQuestionId(questionId);
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedQuestionId) {
-      setInquiries(
-        inquiries.filter((q) => q.questionId !== selectedQuestionId)
+  const handleDeleteConfirm = async () => {
+    if (!selectedQuestionId) return;
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    console.log("삭제 시도", selectedQuestionId);
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/ourlog/question/deleteQuestion/${selectedQuestionId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
       );
-      setShowDeleteModal(false);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("삭제 실패:", res.status, errorText);
+        setAlertMessage(`삭제 실패: ${res.status} ${errorText}`);
+      } else {
+        setShowDeleteModal(false);
+        fetchMyQuestions();
+      }
+    } catch (e) {
+      console.error("삭제 중 네트워크 에러:", e);
+      setAlertMessage("삭제 중 네트워크 에러 발생");
     }
   };
 
@@ -264,44 +353,47 @@ const CustomerCenter: React.FC = () => {
     setShowAlertModal(true);
   };
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (editingInquiry) {
-      // 수정 로직
-      setInquiries(
-        inquiries.map((q) =>
-          q.questionId === editingInquiry.questionId
-            ? {
-                ...q,
-                title: inquiryForm.title,
-                content: inquiryForm.content,
-                modDate: new Date().toISOString().split("T")[0],
-              }
-            : q
-        )
-      );
-    } else {
-      // 새 문의 작성 로직
-      const newInquiry: Question = {
-        questionId: Math.max(...inquiries.map((q) => q.questionId), 0) + 1,
-        title: inquiryForm.title,
-        content: inquiryForm.content,
-        regDate: new Date().toISOString().split("T")[0],
-        modDate: new Date().toISOString().split("T")[0],
-        userDTO: {
-          id: 2,
-          email: "user@example.com",
-          nickname: "사용자",
-        },
-        isOpen: false,
-      };
-      setInquiries([...inquiries, newInquiry]);
+  const handleAnswerSubmit = async (
+    questionId: number,
+    answerContent: string
+  ) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
     }
 
-    setInquiryForm({ title: "", content: "" });
-    setEditingInquiry(null);
-    setShowInquiryModal(false);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/question-answer/${questionId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            contents: answerContent,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert("답변이 등록되었습니다.");
+        setAnswerContent({
+          ...answerContent,
+          [questionId]: "",
+        });
+        fetchAllQuestions(); // 목록 새로고침
+      } else {
+        const errorText = await response.text();
+        alert("답변 등록 실패: " + errorText);
+      }
+    } catch (error) {
+      console.error("답변 등록 실패:", error);
+      alert("답변 등록 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -309,27 +401,40 @@ const CustomerCenter: React.FC = () => {
       <div className="cc-container">
         <nav className="cc-sidebar">
           <h2 className="cc-sidebar-title">고객센터</h2>
-          <div
-            className={`cc-nav-item ${activeSection === "faq" ? "active" : ""}`}
-            onClick={() => scrollToSection("faq")}
-          >
-            자주 묻는 질문
-          </div>
-          {!searchTerm && (
+          {isAdmin ? (
+            // 관리자일 때
+            <div
+              className={`cc-nav-item ${
+                activeSection === "questionlist" ? "active" : ""
+              }`}
+              onClick={() => setActiveSection("questionlist")}
+            >
+              전체 질문 목록
+            </div>
+          ) : (
+            // 일반 유저일 때
             <>
+              <div
+                className={`cc-nav-item ${
+                  activeSection === "faq" ? "active" : ""
+                }`}
+                onClick={() => setActiveSection("faq")}
+              >
+                자주 묻는 질문
+              </div>
               <div
                 className={`cc-nav-item ${
                   activeSection === "inquiry" ? "active" : ""
                 }`}
-                onClick={() => scrollToSection("inquiry")}
+                onClick={() => setActiveSection("inquiry")}
               >
                 1:1 문의하기
               </div>
               <div
                 className={`cc-nav-item ${
-                  activeSection === "history" ? "active" : ""
+                  activeSection === "questionlist" ? "active" : ""
                 }`}
-                onClick={() => scrollToSection("history")}
+                onClick={() => setActiveSection("questionlist")}
               >
                 1:1 문의내역
               </div>
@@ -338,53 +443,106 @@ const CustomerCenter: React.FC = () => {
         </nav>
 
         <div className="cc-content">
-          <section id="faq">
-            <h1 className="cc-styled-h1">
-              무엇이든 물어보세요
-              <br />
-              궁금하신 점 바로 풀어드립니다.
-            </h1>
-
-            <div className="cc-search-wrapper">
-              <input
-                type="text"
-                className="cc-search-input"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="cc-search-icon" />
-            </div>
-
-            <div className="cc-section-title">
-              {searchTerm
-                ? `"${searchTerm}"에 대한 검색 결과`
-                : "자주 묻는 질문"}
-            </div>
-
-            <div className="faq-list">
-              {filteredFaqs.map((faq) => (
-                <div className="faq-item" key={faq.questionId}>
+          {isAdmin ? (
+            <section id="questionlist">
+              <h2 className="cc-section-title">전체 질문 목록</h2>
+              {allQuestions.length === 0 ? (
+                <p className="no-results">등록된 질문이 없습니다.</p>
+              ) : (
+                allQuestions.map((question) => (
                   <div
-                    className="question-box"
-                    onClick={() => toggleQuestion(faq.questionId)}
-                    aria-expanded={faq.isOpen}
+                    key={question.questionId}
+                    className="admin-question-card"
                   >
-                    {faq.title}
+                    <h3 className="admin-question-title">{question.title}</h3>
+                    <p className="admin-question-content">{question.content}</p>
+                    <p className="admin-question-writer">
+                      작성자: {question.userDTO?.nickname || "익명"}
+                    </p>
+                    {question.answerDTO ? (
+                      <div className="answer-box">
+                        <strong className="answer-label">답변:</strong>
+                        <p className="answer-content">
+                          {question.answerDTO.contents}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="answer-form">
+                        <textarea
+                          value={answerContent[question.questionId] || ""}
+                          onChange={(e) =>
+                            setAnswerContent({
+                              ...answerContent,
+                              [question.questionId]: e.target.value,
+                            })
+                          }
+                          placeholder="답변을 입력하세요"
+                          className="admin-answer-textarea"
+                        />
+                        <button
+                          className="button"
+                          onClick={() =>
+                            handleAnswerSubmit(
+                              question.questionId,
+                              answerContent[question.questionId] || ""
+                            )
+                          }
+                        >
+                          답변 등록
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className={`answer ${faq.isOpen ? "open" : ""}`}>
-                    {faq.content}
-                  </div>
-                </div>
-              ))}
-              {filteredFaqs.length === 0 && searchTerm && (
-                <p className="no-results">검색 결과가 없습니다.</p>
+                ))
               )}
-            </div>
-          </section>
-
-          {!searchTerm && (
+            </section>
+          ) : (
             <>
+              <section id="faq">
+                <h1 className="cc-styled-h1">
+                  무엇이든 물어보세요
+                  <br />
+                  궁금하신 점 바로 풀어드립니다.
+                </h1>
+
+                <div className="cc-search-wrapper">
+                  <input
+                    type="text"
+                    className="cc-search-input"
+                    placeholder="검색어를 입력하세요"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <Search className="cc-search-icon" />
+                </div>
+
+                <div className="cc-section-title">
+                  {searchTerm
+                    ? `"${searchTerm}"에 대한 검색 결과`
+                    : "자주 묻는 질문"}
+                </div>
+
+                <div className="faq-list">
+                  {filteredFaqs.map((faq) => (
+                    <div className="faq-item" key={faq.questionId}>
+                      <div
+                        className="question-box"
+                        onClick={() => toggleQuestion(faq.questionId)}
+                        aria-expanded={faq.isOpen}
+                      >
+                        {faq.title}
+                      </div>
+                      <div className={`answer ${faq.isOpen ? "open" : ""}`}>
+                        {faq.content}
+                      </div>
+                    </div>
+                  ))}
+                  {filteredFaqs.length === 0 && searchTerm && (
+                    <p className="no-results">검색 결과가 없습니다.</p>
+                  )}
+                </div>
+              </section>
+
               <section id="inquiry">
                 <h2 className="cc-section-title">1:1 문의하기</h2>
                 <p className="info-text">
@@ -411,9 +569,8 @@ const CustomerCenter: React.FC = () => {
                 </button>
               </section>
 
-              <section id="history">
-                {/* <InquiryHistory token={useToken} /> */}
-                <h2 className="section-title">1:1 문의내역</h2>
+              <section id="questionlist">
+                <h2 className="cc-section-title">1:1 문의내역</h2>
                 <table className="table">
                   <thead>
                     <tr>
@@ -428,8 +585,23 @@ const CustomerCenter: React.FC = () => {
                     {inquiries.map((inquiry) => (
                       <tr key={inquiry.questionId}>
                         <td className="td">{inquiry.questionId}</td>
-                        <td className="td">{inquiry.title}</td>
-                        <td className="td">{inquiry.regDate}</td>
+                        <td
+                          className="td"
+                          onClick={() => {
+                            console.log("문의글 클릭:", inquiry);
+                            setSelectedInquiry(inquiry);
+                            setShowDetailModal(true);
+                          }}
+                          style={{
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          {inquiry.title}
+                        </td>
+                        <td className="td">
+                          {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
+                        </td>
                         <td className="td">
                           <span
                             className={`status-badge ${
@@ -571,8 +743,55 @@ const CustomerCenter: React.FC = () => {
           </div>
         </div>
       )}
+
+      {showDetailModal && selectedInquiry && (
+        <div className="overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>문의 상세</h3>
+              <button
+                className="close-button"
+                onClick={() => setShowDetailModal(false)}
+              >
+                <X />
+              </button>
+            </div>
+            <form>
+              <div className="form-group">
+                <label>제목</label>
+                <input type="text" value={selectedInquiry.title} readOnly />
+              </div>
+              <div className="form-group">
+                <label>내용</label>
+                <textarea value={selectedInquiry.content} readOnly />
+              </div>
+              <div className="form-group">
+                <label>작성일</label>
+                <input
+                  type="text"
+                  value={
+                    selectedInquiry.regDate
+                      ? selectedInquiry.regDate.split("T")[0]
+                      : ""
+                  }
+                  readOnly
+                />
+              </div>
+
+              {selectedInquiry.answerDTO && (
+                <div className="form-group">
+                  <label>답변</label>
+                  <textarea
+                    value={selectedInquiry.answerDTO.contents}
+                    readOnly
+                  />
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };
-
 export default CustomerCenter;
