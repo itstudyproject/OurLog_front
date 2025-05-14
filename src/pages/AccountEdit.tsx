@@ -1,5 +1,5 @@
 // src/pages/AccountEdit.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AccountEdit.css';
 
@@ -9,155 +9,74 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
-interface AccountEditProps {
-  onBack: () => void;
+// interface AccountEditProps {
+//   onBack: () => void;
+// }
+
+interface UserDTO {
+  id: number;
+  email: string;
 }
 
-
-const AccountEdit: React.FC = () => {
+const AccountEditPage: React.FC = () => {
   const navigate = useNavigate();
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('xoxo');
-  const [email] = useState('xoxo@example.com');
-  const [phone, setPhone] = useState('');
+  const stored = localStorage.getItem("user");
+  const userId = stored ? JSON.parse(stored).id : null;
+  const [email, setEmail] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [error, setError] = useState("");
 
-  // 비밀번호 변경
-  const handlePasswordChange = async () => {
-    if (newPassword !== confirmPassword) {
-      alert('새 비밀번호가 일치하지 않습니다.');
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`http://localhost:8080/user/get/${userId}`, { headers: authHeader() })
+      .then(res => res.json())
+      .then((data: UserDTO) => setEmail(data.email))
+      .catch(() => setError("사용자 정보를 불러올 수 없습니다."));
+  }, [userId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!currentPw || !newPw) {
+      setError("비밀번호를 모두 입력해주세요.");
       return;
     }
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/users/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
+      const res = await fetch(
+        `http://localhost:8080/user/edit/${userId}`,
+        {
+          method: "PUT",
+          headers: authHeader(),
+          body: JSON.stringify({ email, currentPassword: currentPw, newPassword: newPw })
+        }
+      );
       if (!res.ok) throw new Error();
-      alert('비밀번호가 변경되었습니다.');
-      navigate(-1); // 또는 원하는 경로로
+      navigate(-1);
     } catch {
-      alert('비밀번호 변경에 실패했습니다.');
-    }
-  };
-
-  // 연락처 변경
-  const handlePhoneUpdate = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/users/update-phone', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ phone })
-      });
-      if (!res.ok) throw new Error();
-      alert('연락처가 변경되었습니다.');
-      navigate(-1); // 또는 원하는 경로로
-    } catch {
-      alert('연락처 변경에 실패했습니다.');
+      setError("회원정보 수정에 실패했습니다.");
     }
   };
 
   return (
-    <div className="account-edit-container">
-      <div className="header-row">
+    <div className="account-edit">
+      <h2>회원정보 수정</h2>
+      {error && <div className="error">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <label>이메일</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
 
-        <h1 className="title">회원정보수정</h1>
-        {/* 뒤로가기 버튼을 살리고 싶으면 주석 해제하세요 */}
-        {/* <button onClick={() => navigate(-1)} className="back-button">
-          <ArrowLeftIcon /> 뒤로가기
-        </button> */}
-      </div>
+        <label>현재 비밀번호</label>
+        <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required />
 
-      <form className="form-grid" onSubmit={e => e.preventDefault()}>
-        {/* 비밀번호 변경 섹션 */}
-        <div className="form-group">
-          <label>현재 비밀번호</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={e => setCurrentPassword(e.target.value)}
-          />
+        <label>새 비밀번호</label>
+        <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} required />
 
-        </div>
-
-        <div className="form-group">
-          <label>새 비밀번호</label>
-
-          <input
-            type="password"
-            value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group full-width">
-          <label>새 비밀번호 확인</label>
-
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group full-width">
-          <button
-            type="button"
-            className="primary-button"
-            onClick={handlePasswordChange}
-          >
-            비밀번호 변경하기
-          </button>
-        </div>
-
-
-        {/* 프로필 정보 섹션 */}
-        <div className="form-group">
-          <label>이름</label>
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>이메일</label>
-          <input type="email" value={email} disabled />
-        </div>
-
-        <div className="form-group full-width">
-          <label>연락처</label>
-
-          <input
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group full-width">
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={handlePhoneUpdate}
-          >
-            연락처 변경하기
-          </button>
-        </div>
+        <button type="submit">저장</button>
       </form>
     </div>
   );
 };
 
-export default AccountEdit;
+export default AccountEditPage;

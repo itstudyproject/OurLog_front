@@ -1,6 +1,6 @@
 // src/pages/MyPage.tsx
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Routes, Route } from "react-router-dom";
 import ProfileEdit from "./ProfileEdit";
 import AccountEditPage from "./AccountEdit";
@@ -10,6 +10,8 @@ import BookmarkPage from "./BookmarkPage";
 import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import DeleteAccountPage from "./DeleteAccountPage";
 import "../styles/WorkerPage.css"; // 기존 스타일 그대로 재활용
+
+import { fetchProfile, updateProfile, UserProfileDTO } from "../services/profileApi";
 
 // ── 임시 데이터 ───────────────────────────────────────────────────
 const recentPosts = [
@@ -23,26 +25,43 @@ const recentPosts = [
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
 
+   // 1) localStorage에서 userId 읽기
+  const stored = localStorage.getItem("user");
+  const userId = stored ? JSON.parse(stored).id as number : null;
+
+  // 2) 프로필 상태
+  const [profile, setProfile] = useState<UserProfileDTO | null>(null);
+
+  // 마운트 시 프로필 불러오기
+  useEffect(() => {
+    if (!userId) return;
+    fetchProfile(userId)
+      .then(setProfile)
+      .catch((err) => console.error(err));
+  }, [userId]);
+
   return (
     <div className="worker-container">
-      {/* ── 프로필 헤더 ─────────────────────────────────────────── */}
+      {/* ── 프로필 헤더 ── */}
       <div className="worker-header">
         <img
-          src="/images/mypage/Mari.jpg"
+          src={profile?.imagePath || "/images/mypage/default.png"}
           alt="프로필"
           className="worker-profile-img"
         />
         <div className="worker-info">
           <div className="worker-meta-row">
-            <div className="worker-name">xoxo</div>
+            <div className="worker-name">
+              {profile?.nickname || "로딩 중..."}
+            </div>
             <div className="worker-stats">
               <div className="stat">
                 <span className="label">팔로워</span>
-                <span>30</span>
+                <span>{profile?.followerCount ?? 0}</span>
               </div>
               <div className="stat">
                 <span className="label">팔로잉</span>
-                <span>30</span>
+                <span>{profile?.followingCount ?? 0}</span>
               </div>
             </div>
           </div>
@@ -79,22 +98,33 @@ const MyPage: React.FC = () => {
         <Route
           index
           element={
-            <section className="worker-gallery">
-              <RecentPostsCarousel
-                posts={recentPosts.map((post) => ({
-                  id: post.id,
-                  title: post.title,
-                  price: Number(post.price.replace(/[^0-9]/g, "")),
-                  thumbnailUrl: post.image,
-                }))}
-              />
-            </section>
+            <RecentPostsCarousel
+              posts={recentPosts.map((p) => ({
+                id: p.id,
+                title: p.title,
+                price: Number(p.price.replace(/[^0-9]/g, "")),
+                thumbnailUrl: p.image,
+              }))}
+            />
           }
         />
 
         {/* 2) 프로필 수정 */}
-        <Route path="edit" element={<ProfileEdit onBack={() => navigate(-1)} />} />
-
+        <Route
+          path="edit"
+          element={
+            <ProfileEdit
+              profile={profile}
+              onBack={() => navigate(-1)}
+              onSave={async (updated) => {
+                if (!userId) return;
+                const saved = await updateProfile(userId, updated);
+                setProfile(saved);
+                navigate(-1);
+              }}
+            />
+          }
+        />
         {/* 3) 회원정보 수정 */}
         <Route
           path="account/edit"
