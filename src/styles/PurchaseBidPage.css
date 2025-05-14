@@ -1,38 +1,46 @@
-/* src/styles/PurchaseBidPage.css */
-
-.purchase-bid-page {
-  padding-top: 1rem; /* MyPage 네비 아래 여유 */
+.purchase-bid-page-container {
+  padding: 24px;
+  background-color: #f8f8f8;
+  min-height: 100vh;
 }
 
-
-/* 탭 컨테이너 */
-.sub-tab-nav {
+.purchase-bid-header {
   display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-/* 탭 */
-.sub-tab {
-  position: relative;
-  color: #fff;
-  font-size: 1.1rem;
+.title {
+  font-size: 28.8px;
+  font-weight: bold;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background-color: #ddd;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  padding-bottom: 0.25rem;
-  transition: color 0.2s;
-}
-.sub-tab:hover {
-  color: #ffb74d;
+  transition: background-color 0.2s ease;
 }
 
+.back-button:hover {
+  background-color: #ccc;
+}
 
-/* 활성 탭 밑줄 */
-.sub-tab.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 2px;
-  background: #ffb74d; /* 주황색 */
+.purchase-bid-content {
+  display: flex;
+  gap: 24px;
+}
+
+.purchase-section,
+.bid-section {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 19.2px;
+  font-weight: 600;
+  margin-bottom: 12px;
 }

@@ -125,6 +125,7 @@ const SearchPage = () => {
     <div className="container">
       <div className="section-title">
         <h2>"{query}"에 대한 검색 결과</h2>
+        <div className="line"></div>
       </div>
 
       {query.trim() === "" ? (
