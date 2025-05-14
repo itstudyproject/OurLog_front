@@ -1,0 +1,131 @@
+
+/* AccountEdit.css */
+
+/* 전체 레이아웃 */
+.account-edit-container {
+  min-height: 100vh;
+  background-color: #1a1a1a;    /* ProfileEdit & BidHistory 와 동일 */
+  color: #ccc;                  /* 기본 텍스트 색 */
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 800px;             /* ProfileEdit 와 동일하게 800px */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 영역 */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.header-row .title {
+  font-size: 24px;              /* BidHistory h2와 동일 */
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+/* 뒤로 가기 버튼 (필요하다면) */
+.back-button {
+  background: none;
+  border: none;
+  color: #f8c147;               /* 강조색으로 통일 */
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.back-button:hover {
+  text-decoration: underline;
+}
+
+
+/* 폼 그리드 */
+.form-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* 각 폼 그룹 */
+.form-group {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+/* 입력창 */
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #ccc;
+  background-color: #232323;
+  border: 1px solid #333;
+  border-radius: 8px;           /* 통일된 모서리 반경 */
+  transition: border-color .2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #f8c147;        /* 강조 포커스 색 */
+}
+
+/* 버튼들 */
+.primary-button,
+.secondary-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;           /* 통일된 모서리 반경 */
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background-color .2s, opacity .2s;
+}
+
+.primary-button {
+  background-color: #f8c147;    /* 강조색 */
+  color: #111;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
+}
+
+.secondary-button {
+  background-color: #333;
+  color: #ccc;
+}
+
+.secondary-button:hover {
+  background-color: #444;
+}
+
+/* 안내 메시지 */
+.message {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #999;
+}

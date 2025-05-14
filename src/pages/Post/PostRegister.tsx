@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useNavigate } from "react-router-dom";
 import "../../styles/PostRegiModi.css";
 
 interface ImageFile {
@@ -12,25 +11,23 @@ interface ImageFile {
 interface FormData {
   title: string;
   content: string;
-  images: ImageFile[];
-  thumbnailId: string | null;
+  thumbnail: File | null;
+  categoryType: "그림 게시판" | "글 게시판";
   category: string;
 }
 
 const PostRegister = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
     content: "",
-    images: [],
-    thumbnailId: null,
-    category: initialCategory,
+    thumbnail: null,
+    categoryType: "글 게시판",
+    category: "자유게시판",
   });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
@@ -48,6 +45,14 @@ const PostRegister = () => {
     if (name === "content") {
       setCharacterCount(value.length);
     }
+  };
+
+  const handleCategoryTypeChange = (type: "그림 게시판" | "글 게시판") => {
+    setFormData((prev) => ({
+      ...prev,
+      categoryType: type,
+      category: type === "그림 게시판" ? "그림" : "자유게시판",
+    }));
   };
 
   const handleCategoryChange = (category: string) => {
@@ -71,13 +76,13 @@ const PostRegister = () => {
   const uploadImage = async (file: File) => {
     const fd = new FormData();
     fd.append("files", file);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
       method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : ''
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: fd
+      body: fd,
     });
     if (!res.ok) throw new Error("이미지 업로드 실패");
     const data = await res.json();
@@ -186,7 +191,7 @@ const PostRegister = () => {
       content: newContent,
     }));
   };
-  
+
   const getBoardNo = (category: string): number => {
     switch (category) {
       case "새소식":
@@ -243,19 +248,23 @@ const PostRegister = () => {
         fileName: formData.thumbnailId,
         images: formData.images.map((img) => img.id),
         userDTO: {
-          "userId": 5,
-          "nickname": "테스트유저"
+          userId: 5,
+          nickname: "테스트유저",
         },
         tags,
       };
 
-      const response = await fetch("http://localhost:8080/ourlog/post/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-         },
-        body: JSON.stringify(postDTO),
-      });
+      const response = await fetch(
+        "http://localhost:8080/ourlog/post/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(postDTO),
+        }
+      );
 
       if (!response.ok) throw new Error("게시물 등록에 실패했습니다.");
       alert("게시물이 성공적으로 등록되었습니다.");
@@ -268,7 +277,11 @@ const PostRegister = () => {
   };
 
   const handleCancel = () => {
-    if (window.confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
+    if (
+      window.confirm(
+        "작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
+      )
+    ) {
       navigate("/post");
     }
   };
@@ -282,15 +295,32 @@ const PostRegister = () => {
     <div className="post-register-wrapper">
       <div className="post-register-container">
         <div className="category-select">
-          <label>카테고리:</label>
+          <label>게시판:</label>
           <select
-            value={formData.category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
+            value={formData.categoryType}
+            onChange={(e) =>
+              handleCategoryTypeChange(
+                e.target.value as "그림 게시판" | "글 게시판"
+              )
+            }
           >
-            <option value="자유게시판">자유게시판</option>
-            <option value="요청게시판">요청게시판</option>
-            <option value="홍보게시판">홍보게시판</option>
+            <option value="그림 게시판">그림 게시판</option>
+            <option value="글 게시판">글 게시판</option>
           </select>
+
+          {formData.categoryType === "글 게시판" && (
+            <>
+              <label>카테고리:</label>
+              <select
+                value={formData.category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                <option value="자유게시판">자유게시판</option>
+                <option value="요청게시판">요청게시판</option>
+                <option value="홍보게시판">홍보게시판</option>
+              </select>
+            </>
+          )}
         </div>
       </div>
 
@@ -318,7 +348,6 @@ const PostRegister = () => {
               style={{ display: "none" }}
               onChange={handleFileChange}
               accept="image/*"
-              multiple
             />
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="images" direction="horizontal">
@@ -485,7 +514,7 @@ const PostRegister = () => {
           임시저장
         </button>
         <button onClick={handleSubmit} disabled={isSubmitting}>
-          등록하기
+          등록
         </button>
       </div>
     </div>

@@ -31,7 +31,7 @@ const LoginPage: React.FC = () => {
     }
 
     setToken(userData.token);
-    
+
     localStorage.setItem(
       "user",
       JSON.stringify({
@@ -54,17 +54,19 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+        `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(
+          email
+        )}&password=${encodeURIComponent(password)}`,
         {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
       const token = await response.text();
-      
+
       if (token.startsWith('{"code"')) {
         setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
         return;
@@ -74,7 +76,7 @@ const LoginPage: React.FC = () => {
         email,
         token: token.trim(),
       };
-      
+
       handleLoginSuccess(userData, autoLogin);
     } catch (err) {
       console.error("로그인 오류:", err);
