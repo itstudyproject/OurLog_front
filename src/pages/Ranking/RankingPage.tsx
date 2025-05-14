@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RankingPage.css";
 
-// ✅ Artwork 타입 선언
 type Artwork = {
   id: number;
   title: string;
@@ -14,191 +13,7 @@ type Artwork = {
   downloads: number;
 };
 
-// ✅ rankingType 키를 타입으로 명시
 type RankingKey = "views" | "followers" | "downloads";
-
-const artworks: Artwork[] = [
-  {
-    id: 1,
-    title: "푸른 들판의 산책",
-    author: "XII",
-    imageSrc: "/images/post1.jpg",
-    avatar: "/images/avatar1.jpg",
-    views: 1200,
-    followers: 320,
-    downloads: 150,
-  },
-  {
-    id: 2,
-    title: "구름 위 고양이",
-    author: "XOXO",
-    imageSrc: "/images/post4.jpg",
-    avatar: "/images/avatar2.jpg",
-    views: 980,
-    followers: 410,
-    downloads: 210,
-  },
-  {
-    id: 3,
-    title: "푸른 들판의 산책",
-    author: "XII",
-    imageSrc: "/images/post1.jpg",
-    avatar: "/images/avatar1.jpg",
-    views: 870,
-    followers: 290,
-    downloads: 180,
-  },
-  {
-    id: 4,
-    title: "디지털 도시 풍경",
-    author: "디자인시티",
-    imageSrc: "/images/post5.jpg",
-    avatar: "/images/avatar3.jpg",
-    views: 760,
-    followers: 380,
-    downloads: 190,
-  },
-  {
-    id: 5,
-    title: "우주 고래",
-    author: "크리에이터K",
-    imageSrc: "/images/post8.jpg",
-    avatar: "/images/avatar4.jpg",
-    views: 650,
-    followers: 350,
-    downloads: 170,
-  },
-  {
-    id: 6,
-    title: "몽환적 숲",
-    author: "판타지작가",
-    imageSrc: "/images/post10.jpg",
-    avatar: "/images/avatar5.jpg",
-    views: 540,
-    followers: 320,
-    downloads: 150,
-  },
-  {
-    id: 7,
-    title: "미래 도시",
-    author: "사이버펑크",
-    imageSrc: "/images/post12.jpg",
-    avatar: "/images/avatar6.jpg",
-    views: 430,
-    followers: 290,
-    downloads: 130,
-  },
-  {
-    id: 8,
-    title: "뚱글뚱글 파스타",
-    author: "미니맘",
-    imageSrc: "/images/post15.jpg",
-    avatar: "/images/avatar7.jpg",
-    views: 320,
-    followers: 260,
-    downloads: 110,
-  },
-  {
-    id: 9,
-    title: "구름 속 고래",
-    author: "하늘고래",
-    imageSrc: "/images/post16.jpg",
-    avatar: "/images/avatar8.jpg",
-    views: 210,
-    followers: 230,
-    downloads: 90,
-  },
-  {
-    id: 10,
-    title: "풍경 스케치",
-    author: "스케치마스터",
-    imageSrc: "/images/post1.jpg",
-    avatar: "/images/avatar9.jpg",
-    views: 100,
-    followers: 200,
-    downloads: 70,
-  },
-  {
-    id: 11,
-    title: "고요한 바다",
-    author: "블루오션",
-    imageSrc: "/images/post2.jpg",
-    avatar: "/images/avatar10.jpg",
-    views: 50,
-    followers: 180,
-    downloads: 50,
-  },
-  {
-    id: 12,
-    title: "가을 단풍길",
-    author: "계절화가",
-    imageSrc: "/images/post3.jpg",
-    avatar: "/images/avatar11.jpg",
-    views: 30,
-    followers: 160,
-    downloads: 30,
-  },
-  {
-    id: 13,
-    title: "도시의 밤",
-    author: "나이트라이프",
-    imageSrc: "/images/post4.jpg",
-    avatar: "/images/avatar12.jpg",
-    views: 20,
-    followers: 140,
-    downloads: 20,
-  },
-  {
-    id: 14,
-    title: "꿈속의 세계",
-    author: "드림웍스",
-    imageSrc: "/images/post5.jpg",
-    avatar: "/images/avatar13.jpg",
-    views: 10,
-    followers: 120,
-    downloads: 10,
-  },
-  {
-    id: 15,
-    title: "봄의 향기",
-    author: "꽃그림작가",
-    imageSrc: "/images/post8.jpg",
-    avatar: "/images/avatar14.jpg",
-    views: 5,
-    followers: 100,
-    downloads: 5,
-  },
-  {
-    id: 16,
-    title: "디지털 추상",
-    author: "추상주의",
-    imageSrc: "/images/post10.jpg",
-    avatar: "/images/avatar15.jpg",
-    views: 3,
-    followers: 80,
-    downloads: 3,
-  },
-  {
-    id: 17,
-    title: "정물화 시리즈",
-    author: "정물화가",
-    imageSrc: "/images/post12.jpg",
-    avatar: "/images/avatar16.jpg",
-    views: 2,
-    followers: 60,
-    downloads: 2,
-  },
-  {
-    id: 18,
-    title: "파스텔 드림",
-    author: "드리머",
-    imageSrc: "/images/post15.jpg",
-    avatar: "/images/avatar17.jpg",
-    views: 1,
-    followers: 40,
-    downloads: 1,
-  },
-];
 
 const badgeColors = [
   { bg: "#f8c147", color: "#222" },
@@ -213,18 +28,70 @@ const rankingTypes = [
   { key: "downloads", label: "다운로드" },
 ];
 
-const RankingPage = () => {
+const API_URL = "http://localhost:8080/ourlog/ranking";
+
+const RankingPage: React.FC = () => {
   const navigate = useNavigate();
   const [rankingType, setRankingType] = useState<RankingKey>("views");
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [visibleCount, setVisibleCount] = useState(12);
   const loader = useRef(null);
 
-  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
-    const target = entries[0];
-    if (target.isIntersecting) {
-      setVisibleCount((prev) => Math.min(prev + 6, artworks.length));
+  const fetchRankings = useCallback(async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}?type=${rankingType}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const contentType = res.headers.get("Content-Type") || "";
+      const raw = await res.text();
+
+      if (!res.ok || !contentType.includes("application/json")) {
+        console.error("🚨 JSON 응답이 아님:", res.status, raw);
+        return;
+      }
+
+      const data = JSON.parse(raw);
+      const mapped: Artwork[] = data.map((item: any) => {
+        const hasUser =
+          item.userProfileDTO && item.userProfileDTO.user.nickname;
+        return {
+          id: item.postId,
+          title: item.title,
+          author: hasUser ? item.userProfileDTO.user.nickname : "unknown",
+          avatar:
+            hasUser && item.userProfileDTO.profileImage
+              ? `/avatar/${item.userProfileDTO.thumbnailImagePath}` // ✅ 경로 수정
+              : "/images/default-avatar.png",
+          imageSrc: `/image/${item.fileName}`, // ✅ 경로 수정
+          views: item.views,
+          followers: item.followers,
+          downloads: item.downloads,
+        };
+      });
+
+      setArtworks(mapped);
+    } catch (error) {
+      console.error("🥶 랭킹 데이터 요청 실패:", error);
     }
-  }, []);
+  }, [rankingType]);
+
+  useEffect(() => {
+    fetchRankings();
+  }, [fetchRankings]);
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        setVisibleCount((prev) => Math.min(prev + 6, artworks.length));
+      }
+    },
+    [artworks.length]
+  );
 
   useEffect(() => {
     const option = { root: null, rootMargin: "20px", threshold: 1.0 };
@@ -233,12 +100,8 @@ const RankingPage = () => {
     return () => observer.disconnect();
   }, [handleObserver]);
 
-  const sortedArtworks = [...artworks].sort(
-    (a, b) => b[rankingType] - a[rankingType]
-  );
-
-  const podium = sortedArtworks.slice(0, 3);
-  const rest = sortedArtworks.slice(3, visibleCount);
+  const podium = artworks.slice(0, 3);
+  const rest = artworks.slice(3, visibleCount);
 
   return (
     <div className="art-list-container">
@@ -260,59 +123,64 @@ const RankingPage = () => {
         ))}
       </div>
 
+      {/* 🥇 Top 3 */}
       <div className="ranking-podium-row">
-        {podiumOrder.map((idx) => (
-          <div
-            key={idx}
-            className={`ranking-podium-card ${
-              idx === 0 ? "first" : idx === 1 ? "second" : "third"
-            }`}
-          >
+        {podiumOrder.map((idx) =>
+          podium[idx] ? (
             <div
-              className="ranking-podium-image-card"
-              onClick={() => navigate(`/Art/${podium[idx].id}`)}
-              style={{ cursor: "pointer" }}
+              key={idx}
+              className={`ranking-podium-card ${
+                idx === 0 ? "first" : idx === 1 ? "second" : "third"
+              }`}
             >
               <div
-                className="ranking-badge"
-                style={{
-                  background: badgeColors[idx].bg,
-                  color: badgeColors[idx].color,
-                }}
+                className="ranking-podium-image-card"
+                onClick={() => navigate(`/Art/${podium[idx].id}`)}
               >
-                {idx + 1}
-              </div>
-              <img
-                src={podium[idx].imageSrc}
-                alt={podium[idx].title}
-                className="podium-image"
-              />
-              <div
-                className="ranking-author-info large"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/profile/${podium[idx].author}`);
-                }}
-              >
+                <div
+                  className="ranking-badge"
+                  style={{
+                    background: badgeColors[idx].bg,
+                    color: badgeColors[idx].color,
+                  }}
+                >
+                  {idx + 1}
+                </div>
                 <img
-                  src={podium[idx].avatar}
-                  alt={podium[idx].author}
-                  className="ranking-author-avatar large"
+                  src={podium[idx].imageSrc}
+                  alt={podium[idx].title}
+                  className="podium-image"
                 />
-                <span className="ranking-list-author">
-                  {podium[idx].author}
-                </span>
-                <span className="ranking-list-meta">
-                  {rankingType === "views" && `👁️ ${podium[idx].views}`}
-                  {rankingType === "followers" && `👥 ${podium[idx].followers}`}
-                  {rankingType === "downloads" && `⬇️ ${podium[idx].downloads}`}
-                </span>
+                <div
+                  className="ranking-author-info large"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/profile/${podium[idx].author}`);
+                  }}
+                >
+                  <img
+                    src={podium[idx].avatar}
+                    alt={podium[idx].author}
+                    className="ranking-author-avatar large"
+                  />
+                  <span className="ranking-list-author">
+                    {podium[idx].author}
+                  </span>
+                  <span className="ranking-list-meta">
+                    {rankingType === "views" && `👁️ ${podium[idx].views}`}
+                    {rankingType === "followers" &&
+                      `👥 ${podium[idx].followers}`}
+                    {rankingType === "downloads" &&
+                      `⬇️ ${podium[idx].downloads}`}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ) : null
+        )}
       </div>
 
+      {/* 🔢 나머지 리스트 */}
       <div className="ranking-list-row">
         {rest.map((art, idx) => (
           <div key={art.id} className="ranking-list-card">
@@ -324,10 +192,7 @@ const RankingPage = () => {
             />
             <div
               className="ranking-author-info small"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/profile/${art.author}`);
-              }}
+              onClick={() => navigate(`/profile/${art.author}`)}
             >
               <img
                 src={art.avatar}

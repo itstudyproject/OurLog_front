@@ -35,8 +35,7 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleOpenChat = () => {
-    // 새 탭 또는 새 창에서 ChatPage 열기
-    window.open("/chat", "_blank", "noopener,noreferrer");
+    navigate("/chat", { state: { fromWorkerPage: true } });
   };
 
   const handleCardClick = (id: number) => {
@@ -47,7 +46,7 @@ const WorkerPage: React.FC = () => {
     <div className="worker-container">
       <div className="worker-header">
         <img
-          src="/images/min.jpg"
+          src="/path/to/your/image.png"
           alt="프로필 이미지"
           className="worker-profile-img"
         />
