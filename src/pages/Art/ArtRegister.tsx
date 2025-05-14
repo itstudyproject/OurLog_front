@@ -113,24 +113,24 @@ const ArtRegister = () => {
   };
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && newTag.trim()) {
+    if (e.key === 'Enter' && newTag.trim()) {
       e.preventDefault();
       if (form.tags.includes(newTag.trim())) {
-        alert("이미 존재하는 태그입니다.");
+        alert('이미 존재하는 태그입니다.');
         return;
       }
-      setForm((prev) => ({
+      setForm(prev => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()],
+        tags: [...prev.tags, newTag.trim()]
       }));
-      setNewTag("");
+      setNewTag('');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
   };
 
@@ -279,8 +279,8 @@ const ArtRegister = () => {
                     {form.tags.map((tag, index) => (
                       <span key={index} className="tag">
                         #{tag}
-                        <button
-                          onClick={() => handleRemoveTag(tag)}
+                        <button 
+                          onClick={() => handleRemoveTag(tag)} 
                           className="remove-tag"
                           title="태그 삭제"
                         >
@@ -304,14 +304,14 @@ const ArtRegister = () => {
                     onClick={() => {
                       if (newTag.trim()) {
                         if (form.tags.includes(newTag.trim())) {
-                          alert("이미 존재하는 태그입니다.");
+                          alert('이미 존재하는 태그입니다.');
                           return;
                         }
-                        setForm((prev) => ({
+                        setForm(prev => ({
                           ...prev,
-                          tags: [...prev.tags, newTag.trim()],
+                          tags: [...prev.tags, newTag.trim()]
                         }));
-                        setNewTag("");
+                        setNewTag('');
                       }
                     }}
                     className="tag-add-button"

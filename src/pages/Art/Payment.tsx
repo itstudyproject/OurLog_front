@@ -61,9 +61,9 @@ const ArtPayment = () => {
 
   return (
     <div className="payment-container">
-      {/* <div className="header">
+      <div className="header">
         <h1 style={{ fontFamily: "'Kolker Brush', cursive" }}>OurLog</h1>
-      </div> */}
+      </div>
       
       <div className="payment-title">
         <h2>주문 / 결제</h2>
