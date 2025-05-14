@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
+import { setToken } from "../utils/auth";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -29,12 +30,13 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("autoLoginUser", JSON.stringify(userData));
     }
 
-    localStorage.setItem("token", userData.token);
+    setToken(userData.token);
+
     localStorage.setItem(
       "user",
       JSON.stringify({
         email: userData.email,
-        profileImage: "/images/profile.png", // 실제 API 응답에서 받아오면 수정 가능
+        profileImage: "/images/default-profile.png",
       })
     );
     window.dispatchEvent(new Event("login"));
@@ -51,32 +53,34 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      new Promise((resolve, reject) => {
-        fetch(
-          "http://localhost:8080/ourlog/auth/login?email=" +
-            email +
-            "&password=" +
-            password,
-          {
-            method: "POST",
-          }
-        )
-          .then((res) => res.text())
-          .then((token) => {
-            if (token.startsWith('{"code"')) {
-              navigate("/login");
-            } else {
-              const userData = {
-                email,
-                token,
-              };
-              handleLoginSuccess(userData, autoLogin);
-            }
-          })
-          .catch((err) => console.log("Error:", err));
-      });
+      const response = await fetch(
+        `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(
+          email
+        )}&password=${encodeURIComponent(password)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const token = await response.text();
+
+      if (token.startsWith('{"code"')) {
+        setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
+        return;
+      }
+
+      const userData = {
+        email,
+        token: token.trim(),
+      };
+
+      handleLoginSuccess(userData, autoLogin);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
+      console.error("로그인 오류:", err);
+      setError("로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
 
