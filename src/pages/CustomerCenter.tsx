@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
 import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
-import { useToken } from "../hooks/useToken";
 
 // 원본 FAQ 데이터
 const originalFaqs: Question[] = [
@@ -81,6 +80,9 @@ const CustomerCenter: React.FC = () => {
     title: "",
     content: "",
   });
+
+  const [selectedInquiry, setSelectedInquiry] = useState<Question | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
 
@@ -207,19 +209,41 @@ const CustomerCenter: React.FC = () => {
   };
 
   const handleDeleteConfirm = async () => {
-    if (selectedQuestionId) {
-      const token = localStorage.getItem("token");
-      const headers = {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      };
-      await fetch("http://localhost:8080/ourlog/question/deleteQuestion", {
-        method: "DELETE",
-        headers,
-        body: JSON.stringify({ questionId: selectedQuestionId }),
-      });
-      setShowDeleteModal(false);
-      fetchMyQuestions(); // 삭제 후 목록 갱신
+    if (!selectedQuestionId) return;
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    console.log("삭제 시도", selectedQuestionId);
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/ourlog/question/deleteQuestion/${selectedQuestionId}`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("삭제 실패:", res.status, errorText);
+        alert(`삭제 실패: ${res.status} ${errorText}`);
+      } else {
+        setShowDeleteModal(false);
+        fetchMyQuestions();
+      }
+    } catch (e) {
+      console.error("삭제 중 네트워크 에러:", e);
+      alert("삭제 중 네트워크 에러 발생");
     }
   };
 
@@ -340,8 +364,7 @@ const CustomerCenter: React.FC = () => {
               </section>
 
               <section id="questionlist">
-                {/* <InquiryQuestionlist token={useToken} /> */}
-                <h2 className="section-title">1:1 문의내역</h2>
+                <h2 className="cc-section-title">1:1 문의내역</h2>
                 <table className="table">
                   <thead>
                     <tr>
@@ -356,8 +379,23 @@ const CustomerCenter: React.FC = () => {
                     {inquiries.map((inquiry) => (
                       <tr key={inquiry.questionId}>
                         <td className="td">{inquiry.questionId}</td>
-                        <td className="td">{inquiry.title}</td>
-                        <td className="td">{inquiry.regDate}</td>
+                        <td
+                          className="td"
+                          onClick={() => {
+                            console.log("문의글 클릭:", inquiry);
+                            setSelectedInquiry(inquiry);
+                            setShowDetailModal(true);
+                          }}
+                          style={{
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          {inquiry.title}
+                        </td>
+                        <td className="td">
+                          {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
+                        </td>
                         <td className="td">
                           <span
                             className={`status-badge ${
@@ -496,6 +534,53 @@ const CustomerCenter: React.FC = () => {
                 확인
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showDetailModal && selectedInquiry && (
+        <div className="overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>문의 상세</h3>
+              <button
+                className="close-button"
+                onClick={() => setShowDetailModal(false)}
+              >
+                <X />
+              </button>
+            </div>
+            <form>
+              <div className="form-group">
+                <label>제목</label>
+                <input type="text" value={selectedInquiry.title} readOnly />
+              </div>
+              <div className="form-group">
+                <label>내용</label>
+                <textarea value={selectedInquiry.content} readOnly />
+              </div>
+              <div className="form-group">
+                <label>작성일</label>
+                <input
+                  type="text"
+                  value={
+                    selectedInquiry.regDate
+                      ? selectedInquiry.regDate.split("T")[0]
+                      : ""
+                  }
+                  readOnly
+                />
+              </div>
+              {selectedInquiry.answerDTO && (
+                <div className="form-group">
+                  <label>답변</label>
+                  <textarea
+                    value={selectedInquiry.answerDTO.contents}
+                    readOnly
+                  />
+                </div>
+              )}
+            </form>
           </div>
         </div>
       )}
