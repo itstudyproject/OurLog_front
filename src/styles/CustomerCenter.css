@@ -389,6 +389,22 @@
   margin-top: 24px;
 }
 
+.admin-question-card {
+  background: #181818;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.answer-box {
+  background: #222;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
 #faq,
 #inquiry,
 #history {
