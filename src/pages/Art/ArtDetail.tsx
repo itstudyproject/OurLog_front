@@ -164,6 +164,10 @@ const ArtDetail = () => {
     }
   };
 
+  const handleArtistClick = () => {
+    navigate(`/worker/${post?.author}`);  // 작가의 페이지로 이동
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -202,10 +206,10 @@ const ArtDetail = () => {
 
         <div className="art-info-container">
           <div className="artist-info">
-            <div className="artist-avatar">
+            <div className="artist-avatar" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
               <img src={post.artistProfileImg} alt={`${post.author} 프로필`} />
             </div>
-            <div className="artist-detail">
+            <div className="artist-detail" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
               <h3>{post.author}</h3>
               <p>일러스트레이터</p>
             </div>

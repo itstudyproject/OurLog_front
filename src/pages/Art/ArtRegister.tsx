@@ -21,6 +21,7 @@ interface ArtworkForm {
   endTime: Date;
   images: ImageFile[];
   thumbnailId: string | null;
+  tags: string[];
 }
 
 const ArtRegister = () => {
@@ -34,7 +35,10 @@ const ArtRegister = () => {
     endTime: new Date(),
     images: [],
     thumbnailId: null,
+    tags: [],
   });
+
+  const [newTag, setNewTag] = useState<string>("");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -105,6 +109,28 @@ const ArtRegister = () => {
     setForm((prev) => ({
       ...prev,
       [name]: formatPrice(value),
+    }));
+  };
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && newTag.trim()) {
+      e.preventDefault();
+      if (form.tags.includes(newTag.trim())) {
+        alert('이미 존재하는 태그입니다.');
+        return;
+      }
+      setForm(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()]
+      }));
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setForm(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
     }));
   };
 
@@ -241,9 +267,61 @@ const ArtRegister = () => {
             )}
           </div>
           {form.images.length > 0 && (
-            <p className="image-help-text">
-              * 이미지를 클릭하여 썸네일로 설정할 수 있습니다.
-            </p>
+            <>
+              <p className="image-help-text">
+                * 이미지를 클릭하여 썸네일로 설정할 수 있습니다.
+              </p>
+
+              {/* 태그 입력 섹션 수정 */}
+              <div className="tags-section">
+                {form.tags.length > 0 && (
+                  <div className="tags-container">
+                    {form.tags.map((tag, index) => (
+                      <span key={index} className="tag">
+                        #{tag}
+                        <button 
+                          onClick={() => handleRemoveTag(tag)} 
+                          className="remove-tag"
+                          title="태그 삭제"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="tags-input-container">
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={handleAddTag}
+                    placeholder="태그 입력 후 Enter"
+                    className="tag-input"
+                    maxLength={20}
+                  />
+                  <button
+                    onClick={() => {
+                      if (newTag.trim()) {
+                        if (form.tags.includes(newTag.trim())) {
+                          alert('이미 존재하는 태그입니다.');
+                          return;
+                        }
+                        setForm(prev => ({
+                          ...prev,
+                          tags: [...prev.tags, newTag.trim()]
+                        }));
+                        setNewTag('');
+                      }
+                    }}
+                    className="tag-add-button"
+                    type="button"
+                  >
+                    추가
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import "../../styles/PostList.css";
 
 interface Post {
@@ -34,9 +35,7 @@ const PostList = () => {
   const postsPerPage = 10;
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log("현재 저장된 토큰:", token ? "토큰 존재" : "토큰 없음");
-    if (!token) {
+    if (!hasToken()) {
       console.warn("토큰이 없습니다. 로그인이 필요할 수 있습니다.");
     }
   }, []);
@@ -56,28 +55,19 @@ const PostList = () => {
       size: String(postsPerPage),
       boardNo: String(selectedBoardId),
       type: "t",
-      keyword: searchTerm,
-      userId: localStorage.getItem('userId') || '1'
+      keyword: searchTerm
     });
-
-    const token = localStorage.getItem('token');
-    console.log("API 요청 정보:", {
-      url: `http://localhost:8080/ourlog/post/list?${params.toString()}`,
-      pageNumber: pageNumber,
-      boardNo: selectedBoardId,
-      userId: localStorage.getItem('userId'),
-      token: token ? "존재" : "없음"
-    });
-
+    
     fetch(`http://localhost:8080/ourlog/post/list?${params.toString()}`, {
       method: 'GET',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Content-Type': 'application/json',
-      }
+      headers: getAuthHeaders()
     })
     .then(async (res) => {
-      console.log("서버 응답 상태:", res.status);
+      if (res.status === 403) {
+        removeToken();
+        navigate('/login');
+        throw new Error("인증이 필요합니다.");
+      }
       if (!res.ok) {
         const text = await res.text();
         console.error("서버 에러 응답:", text);
@@ -86,7 +76,6 @@ const PostList = () => {
       return res.json();
     })
     .then((data) => {
-      console.log("서버 응답 데이터:", data);
       if (!data.pageResultDTO) {
         throw new Error("잘못된 응답 형식");
       }

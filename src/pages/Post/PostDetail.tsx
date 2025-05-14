@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
 import "../../styles/PostDetail.css";
 
 interface Comment {
@@ -47,12 +48,8 @@ const PostDetail = () => {
       setLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -76,16 +73,11 @@ const PostDetail = () => {
     }
   };
 
-  // 조회수 증가를 위한 별도의 API 호출
   const increaseViewCount = async () => {
     try {
-      const token = localStorage.getItem('token');
       await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
         method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        }
+        headers: getAuthHeaders()
       });
     } catch (error) {
       console.error("조회수 증가 실패:", error);
@@ -109,13 +101,9 @@ const PostDetail = () => {
     if (!commentContent.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/reply/${id}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           content: commentContent,
           postDTO: {
@@ -133,7 +121,7 @@ const PostDetail = () => {
       }
 
       setCommentContent("");
-      fetchPost(); // 게시글을 다시 불러와 댓글 목록 갱신
+      fetchPost();
     } catch (error) {
       console.error('댓글 등록 실패:', error);
       alert('댓글 등록에 실패했습니다. 다시 시도해주세요.');
@@ -144,20 +132,16 @@ const PostDetail = () => {
     if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/reply/remove/${replyId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        }
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
         throw new Error('댓글 삭제에 실패했습니다.');
       }
 
-      fetchPost(); // 게시글을 다시 불러와 댓글 목록 갱신
+      fetchPost();
     } catch (error) {
       console.error('댓글 삭제 실패:', error);
       alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
