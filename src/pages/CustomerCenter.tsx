@@ -86,6 +86,8 @@ const CustomerCenter: React.FC = () => {
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
 
+  const [inquiries, setInquiries] = useState<Question[]>([]);
+
   // 운영자(Admin) 답글 달기
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [answerContent, setAnswerContent] = useState<Record<number, string>>(
@@ -225,8 +227,6 @@ const CustomerCenter: React.FC = () => {
       )
     : faqs;
 
-  const [inquiries, setInquiries] = useState<Question[]>([]);
-
   const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
     setActiveSection(section);
     const sectionRefs = {
@@ -355,13 +355,16 @@ const CustomerCenter: React.FC = () => {
 
   const handleAnswerSubmit = async (
     questionId: number,
-    answerContent: string
+    answerContentValue: string
   ) => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       console.error("토큰이 없습니다.");
       return;
     }
+
+    console.log("token answer", token);
 
     try {
       const response = await fetch(
@@ -374,18 +377,18 @@ const CustomerCenter: React.FC = () => {
           },
           credentials: "include",
           body: JSON.stringify({
-            contents: answerContent,
+            contents: answerContentValue,
           }),
         }
       );
 
       if (response.ok) {
         alert("답변이 등록되었습니다.");
-        setAnswerContent({
-          ...answerContent,
+        setAnswerContent((prev) => ({
+          ...prev,
           [questionId]: "",
-        });
-        fetchAllQuestions(); // 목록 새로고침
+        }));
+        fetchAllQuestions();
       } else {
         const errorText = await response.text();
         alert("답변 등록 실패: " + errorText);
