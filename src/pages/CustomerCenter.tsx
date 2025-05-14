@@ -1,71 +1,103 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import "../styles/CustomerCenter.css";
+// import { useToken } from "../hooks/useToken";
 
-// 원본 FAQ 데이터
-const originalFaqs: Question[] = [
-  {
-    questionId: 1,
-    title: "로그인이 안 돼요.",
-    content:
-      "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-  {
-    questionId: 2,
-    title: "비밀번호를 잊어버렸어요.",
-    content:
-      "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-  {
-    questionId: 3,
-    title: "회원가입은 어떻게 하나요?",
-    content:
-      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-  {
-    questionId: 4,
-    title: "회원탈퇴는 어떻게 하나요?",
-    content:
-      "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-];
+// const InquiryHistory: React.FC<{ token: string }> = ({ token }) => {
+//   const [inquiries, setInquiries] = useState<Question[]>([]);
+
+//   useEffect(() => {
+//     console.log("Token:", token); // token 값 출력
+//     if (token) {
+//       fetch("http://localhost:8080/ourlog/question/list", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       })
+//         .then((res) => res.json())
+//         .then(setInquiries)
+//         .catch(console.error);
+//     } else {
+//       console.error("❌ Token is undefined or null");
+//     }
+//   }, [token]);
+
+//   const handleEditInquiry = (inquiry: Question) => {
+//     // 수정 로직
+//   };
+
+//   const handleDeleteInquiry = (questionId: number) => {
+//     // 삭제 로직
+//   };
+
+//   const handleRestrictedAction = (type: "edit" | "delete") => {
+//     alert(
+//       `이미 답변이 완료되어 ${type === "edit" ? "수정" : "삭제"}할 수 없습니다.`
+//     );
+//   };
+
+//   return (
+//     <div>
+//       <h2 className="cc-section-title">1:1 문의내역</h2>
+//       <table className="table">
+//         <thead>
+//           <tr>
+//             <th className="th">번호</th>
+//             <th className="th">제목</th>
+//             <th className="th">작성일</th>
+//             <th className="th">상태</th>
+//             <th className="th">관리</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {inquiries.map((inquiry) => (
+//             <tr key={inquiry.questionId}>
+//               <td className="td">{inquiry.questionId}</td>
+//               <td className="td">{inquiry.title}</td>
+//               <td className="td">{inquiry.regDate}</td>
+//               <td className="td">
+//                 <span
+//                   className={`status-badge ${
+//                     inquiry.answerDTO ? "completed" : "waiting"
+//                   }`}
+//                 >
+//                   {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
+//                 </span>
+//               </td>
+//               <td className="td">
+//                 <div className="button-group">
+//                   <button
+//                     className="action-button"
+//                     // onClick={() =>
+//                     //   inquiry.answerDTO
+//                     //     ? handleRestrictedAction("edit")
+//                     //     : handleEditInquiry(inquiry)
+//                     // }
+//                   >
+//                     수정
+//                   </button>
+//                   <button
+//                     className="action-button delete"
+//                     onClick={() =>
+//                       inquiry.answerDTO
+//                         ? handleRestrictedAction("delete")
+//                         : handleDeleteInquiry(inquiry.questionId)
+//                     }
+//                   >
+//                     삭제
+//                   </button>
+//                 </div>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
 
 const CustomerCenter: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
-    "faq" | "inquiry" | "questionlist"
+    "faq" | "inquiry" | "history"
   >("faq");
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -76,13 +108,73 @@ const CustomerCenter: React.FC = () => {
     null
   );
   const [editingInquiry, setEditingInquiry] = useState<Question | null>(null);
+  const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(
+    null
+  );
   const [inquiryForm, setInquiryForm] = useState<QuestionFormData>({
     title: "",
     content: "",
   });
 
-  const [selectedInquiry, setSelectedInquiry] = useState<Question | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  // 원본 FAQ 데이터
+  const originalFaqs: Question[] = [
+    {
+      questionId: 1,
+      title: "로그인이 안 돼요.",
+      content:
+        "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
+      regDate: "2024-01-20",
+      modDate: "2024-01-20",
+      userDTO: {
+        id: 1,
+        email: "admin@example.com",
+        nickname: "관리자",
+      },
+      isOpen: false,
+    },
+    {
+      questionId: 2,
+      title: "비밀번호를 잊어버렸어요.",
+      content:
+        "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
+      regDate: "2024-01-20",
+      modDate: "2024-01-20",
+      userDTO: {
+        id: 1,
+        email: "admin@example.com",
+        nickname: "관리자",
+      },
+      isOpen: false,
+    },
+    {
+      questionId: 3,
+      title: "회원가입은 어떻게 하나요?",
+      content:
+        "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+      regDate: "2024-01-20",
+      modDate: "2024-01-20",
+      userDTO: {
+        id: 1,
+        email: "admin@example.com",
+        nickname: "관리자",
+      },
+      isOpen: false,
+    },
+    {
+      questionId: 4,
+      title: "회원탈퇴는 어떻게 하나요?",
+      content:
+        "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
+      regDate: "2024-01-20",
+      modDate: "2024-01-20",
+      userDTO: {
+        id: 1,
+        email: "admin@example.com",
+        nickname: "관리자",
+      },
+      isOpen: false,
+    },
+  ];
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
 
@@ -118,12 +210,16 @@ const CustomerCenter: React.FC = () => {
     },
   ]);
 
-  const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
+  const faqRef = useRef<HTMLDivElement>(null);
+  const inquiryRef = useRef<HTMLDivElement>(null);
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (section: "faq" | "inquiry" | "history") => {
     setActiveSection(section);
     const sectionRefs = {
       faq: document.getElementById("faq"),
       inquiry: document.getElementById("inquiry"),
-      questionlist: document.getElementById("questionlist"),
+      history: document.getElementById("history"),
     };
     sectionRefs[section]?.scrollIntoView({ behavior: "smooth" });
   };
@@ -145,105 +241,17 @@ const CustomerCenter: React.FC = () => {
     setShowInquiryModal(true);
   };
 
-  const handleInquirySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const token = localStorage.getItem("token");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-    console.log("token", token);
-
-    if (editingInquiry) {
-      // 수정
-      await fetch("http://localhost:8080/ourlog/question/editingInquiry", {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          questionId: editingInquiry.questionId,
-          title: inquiryForm.title,
-          content: inquiryForm.content,
-        }),
-      });
-    } else {
-      // 등록
-      await fetch("http://localhost:8080/ourlog/question/inquiry", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          title: inquiryForm.title,
-          content: inquiryForm.content,
-        }),
-      });
-    }
-
-    // 등록/수정 후 내 문의 목록 새로고침
-    fetchMyQuestions();
-    setInquiryForm({ title: "", content: "" });
-    setEditingInquiry(null);
-    setShowInquiryModal(false);
-  };
-  const fetchMyQuestions = async () => {
-    const token = localStorage.getItem("token");
-    const headers = {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-    const res = await fetch(
-      "http://localhost:8080/ourlog/question/my-questions",
-      { headers }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      setInquiries(data); // 문의 목록 갱신
-    }
-  };
-
-  useEffect(() => {
-    fetchMyQuestions();
-  }, []);
-
   const handleDeleteInquiry = (questionId: number) => {
     setSelectedQuestionId(questionId);
     setShowDeleteModal(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!selectedQuestionId) return;
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    console.log("삭제 시도", selectedQuestionId);
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
-    try {
-      const res = await fetch(
-        `http://localhost:8080/ourlog/question/deleteQuestion/${selectedQuestionId}`,
-        {
-          method: "DELETE",
-          headers,
-        }
+  const handleDeleteConfirm = () => {
+    if (selectedQuestionId) {
+      setInquiries(
+        inquiries.filter((q) => q.questionId !== selectedQuestionId)
       );
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("삭제 실패:", res.status, errorText);
-        alert(`삭제 실패: ${res.status} ${errorText}`);
-      } else {
-        setShowDeleteModal(false);
-        fetchMyQuestions();
-      }
-    } catch (e) {
-      console.error("삭제 중 네트워크 에러:", e);
-      alert("삭제 중 네트워크 에러 발생");
+      setShowDeleteModal(false);
     }
   };
 
@@ -254,6 +262,46 @@ const CustomerCenter: React.FC = () => {
       }할 수 없습니다.`
     );
     setShowAlertModal(true);
+  };
+
+  const handleInquirySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (editingInquiry) {
+      // 수정 로직
+      setInquiries(
+        inquiries.map((q) =>
+          q.questionId === editingInquiry.questionId
+            ? {
+                ...q,
+                title: inquiryForm.title,
+                content: inquiryForm.content,
+                modDate: new Date().toISOString().split("T")[0],
+              }
+            : q
+        )
+      );
+    } else {
+      // 새 문의 작성 로직
+      const newInquiry: Question = {
+        questionId: Math.max(...inquiries.map((q) => q.questionId), 0) + 1,
+        title: inquiryForm.title,
+        content: inquiryForm.content,
+        regDate: new Date().toISOString().split("T")[0],
+        modDate: new Date().toISOString().split("T")[0],
+        userDTO: {
+          id: 2,
+          email: "user@example.com",
+          nickname: "사용자",
+        },
+        isOpen: false,
+      };
+      setInquiries([...inquiries, newInquiry]);
+    }
+
+    setInquiryForm({ title: "", content: "" });
+    setEditingInquiry(null);
+    setShowInquiryModal(false);
   };
 
   return (
@@ -279,9 +327,9 @@ const CustomerCenter: React.FC = () => {
               </div>
               <div
                 className={`cc-nav-item ${
-                  activeSection === "questionlist" ? "active" : ""
+                  activeSection === "history" ? "active" : ""
                 }`}
-                onClick={() => scrollToSection("questionlist")}
+                onClick={() => scrollToSection("history")}
               >
                 1:1 문의내역
               </div>
@@ -363,8 +411,9 @@ const CustomerCenter: React.FC = () => {
                 </button>
               </section>
 
-              <section id="questionlist">
-                <h2 className="cc-section-title">1:1 문의내역</h2>
+              <section id="history">
+                {/* <InquiryHistory token={useToken} /> */}
+                <h2 className="section-title">1:1 문의내역</h2>
                 <table className="table">
                   <thead>
                     <tr>
@@ -379,23 +428,8 @@ const CustomerCenter: React.FC = () => {
                     {inquiries.map((inquiry) => (
                       <tr key={inquiry.questionId}>
                         <td className="td">{inquiry.questionId}</td>
-                        <td
-                          className="td"
-                          onClick={() => {
-                            console.log("문의글 클릭:", inquiry);
-                            setSelectedInquiry(inquiry);
-                            setShowDetailModal(true);
-                          }}
-                          style={{
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {inquiry.title}
-                        </td>
-                        <td className="td">
-                          {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
-                        </td>
+                        <td className="td">{inquiry.title}</td>
+                        <td className="td">{inquiry.regDate}</td>
                         <td className="td">
                           <span
                             className={`status-badge ${
@@ -534,53 +568,6 @@ const CustomerCenter: React.FC = () => {
                 확인
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {showDetailModal && selectedInquiry && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h3>문의 상세</h3>
-              <button
-                className="close-button"
-                onClick={() => setShowDetailModal(false)}
-              >
-                <X />
-              </button>
-            </div>
-            <form>
-              <div className="form-group">
-                <label>제목</label>
-                <input type="text" value={selectedInquiry.title} readOnly />
-              </div>
-              <div className="form-group">
-                <label>내용</label>
-                <textarea value={selectedInquiry.content} readOnly />
-              </div>
-              <div className="form-group">
-                <label>작성일</label>
-                <input
-                  type="text"
-                  value={
-                    selectedInquiry.regDate
-                      ? selectedInquiry.regDate.split("T")[0]
-                      : ""
-                  }
-                  readOnly
-                />
-              </div>
-              {selectedInquiry.answerDTO && (
-                <div className="form-group">
-                  <label>답변</label>
-                  <textarea
-                    value={selectedInquiry.answerDTO.contents}
-                    readOnly
-                  />
-                </div>
-              )}
-            </form>
           </div>
         </div>
       )}

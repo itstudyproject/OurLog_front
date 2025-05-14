@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/ArtList.css";
 
@@ -14,12 +14,12 @@ interface ArtWork {
 
 const ArtList = () => {
   const navigate = useNavigate();
-  const [popularArtworks, setPopularArtworks] = useState<ArtWork[]>([]);
-  const [recentArtworks, setRecentArtworks] = useState<ArtWork[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [artworks, setArtworks] = useState<ArtWork[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
-  const artworksPerPage = 12;
+  const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const artworksPerPage = 15;
 
   useEffect(() => {
     const fetchArtworks = async () => {
@@ -189,42 +189,40 @@ const ArtList = () => {
             imageSrc: "/images/post12.jpg",
           },
         ];
-
-        // 인기 작품 - 좋아요 기준으로 정렬
-
-        const sortedByPopularity = [...dummyArtworks]
-          .sort((a, b) => b.likes - a.likes)
-          .slice(0, 3);
-        setPopularArtworks(sortedByPopularity);
-
-        // 최신 작품 - 날짜 기준으로 정렬
-        const sortedByDate = [...dummyArtworks].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setRecentArtworks(sortedByDate);
+        setArtworks(dummyArtworks);
         setLoading(false);
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
         setLoading(false);
       }
     };
-
     fetchArtworks();
   }, []);
 
+  // 정렬된 리스트
+  const sortedArtworks = useMemo(() => {
+    if (sortType === 'popular') {
+      return [...artworks].sort((a, b) => b.likes - a.likes);
+    }
+    return [...artworks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [artworks, sortType]);
+
+  // 검색 필터링
+  const filteredArtworks = useMemo(() => {
+    if (!searchTerm.trim()) return sortedArtworks;
+    return sortedArtworks.filter(
+      art =>
+        art.title.includes(searchTerm) ||
+        art.author.includes(searchTerm)
+    );
+  }, [sortedArtworks, searchTerm]);
+
+  // 페이지별 리스트
   const indexOfLastArtwork = currentPage * artworksPerPage;
   const indexOfFirstArtwork = indexOfLastArtwork - artworksPerPage;
-  const currentArtworks = recentArtworks.slice(
-    indexOfFirstArtwork,
-    indexOfLastArtwork
-  );
-
-  const totalPages = Math.ceil(recentArtworks.length / artworksPerPage);
-  const pageNumbers: number[] = Array.from(
-    { length: totalPages },
-    (_, i) => i + 1
-  );
+  const currentArtworks = filteredArtworks.slice(indexOfFirstArtwork, indexOfLastArtwork);
+  const totalPages = Math.ceil(filteredArtworks.length / artworksPerPage);
+  const pageNumbers: number[] = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   const handleArtworkClick = (artworkId: number) => {
     navigate(`/Art/${artworkId}`);
@@ -232,8 +230,12 @@ const ArtList = () => {
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
-    // 페이지 변경 시 상단으로 스크롤
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
   };
 
   if (loading) {
@@ -246,38 +248,37 @@ const ArtList = () => {
 
   return (
     <div className="art-list-container">
-      <div className="section-title">
-        <h2>인기 작품</h2>
-        <div className="line"></div>
-      </div>
-
-      <div className="popular-artworks">
-        {popularArtworks.map((artwork) => (
-          <div
-            key={artwork.id}
-            className="artwork-card popular"
-            onClick={() => handleArtworkClick(artwork.id)}
+      <div className="art-list-header">
+        <h2 className="art-list-title">아트</h2>
+        <div className="art-search-bar-wrapper">
+          <form className="art-search-bar" onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="작품명 또는 작가명으로 검색"
+              className="art-search-input"
+            />
+            <button type="submit" className="art-search-button">
+              <img src="/images/Search.png" alt="검색" className="art-search-icon" />
+            </button>
+          </form>
+        </div>
+        <div className="art-list-tabs">
+          <button
+            className={`art-list-tab-btn${sortType === 'popular' ? ' active' : ''}`}
+            onClick={() => { setSortType('popular'); setCurrentPage(1); }}
           >
-            <div className="artwork-image">
-              <img src={artwork.imageSrc} alt={artwork.title} />
-              <div className="artwork-likes">♥ {artwork.likes}</div>
-            </div>
-            <div className="artwork-info">
-              <h3>{artwork.title}</h3>
-              <p className="artwork-author">{artwork.author}</p>
-              <p className="artwork-price">
-                {artwork.price.toLocaleString()}원
-              </p>
-            </div>
-          </div>
-        ))}
+            인기순
+          </button>
+          <button
+            className={`art-list-tab-btn${sortType === 'latest' ? ' active' : ''}`}
+            onClick={() => { setSortType('latest'); setCurrentPage(1); }}
+          >
+            최신순
+          </button>
+        </div>
       </div>
-
-      <div className="section-title recent">
-        <h2>최신 작품</h2>
-        <div className="line"></div>
-      </div>
-
       <div className="recent-artworks">
         {currentArtworks.map((artwork) => (
           <div
@@ -292,14 +293,11 @@ const ArtList = () => {
             <div className="artwork-info">
               <h3>{artwork.title}</h3>
               <p className="artwork-author">{artwork.author}</p>
-              <p className="artwork-price">
-                {artwork.price.toLocaleString()}원
-              </p>
+              <p className="artwork-price">{artwork.price.toLocaleString()}원</p>
             </div>
           </div>
         ))}
       </div>
-
       <div className="pagination">
         <button
           onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
