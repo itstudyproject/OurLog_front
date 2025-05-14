@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
 import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
+import { useNavigate } from "react-router-dom";
 
 // 원본 FAQ 데이터
 const originalFaqs: Question[] = [
@@ -95,28 +96,7 @@ const CustomerCenter: React.FC = () => {
       )
     : faqs;
 
-  const [inquiries, setInquiries] = useState<Question[]>([
-    {
-      questionId: 5,
-      title: "로그인 오류",
-      content: "로그인이 계속 안 되는데 어떻게 해야 하나요?",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 2,
-        email: "user@example.com",
-        nickname: "사용자",
-      },
-      answerDTO: {
-        answerId: 1,
-        contents:
-          "안녕하세요. 불편을 드려 죄송합니다. 로그인 시 발생하는 구체적인 오류 메시지와 함께 사용하시는 브라우저 정보를 알려주시면 확인 후 도움드리도록 하겠습니다.",
-        regDate: "2024-01-20",
-        modDate: "2024-01-20",
-      },
-      isOpen: false,
-    },
-  ]);
+  const [inquiries, setInquiries] = useState<Question[]>([]);
 
   const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
     setActiveSection(section);
@@ -149,6 +129,12 @@ const CustomerCenter: React.FC = () => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     const headers = {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -199,9 +185,14 @@ const CustomerCenter: React.FC = () => {
     }
   };
 
+  // 컴포넌트 마운트 시 호출
   useEffect(() => {
     fetchMyQuestions();
-  }, []);
+
+    if (isAdmin) {
+      fetchAllQuestions();
+    }
+  }, [isAdmin]);
 
   const handleDeleteInquiry = (questionId: number) => {
     setSelectedQuestionId(questionId);
@@ -236,14 +227,14 @@ const CustomerCenter: React.FC = () => {
       if (!res.ok) {
         const errorText = await res.text();
         console.error("삭제 실패:", res.status, errorText);
-        alert(`삭제 실패: ${res.status} ${errorText}`);
+        setAlertMessage(`삭제 실패: ${res.status} ${errorText}`);
       } else {
         setShowDeleteModal(false);
         fetchMyQuestions();
       }
     } catch (e) {
       console.error("삭제 중 네트워크 에러:", e);
-      alert("삭제 중 네트워크 에러 발생");
+      setAlertMessage("삭제 중 네트워크 에러 발생");
     }
   };
 
@@ -254,6 +245,61 @@ const CustomerCenter: React.FC = () => {
       }할 수 없습니다.`
     );
     setShowAlertModal(true);
+  };
+
+  // 운영자(Admin) 답글 달기
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [answerContent, setAnswerContent] = useState("");
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+
+  // 관리자용 전체 질문 목록 가져오기
+  const fetchAllQuestions = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
+
+      const res = await fetch(
+        "http://localhost:8080/ourlog/questionList?page=1&size=20",
+        { headers }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setAllQuestions(data.dtoList); // PageResultDTO의 dtoList만 추출
+      }
+    } catch (e) {
+      console.error("전체 질문 목록 불러오기 실패:", e);
+    }
+  };
+
+  const handleAnswerSubmit = async (
+    questionId: number,
+    answerContent: string
+  ) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+    const res = await fetch(
+      `http://localhost:8080/ourlog/question-answer/${questionId}`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          contents: answerContent,
+        }),
+      }
+    );
+    if (res.ok) {
+      alert("답변이 등록되었습니다.");
+      // 문의내역 새로고침 등
+    } else {
+      const errorText = await res.text();
+      alert("답변 등록 실패: " + errorText);
+    }
   };
 
   return (
@@ -571,6 +617,7 @@ const CustomerCenter: React.FC = () => {
                   readOnly
                 />
               </div>
+
               {selectedInquiry.answerDTO && (
                 <div className="form-group">
                   <label>답변</label>
@@ -584,8 +631,40 @@ const CustomerCenter: React.FC = () => {
           </div>
         </div>
       )}
+      {isAdmin && activeSection === "questionlist" && (
+        <section id="questionlist">
+          <h2>전체 질문 목록</h2>
+          {allQuestions.map((question) => (
+            <div key={question.questionId} className="admin-question-card">
+              <h3>{question.title}</h3>
+              <p>{question.content}</p>
+              <p>작성자: {question.userDTO?.name || "익명"}</p>
+              {question.answerDTO ? (
+                <div className="answer-box">
+                  <strong>답변:</strong>
+                  <p>{question.answerDTO.contents}</p>
+                </div>
+              ) : (
+                <div className="answer-form">
+                  <textarea
+                    value={answerContent}
+                    onChange={(e) => setAnswerContent(e.target.value)}
+                    placeholder="답변을 입력하세요"
+                  />
+                  <button
+                    onClick={() =>
+                      handleAnswerSubmit(question.questionId, answerContent)
+                    }
+                  >
+                    답변 등록
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
     </>
   );
 };
-
 export default CustomerCenter;
