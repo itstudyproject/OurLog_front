@@ -20,6 +20,12 @@ body {
   align-items: center;
   margin: 30px 0 20px;
 }
+.section-title-search {
+  display: flex;
+  align-items: center;
+  margin: 30px 0 20px;
+  border-bottom: 1px solid #f8c147;
+}
 
 .section-title h2 {
   font-size: 24px;
@@ -27,6 +33,14 @@ body {
   margin: 0;
   margin-right: 15px;
   font-weight: 600;
+}
+.section-title-search h2 {
+  font-size: 24px;
+  color: #fff;
+  margin: 0;
+  margin-right: 15px;
+  font-weight: 600;
+  margin-bottom: 5px;
 }
 
 .section-title .line {

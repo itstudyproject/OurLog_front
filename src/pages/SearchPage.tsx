@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/PostList.css";
 import "../styles/ArtList.css";
@@ -123,7 +122,7 @@ const SearchPage = () => {
 
   return (
     <div className="container">
-      <div className="section-title">
+      <div className="section-title-search">
         <h2>"{query}"에 대한 검색 결과</h2>
         <div className="line"></div>
       </div>
@@ -132,7 +131,7 @@ const SearchPage = () => {
         <p className="main-search">검색어를 입력해주세요.</p>
       ) : (
         <>
-          <div className="section-title">
+          <div className="section-title-search">
             <h2>작가 ({uniqueAuthors})</h2>
           </div>
 
@@ -164,7 +163,7 @@ const SearchPage = () => {
             </div>
           )}
 
-          <div className="section-title">
+          <div className="section-title-search">
             <h2>아트 ({filteredArtworks.length})</h2>
           </div>
 
@@ -189,7 +188,7 @@ const SearchPage = () => {
           )}
 
           <div style={{ marginBottom: "100px" }}>
-            <div className="section-title">
+            <div className="section-title-search">
               <h2>커뮤니티 ({filteredPosts.length})</h2>
             </div>
 

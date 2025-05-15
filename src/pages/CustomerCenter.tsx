@@ -902,7 +902,7 @@ const CustomerCenter: React.FC = () => {
         <div className="cc-overlay">
           <div className="cc-modal">
             <div className="cc-modal-header">
-              <h3>문의 상세</h3>
+              <h2>1:1 문의 상세내용</h2>
               <button
                 className="cc-close-button"
                 onClick={() => setShowDetailModal(false)}
