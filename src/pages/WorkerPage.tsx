@@ -13,14 +13,32 @@ interface LikeStatus {
   count: number;
 }
 
+interface UserProfile {
+  userId: number;
+  nickname: string;
+  thumbnailImagePath: string; // 썸네일 이미지 경로
+  followCount: number;
+  followingCount: number;
+}
+
 const userId = 1;
+const baseUrl = "http://localhost:8080/ourlog"; // 여기에 선언
 
 const WorkerPage: React.FC = () => {
   const [cardData, setCardData] = useState<Post[]>([]);
   const [likes, setLikes] = useState<LikeStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [followCount, setFollowCount] = useState(120);
+  const [followCount, setFollowCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+
+  const [profile, setProfile] = useState<UserProfile>({
+    userId,
+    nickname: "",
+    thumbnailImagePath: "/default-profile.png",
+    followCount: 0,
+    followingCount: 0,
+  });
 
   const navigate = useNavigate();
   const cardsPerPage = 6;
@@ -32,11 +50,52 @@ const WorkerPage: React.FC = () => {
   );
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // 유저 프로필 정보 가져오기
+    const fetchUserProfile = async () => {
+      try {
+        const res = await fetch(`${baseUrl}/profile/get/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("프로필 불러오기 실패");
+
+        const profileData = await res.json();
+
+        setProfile({
+          userId: profileData.user.userId,
+          nickname: profileData.user.nickname,
+          thumbnailImagePath: profileData.thumbnailImagePath
+            ? baseUrl + profileData.thumbnailImagePath
+            : "/default-profile.png",
+          followCount: profileData.follow
+            ? profileData.follow.followersCount
+            : 0,
+          followingCount: profileData.follow
+            ? profileData.follow.followingCount
+            : 0,
+        });
+
+        setFollowCount(
+          profileData.follow ? profileData.follow.followersCount : 0
+        );
+        setFollowingCount(
+          profileData.follow ? profileData.follow.followingCount : 0
+        );
+      } catch (err) {
+        console.error("프로필 데이터 불러오기 실패", err);
+      }
+    };
+
+    // 게시글 및 좋아요 상태 가져오기
     const fetchPostsAndLikes = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch("http://localhost:8080/ourlog/post", {
+        const res = await fetch(`${baseUrl}/ourlog/post`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +112,7 @@ const WorkerPage: React.FC = () => {
           posts.map(async (post) => {
             try {
               const likedRes = await fetch(
-                `http://localhost:8080/ourlog/favorites/${userId}/${post.id}`,
+                `${baseUrl}/ourlog/favorites/${userId}/${post.id}`,
                 {
                   method: "GET",
                   headers: {
@@ -68,7 +127,7 @@ const WorkerPage: React.FC = () => {
               const liked = JSON.parse(likedText);
 
               const countRes = await fetch(
-                `http://localhost:8080/ourlog/favorites/count/${post.id}`,
+                `${baseUrl}/ourlog/favorites/count/${post.id}`,
                 {
                   method: "GET",
                   headers: {
@@ -97,6 +156,7 @@ const WorkerPage: React.FC = () => {
       }
     };
 
+    fetchUserProfile();
     fetchPostsAndLikes();
   }, []);
 
@@ -116,18 +176,15 @@ const WorkerPage: React.FC = () => {
 
   const handleLikeToggle = async (index: number, postId: number) => {
     try {
-      const response = await fetch(
-        "http://localhost:8080/ourlog/favorites/toggle",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            userDTO: { userId },
-            postDTO: { postId },
-          }),
-        }
-      );
+      const response = await fetch(`${baseUrl}/ourlog/favorites/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          userDTO: { userId },
+          postDTO: { postId },
+        }),
+      });
 
       if (!response.ok) throw new Error("좋아요 토글 실패");
 
@@ -149,13 +206,13 @@ const WorkerPage: React.FC = () => {
     <div className="worker-container">
       <div className="worker-header">
         <img
-          src="/images/min.jpg"
+          src={profile.thumbnailImagePath}
           alt="프로필 이미지"
           className="worker-profile-img"
         />
         <div className="worker-info">
           <div className="worker-meta-row">
-            <div className="worker-name">XOXO</div>
+            <div className="worker-name">{profile.nickname}</div>
             <div className="worker-stats">
               <div className="stat">
                 <span className="label">팔로우</span>
@@ -163,7 +220,7 @@ const WorkerPage: React.FC = () => {
               </div>
               <div className="stat">
                 <span className="label">팔로잉</span>
-                <span>340</span>
+                <span>{followingCount}</span>
               </div>
             </div>
           </div>
