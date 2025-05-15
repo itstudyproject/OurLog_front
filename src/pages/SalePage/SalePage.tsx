@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import SaleList from "./SaleList";
 import SaleStatusList from "./SaleStatusList";
-import "../../styles/SalePage.css"; // 아래에 새로 만들 CSS를 import
+import "../../styles/SalePage.css"; 
+import '../../styles/BidHistory.css';
 
 const SalePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"list" | "status">("list");

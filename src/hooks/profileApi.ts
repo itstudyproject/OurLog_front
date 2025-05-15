@@ -1,43 +1,32 @@
-// src/services/profileApi.ts
+// src/hooks/profileApi.ts
+import { getAuthHeaders } from "../utils/auth";
+
 export interface UserProfileDTO {
   id: number;
-  user: { id: number; email: string };
+  user: number;
   nickname: string;
-  bio?: string;
   imagePath?: string;
-  followerCount?: number;
-  followingCount?: number;
+  followerCount: number;
+  followingCount: number;
 }
 
-function getToken(): string | null {
-  return localStorage.getItem("token");
-}
-
-// 공통 헤더
-function authHeader() {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-// 프로필 조회
-export async function fetchProfile(userId: number): Promise<UserProfileDTO> {
-  const res = await fetch(`http://localhost:8080/profile/get/${userId}`, {
-    headers: { ...authHeader(), "Content-Type": "application/json" },
+export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
+  const res = await fetch(`http://localhost:8080/ourlog/profile/get/${userId}`, {
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("프로필 조회 실패");
   return res.json();
-}
+};
 
-// 프로필 수정
-export async function updateProfile(
+export const updateProfile = async (
   userId: number,
-  payload: Partial<UserProfileDTO>
-): Promise<UserProfileDTO> {
-  const res = await fetch(`http://localhost:8080/profile/edit/${userId}`, {
+  profile: Partial<UserProfileDTO>
+): Promise<UserProfileDTO> => {
+  const res = await fetch(`http://localhost:8080/ourlog/profile/edit/${userId}`, {
     method: "PUT",
-    headers: { ...authHeader(), "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: getAuthHeaders(),
+    body: JSON.stringify(profile),
   });
   if (!res.ok) throw new Error("프로필 수정 실패");
   return res.json();
-}
+};
