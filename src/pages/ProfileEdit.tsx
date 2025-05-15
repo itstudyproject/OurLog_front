@@ -1,10 +1,9 @@
 // src/pages/ProfileEdit.tsx
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserProfileDTO } from "../hooks/profileApi";
-import '../styles/ProfileEdit.css';
-
+import "../styles/ProfileEdit.css";
 
 interface ProfileEditProps {
   profile: UserProfileDTO | null;
@@ -12,23 +11,30 @@ interface ProfileEditProps {
   onSave: (updated: Partial<UserProfileDTO>) => Promise<void>;
 }
 
-
-const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) => {
+const ProfileEdit: React.FC<ProfileEditProps> = ({
+  profile,
+  onBack,
+  onSave,
+}) => {
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState({
-    username: profile?.nickname || 'art_lover',
-    email: profile?.email || 'user@example.com',
-    fullName: profile?.name || '김예술',
-    bio: profile?.introduction || '현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.',
-    location: profile?.location || '서울특별시',
-    website: profile?.website || 'https://myartblog.com',
-    profilePicture: profile?.imagePath || '/images/Logo.png',
+    username: profile?.nickname || "art_lover",
+    email: profile?.email || "user@example.com",
+    fullName: profile?.name || "김예술",
+    bio:
+      profile?.introduction ||
+      "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
+    location: profile?.location || "서울특별시",
+    website: profile?.website || "https://myartblog.com",
+    profilePicture: profile?.imagePath || "/images/Logo.png",
   });
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setProfileData((prev) => ({
@@ -37,23 +43,21 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) =>
     }));
   };
 
- // 프로필 이미지 변경 핸들러
+  // 프로필 이미지 변경 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setProfileData(prev => ({
+          setProfileData((prev) => ({
             ...prev,
-            profilePicture: event.target?.result as string
+            profilePicture: event.target?.result as string,
           }));
         }
       };
       reader.readAsDataURL(e.target.files[0]);
     }
   };
-
-
 
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,19 +72,19 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) =>
         introduction: profileData.bio,
         location: profileData.location,
         website: profileData.website,
-        imagePath: profileData.profilePicture
+        imagePath: profileData.profilePicture,
       });
 
       // 성공 알림 후 돌아가기
-      alert('프로필이 성공적으로 업데이트되었습니다.');
+      alert("프로필이 성공적으로 업데이트되었습니다.");
       if (onBack) {
         onBack();
       } else {
-        navigate('/mypage');
+        navigate("/mypage");
       }
     } catch (error) {
       console.error(error);
-      alert('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+      alert("프로필 저장에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -100,7 +104,10 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) =>
               className="profile-photo"
             />
             <div className="photo-overlay">
-              <label htmlFor="profile-photo-input" className="change-photo-button">
+              <label
+                htmlFor="profile-photo-input"
+                className="change-photo-button"
+              >
                 사진 변경
               </label>
               <input
@@ -108,7 +115,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) =>
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
             </div>
           </div>

@@ -31,7 +31,10 @@ const BidStatusList: React.FC = () => {
       .catch(console.error);
   }, []);
 
-  const currentItems = bids.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = bids.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(bids.length / itemsPerPage);
 
   return (
@@ -42,15 +45,23 @@ const BidStatusList: React.FC = () => {
 
       <div className="bid-list">
         {currentItems.map((item) => (
-          <div key={item.tradeId} className="bid-item" onClick={() => navigate(`/art/${item.postDTO.postId}`)}>
+          <div
+            key={item.tradeId}
+            className="bid-item"
+            onClick={() => navigate(`/art/${item.postDTO.postId}`)}
+          >
             <div className="bid-artwork">
               <img src={item.thumbnailPath} alt={item.postTitle} />
             </div>
             <div className="bid-details">
               <h3>{item.postTitle}</h3>
               <p>시작가: {item.startPrice.toLocaleString()}원</p>
-              <p className="bid-amount">낙찰가: {item.highestBid.toLocaleString()}원</p>
-              {item.nowBuy && <p>즉시구매가: {item.nowBuy.toLocaleString()}원</p>}
+              <p className="bid-amount">
+                낙찰가: {item.highestBid.toLocaleString()}원
+              </p>
+              {item.nowBuy && (
+                <p>즉시구매가: {item.nowBuy.toLocaleString()}원</p>
+              )}
             </div>
           </div>
         ))}
@@ -58,9 +69,9 @@ const BidStatusList: React.FC = () => {
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button 
-            key={page} 
-            onClick={() => setCurrentPage(page)} 
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
             className={`page-btn${page === currentPage ? " active" : ""}`}
           >
             {page}

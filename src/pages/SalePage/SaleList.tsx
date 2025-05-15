@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/auth";
@@ -21,28 +20,30 @@ const SaleList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-useEffect(() => {
-  fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
-    headers: getAuthHeaders(),
-  })
-    .then(res => res.json())
-    .then(data => {
-      const mapped = data.map((item: any) => ({
-        id: item.tradeId,
-        image: item.thumbnailPath,
-        title: item.postTitle,
-        price: item.nowBuy ?? item.highestBid ?? 0,
-        method: item.nowBuy ? "즉시구매" : "경매",
-        date: item.createdAt?.substring(0, 10) ?? "",
-        count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
-        artist: item.postDTO?.user?.nickname ?? "나",
-      }));
-      setSales(mapped);
-    });
-}, []);
+  useEffect(() => {
+    fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item.tradeId,
+          image: item.thumbnailPath,
+          title: item.postTitle,
+          price: item.nowBuy ?? item.highestBid ?? 0,
+          method: item.nowBuy ? "즉시구매" : "경매",
+          date: item.createdAt?.substring(0, 10) ?? "",
+          count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
+          artist: item.postDTO?.user?.nickname ?? "나",
+        }));
+        setSales(mapped);
+      });
+  }, []);
 
-
-  const currentItems = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = sales.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(sales.length / itemsPerPage);
 
   return (
@@ -52,7 +53,11 @@ useEffect(() => {
       </div>
       <div className="bid-list">
         {currentItems.map((item) => (
-          <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => navigate(`/art/${item.id}`)}
+          >
             <div className="bid-artwork">
               <img src={item.image} alt={item.title} />
             </div>
@@ -65,19 +70,20 @@ useEffect(() => {
               <p>판매날짜: {item.date}</p>
             </div>
           </div>
-
         ))}
       </div>
 
-
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button key={page} onClick={() => setCurrentPage(page)} className={`page-btn${page === currentPage ? " active" : ""}`}>
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
+          >
             {page}
           </button>
         ))}
       </div>
-
     </div>
   );
 };

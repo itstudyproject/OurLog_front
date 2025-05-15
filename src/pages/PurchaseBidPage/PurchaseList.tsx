@@ -70,7 +70,9 @@ const PurchaseList: React.FC = () => {
             </div>
             <div className="bid-details">
               <h3>{item.postTitle}</h3>
-              <p className="bid-amount">구매금액: {item.price.toLocaleString()}원</p>
+              <p className="bid-amount">
+                구매금액: {item.price.toLocaleString()}원
+              </p>
               <p>구매방식: {item.method}</p>
               <p>구매날짜: {item.date}</p>
             </div>
