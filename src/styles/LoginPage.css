@@ -195,6 +195,17 @@
   text-align: center;
 }
 
+/* 성공 메시지 스타일 */
+.success-message {
+  color: #52c41a;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 /* 성별 선택 스타일 */
 .gender-options {
   display: flex;

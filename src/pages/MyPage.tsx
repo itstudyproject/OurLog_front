@@ -10,6 +10,7 @@ import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import DeleteAccountPage from "./DeleteAccountPage";
 import "../styles/WorkerPage.css";
 import "../styles/BidHistory.css";
+import "../styles/PurchaseBidPage.css";
 
 import { fetchProfile, updateProfile, UserProfileDTO } from "../hooks/profileApi";
 import AccountEdit from "./AccountEdit";
@@ -25,7 +26,7 @@ const MyPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const stored = localStorage.getItem("user");
-  const userId = stored ? (JSON.parse(stored).id as number) : null;
+  const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
@@ -36,6 +37,16 @@ const MyPage: React.FC = () => {
       .catch((err) => console.error(err));
   }, [userId]);
 
+  // 메뉴 선택 상태 관리
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path === '/mypage') return 'recent';
+    if (path.includes('/purchase-bid')) return 'purchase-bid';
+    if (path.includes('/sale')) return 'sale';
+    if (path.includes('/bookmark')) return 'bookmark';
+    return 'recent';
+  };
+
   return (
     <div className="bid-history-container">
       <div className="bid-history-title">
@@ -45,7 +56,7 @@ const MyPage: React.FC = () => {
       <div className="bid-item" style={{ padding: "20px" }}>
         <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
           <img
-            src={profile?.imagePath || "/images/mypage/default.png"}
+            src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
           />
         </div>
@@ -66,8 +77,16 @@ const MyPage: React.FC = () => {
             <button 
               className="detail-button" 
               onClick={() => navigate("/mypage/account/edit")}
+              style={{ marginRight: "10px" }}
             >
               회원정보수정
+            </button>
+            <button 
+              className="detail-button"
+              onClick={() => navigate("/mypage/account/delete")}
+              style={{ backgroundColor: "#e74c3c" }}
+            >
+              회원탈퇴
             </button>
           </div>
         </div>
@@ -77,32 +96,28 @@ const MyPage: React.FC = () => {
         <h2>메뉴</h2>
       </div>
       
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
+      <div className="sub-tab-nav">
         <button 
-          className={`bid-now-button ${location.pathname === '/mypage' ? 'active' : ''}`} 
+          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`} 
           onClick={() => navigate("/mypage")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           최근 본 게시물
         </button>
         <button 
-          className={`bid-now-button ${location.pathname.includes('/purchase-bid') ? 'active' : ''}`}
+          className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/purchase-bid")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           구매/입찰목록
         </button>
         <button 
-          className={`bid-now-button ${location.pathname.includes('/sale') ? 'active' : ''}`}
+          className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/sale")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           판매목록/현황
         </button>
         <button 
-          className={`bid-now-button ${location.pathname.includes('/bookmark') ? 'active' : ''}`}
+          className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/bookmark")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           북마크
         </button>

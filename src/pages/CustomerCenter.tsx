@@ -357,15 +357,17 @@ const CustomerCenter: React.FC = () => {
     questionId: number,
     answerContentValue: string
   ) => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      console.error("토큰이 없습니다.");
+    if (!answerContentValue.trim()) {
+      setAlertMessage("답변 내용을 입력하세요.");
+      setShowAlertModal(true);
       return;
     }
-
-    console.log("token answer", token);
-
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setAlertMessage("토큰이 없습니다.");
+      setShowAlertModal(true);
+      return;
+    }
     try {
       const response = await fetch(
         `http://localhost:8080/ourlog/question-answer/${questionId}`,
@@ -381,9 +383,9 @@ const CustomerCenter: React.FC = () => {
           }),
         }
       );
-
       if (response.ok) {
-        alert("답변이 등록되었습니다.");
+        setAlertMessage("답변이 등록되었습니다.");
+        setShowAlertModal(true);
         setAnswerContent((prev) => ({
           ...prev,
           [questionId]: "",
@@ -391,11 +393,87 @@ const CustomerCenter: React.FC = () => {
         fetchAllQuestions();
       } else {
         const errorText = await response.text();
-        alert("답변 등록 실패: " + errorText);
+        setAlertMessage("답변 등록 실패: " + errorText);
+        setShowAlertModal(true);
       }
     } catch (error) {
-      console.error("답변 등록 실패:", error);
-      alert("답변 등록 중 오류가 발생했습니다.");
+      setAlertMessage("답변 등록 중 오류가 발생했습니다.");
+      setShowAlertModal(true);
+    }
+  };
+
+  const [editingAnswerId, setEditingAnswerId] = useState<number | null>(null);
+  const [editingAnswerContent, setEditingAnswerContent] = useState<string>("");
+
+  const handleEditAnswer = (question) => {
+    setEditingAnswerId(question.answerDTO.answerId);
+    setEditingAnswerContent(question.answerDTO.contents);
+  };
+
+  const handleEditAnswerSubmit = async () => {
+    if (!editingAnswerContent.trim()) {
+      setAlertMessage("답변 내용을 입력하세요.");
+      setShowAlertModal(true);
+      return;
+    }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setAlertMessage("토큰이 없습니다.");
+      setShowAlertModal(true);
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/question-answer/${editingAnswerId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ contents: editingAnswerContent }),
+        }
+      );
+      if (response.ok) {
+        setAlertMessage("답변이 수정되었습니다.");
+        setShowAlertModal(true);
+        setEditingAnswerId(null);
+        setEditingAnswerContent("");
+        fetchAllQuestions();
+      } else {
+        setAlertMessage("수정 실패");
+        setShowAlertModal(true);
+      }
+    } catch (e) {
+      setAlertMessage("수정 중 오류 발생");
+      setShowAlertModal(true);
+    }
+  };
+
+  const handleDeleteAnswer = async (question) => {
+    if (!window.confirm("정말 답변을 삭제하시겠습니까?")) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/question-answer/${question.answerDTO.answerId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.ok) {
+        alert("답변이 삭제되었습니다.");
+        fetchAllQuestions();
+      } else {
+        alert("삭제 실패");
+      }
+    } catch (e) {
+      alert("삭제 중 오류 발생");
     }
   };
 
@@ -421,7 +499,7 @@ const CustomerCenter: React.FC = () => {
                 className={`cc-nav-item ${
                   activeSection === "faq" ? "active" : ""
                 }`}
-                onClick={() => setActiveSection("faq")}
+                onClick={() => scrollToSection("faq")}
               >
                 자주 묻는 질문
               </div>
@@ -429,7 +507,7 @@ const CustomerCenter: React.FC = () => {
                 className={`cc-nav-item ${
                   activeSection === "inquiry" ? "active" : ""
                 }`}
-                onClick={() => setActiveSection("inquiry")}
+                onClick={() => scrollToSection("inquiry")}
               >
                 1:1 문의하기
               </div>
@@ -437,7 +515,7 @@ const CustomerCenter: React.FC = () => {
                 className={`cc-nav-item ${
                   activeSection === "questionlist" ? "active" : ""
                 }`}
-                onClick={() => setActiveSection("questionlist")}
+                onClick={() => scrollToSection("questionlist")}
               >
                 1:1 문의내역
               </div>
@@ -450,34 +528,98 @@ const CustomerCenter: React.FC = () => {
             <section id="questionlist">
               <h2 className="cc-section-title">전체 질문 목록</h2>
               {allQuestions.length === 0 ? (
-                <p className="no-results">등록된 질문이 없습니다.</p>
+                <p className="cc-no-results">등록된 질문이 없습니다.</p>
               ) : (
                 allQuestions.map((question) => (
                   <div
                     key={question.questionId}
-                    className="admin-question-card"
+                    className="cc-admin-question-card"
                   >
-                    <p className="admin-question-writer">
-                      작성자 : {question.userDTO?.nickname || "익명"}
-                      <br />
-                      e-mail: {question.userDTO?.email || "익명"}
-                    </p>
-                    <h3 className="admin-question-title">
-                      제목 : {question.title}
-                    </h3>
-                    <h3 className="admin-question-content">
-                      내용 : {question.content}
-                    </h3>
+                    <div className="cc-form-row">
+                      <div className="cc-form-group half">
+                        <label>User ID</label>
+                        <input
+                          type="text"
+                          value={question.userDTO?.nickname}
+                          readOnly
+                        />
+                      </div>
+
+                      <div className="cc-form-group half">
+                        <label>User e-mail</label>
+                        <input
+                          type="text"
+                          value={question.userDTO?.email}
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="cc-form-group">
+                      <label>제목</label>
+                      <input type="text" value={question.title} readOnly />
+                    </div>
+                    <div className="cc-form-group">
+                      <label>내용</label>
+                      <input type="text" value={question.content} readOnly />
+                    </div>
 
                     {question.answerDTO ? (
-                      <div className="answer-box">
-                        <strong className="answer-label">답변:</strong>
-                        <p className="answer-content">
-                          {question.answerDTO.contents}
-                        </p>
-                      </div>
+                      editingAnswerId === question.answerDTO.answerId ? (
+                        <div>
+                          <textarea
+                            value={editingAnswerContent}
+                            onChange={(e) =>
+                              setEditingAnswerContent(e.target.value)
+                            }
+                            className="cc-admin-answer-textarea"
+                          />
+                          <div className="cc-button-wrapper">
+                            <button
+                              className="cc-action-button"
+                              onClick={handleEditAnswerSubmit}
+                            >
+                              저장
+                            </button>
+                            <button
+                              className="cc-action-button cancel"
+                              onClick={() => setEditingAnswerId(null)}
+                            >
+                              취소
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="cc-form-group">
+                          <label>답변</label>
+
+                          <div className="cc-answer-box">
+                            <input
+                              type="text"
+                              value={question.answerDTO.contents}
+                              readOnly
+                            />
+
+                            <div className="cc-button-wrapper">
+                              <button
+                                className="cc-action-button"
+                                onClick={() => handleEditAnswer(question)}
+                              >
+                                수정
+                              </button>
+                              <button
+                                className="cc-action-button delete"
+                                onClick={() => handleDeleteAnswer(question)}
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
                     ) : (
-                      <div className="answer-form">
+                      <div className="cc-answer-form">
+                        <label>답변</label>
+
                         <textarea
                           value={answerContent[question.questionId] || ""}
                           onChange={(e) =>
@@ -487,19 +629,21 @@ const CustomerCenter: React.FC = () => {
                             })
                           }
                           placeholder="답변을 입력하세요"
-                          className="admin-answer-textarea"
+                          className="cc-admin-answer-textarea"
                         />
-                        <button
-                          className="button"
-                          onClick={() =>
-                            handleAnswerSubmit(
-                              question.questionId,
-                              answerContent[question.questionId] || ""
-                            )
-                          }
-                        >
-                          답변 등록
-                        </button>
+                        <div className="cc-button-wrapper">
+                          <button
+                            className="cc-action-button"
+                            onClick={() =>
+                              handleAnswerSubmit(
+                                question.questionId,
+                                answerContent[question.questionId] || ""
+                              )
+                            }
+                          >
+                            답변 등록
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -532,39 +676,39 @@ const CustomerCenter: React.FC = () => {
                     : "자주 묻는 질문"}
                 </div>
 
-                <div className="faq-list">
+                <div className="cc-faq-list">
                   {filteredFaqs.map((faq) => (
-                    <div className="faq-item" key={faq.questionId}>
+                    <div className="cc-faq-item" key={faq.questionId}>
                       <div
-                        className="question-box"
+                        className="cc-question-box"
                         onClick={() => toggleQuestion(faq.questionId)}
                         aria-expanded={faq.isOpen}
                       >
                         {faq.title}
                       </div>
-                      <div className={`answer ${faq.isOpen ? "open" : ""}`}>
+                      <div className={`cc-answer ${faq.isOpen ? "open" : ""}`}>
                         {faq.content}
                       </div>
                     </div>
                   ))}
                   {filteredFaqs.length === 0 && searchTerm && (
-                    <p className="no-results">검색 결과가 없습니다.</p>
+                    <p className="cc-no-results">검색 결과가 없습니다.</p>
                   )}
                 </div>
               </section>
 
               <section id="inquiry">
                 <h2 className="cc-section-title">1:1 문의하기</h2>
-                <p className="info-text">
+                <p className="cc-info-text">
                   서비스 이용 중 불편하신 점이나 문의사항을 남겨주시면 신속하게
                   답변 드리도록 하겠습니다.
                 </p>
-                <p className="info-text">
+                <p className="cc-info-text">
                   영업일 기준(주말·공휴일 제외) 3일 이내에 답변드리겠습니다. 단,
                   문의가 집중되는 경우 답변이 지연될 수 있는 점 너그러이 양해
                   부탁드립니다.
                 </p>
-                <div className="warning-box">
+                <div className="cc-warning-box">
                   산업안전보건법에 따라 폭언, 욕설, 성희롱, 반말, 비하, 반복적인
                   요구 등에는 회신 없이 상담을 즉시 종료하며, 이후 다른 문의에도
                   회신하지 않습니다. 고객응대 근로자를 보호하기 위해 이같은
@@ -572,7 +716,7 @@ const CustomerCenter: React.FC = () => {
                   민형사상 조치를 취할 수 있음을 알려드립니다.
                 </div>
                 <button
-                  className="button"
+                  className="cc-button"
                   onClick={() => setShowInquiryModal(true)}
                 >
                   문의하기
@@ -581,22 +725,22 @@ const CustomerCenter: React.FC = () => {
 
               <section id="questionlist">
                 <h2 className="cc-section-title">1:1 문의내역</h2>
-                <table className="table">
+                <table className="cc-table">
                   <thead>
                     <tr>
-                      <th className="th">번호</th>
-                      <th className="th">제목</th>
-                      <th className="th">작성일</th>
-                      <th className="th">상태</th>
-                      <th className="th">관리</th>
+                      <th className="cc-th">번호</th>
+                      <th className="cc-th">제목</th>
+                      <th className="cc-th">작성일</th>
+                      <th className="cc-th">상태</th>
+                      <th className="cc-th">관리</th>
                     </tr>
                   </thead>
                   <tbody>
                     {inquiries.map((inquiry) => (
                       <tr key={inquiry.questionId}>
-                        <td className="td">{inquiry.questionId}</td>
+                        <td className="cc-td">{inquiry.questionId}</td>
                         <td
-                          className="td"
+                          className="cc-td"
                           onClick={() => {
                             console.log("문의글 클릭:", inquiry);
                             setSelectedInquiry(inquiry);
@@ -609,22 +753,22 @@ const CustomerCenter: React.FC = () => {
                         >
                           {inquiry.title}
                         </td>
-                        <td className="td">
+                        <td className="cc-td">
                           {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
                         </td>
-                        <td className="td">
+                        <td className="cc-td">
                           <span
-                            className={`status-badge ${
+                            className={`cc-status-badge ${
                               inquiry.answerDTO ? "completed" : "waiting"
                             }`}
                           >
                             {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
                           </span>
                         </td>
-                        <td className="td">
-                          <div className="button-group">
+                        <td className="cc-td">
+                          <div className="cc-button-group">
                             <button
-                              className="action-button"
+                              className="cc-action-button"
                               onClick={() =>
                                 inquiry.answerDTO
                                   ? handleRestrictedAction("edit")
@@ -634,7 +778,7 @@ const CustomerCenter: React.FC = () => {
                               수정
                             </button>
                             <button
-                              className="action-button delete"
+                              className="cc-action-button delete"
                               onClick={() =>
                                 inquiry.answerDTO
                                   ? handleRestrictedAction("delete")
@@ -656,12 +800,12 @@ const CustomerCenter: React.FC = () => {
       </div>
 
       {showInquiryModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h2>{editingInquiry ? "문의 수정하기" : "1:1 문의하기"}</h2>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => {
                   setShowInquiryModal(false);
                   setEditingInquiry(null);
@@ -672,7 +816,7 @@ const CustomerCenter: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleInquirySubmit}>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>제목</label>
                 <input
                   type="text"
@@ -683,7 +827,7 @@ const CustomerCenter: React.FC = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>내용</label>
                 <textarea
                   value={inquiryForm.content}
@@ -693,7 +837,7 @@ const CustomerCenter: React.FC = () => {
                   required
                 />
               </div>
-              <button type="submit" className="button">
+              <button type="submit" className="cc-button">
                 {editingInquiry ? "수정하기" : "제출하기"}
               </button>
             </form>
@@ -702,21 +846,21 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showDeleteModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h3>삭제 확인</h3>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowDeleteModal(false)}
               >
                 <X />
               </button>
             </div>
             <p>문의를 삭제하시겠습니까?</p>
-            <div className="modal-button-group">
+            <div className="cc-modal-button-group">
               <button
-                className="modal-button cancel"
+                className="cc-modal-button cancle"
                 onClick={() => setShowDeleteModal(false)}
               >
                 취소
@@ -730,21 +874,21 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showAlertModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h3>알림</h3>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowAlertModal(false)}
               >
                 <X />
               </button>
             </div>
             <p>{alertMessage}</p>
-            <div className="modal-button-group">
+            <div className="cc-modal-button-group">
               <button
-                className="modal-button"
+                className="cc-modal-button"
                 onClick={() => setShowAlertModal(false)}
               >
                 확인
@@ -755,27 +899,27 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showDetailModal && selectedInquiry && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h3>문의 상세</h3>
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
+              <h2>1:1 문의 상세내용</h2>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowDetailModal(false)}
               >
                 <X />
               </button>
             </div>
             <form>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>제목</label>
                 <input type="text" value={selectedInquiry.title} readOnly />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>내용</label>
                 <textarea value={selectedInquiry.content} readOnly />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>작성일</label>
                 <input
                   type="text"
@@ -789,12 +933,55 @@ const CustomerCenter: React.FC = () => {
               </div>
 
               {selectedInquiry.answerDTO && (
-                <div className="form-group">
+                <div className="cc-form-group">
                   <label>답변</label>
-                  <textarea
-                    value={selectedInquiry.answerDTO.contents}
-                    readOnly
-                  />
+                  {editingAnswerId === selectedInquiry.answerDTO.answerId ? (
+                    <div>
+                      <textarea
+                        value={editingAnswerContent}
+                        onChange={(e) =>
+                          setEditingAnswerContent(e.target.value)
+                        }
+                      />
+                      {isAdmin && (
+                        <>
+                          <button
+                            className="cc-action-button"
+                            onClick={handleEditAnswerSubmit}
+                          >
+                            저장
+                          </button>
+                          <button
+                            className="cc-action-button cancle"
+                            onClick={() => setEditingAnswerId(null)}
+                          >
+                            취소
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="cc-answer-box">
+                      <div className="cc-answer-label"></div>
+                      <p className="cc-answer-content">
+                        {selectedInquiry.answerDTO.contents}
+                      </p>
+                      {isAdmin && (
+                        <div className="cc-admin-answer-actions">
+                          <button
+                            onClick={() => handleEditAnswer(selectedInquiry)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnswer(selectedInquiry)}
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </form>

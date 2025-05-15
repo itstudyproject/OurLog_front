@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/auth";
@@ -11,7 +10,7 @@ interface Sale {
   artist: string;
   count: number;
   date: string;
-  price: string;
+  price: string | number;
   method: string;
 }
 
@@ -51,33 +50,55 @@ useEffect(() => {
         <h2>판매 내역</h2>
       </div>
       <div className="bid-list">
-        {currentItems.map((item) => (
-          <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.title} />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.title} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>판매횟수: {item.count}</p>
+                <p className="bid-amount">판매금액: {typeof item.price === 'number' ? item.price.toLocaleString() : item.price}원</p>
+                <p>판매방식: {item.method}</p>
+                <p>판매날짜: {item.date}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.id}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p>작가: {item.artist}</p>
-              <p>판매횟수: {item.count}</p>
-              <p className="bid-amount">판매금액: {item.price}</p>
-              <p>판매방식: {item.method}</p>
-              <p>판매날짜: {item.date}</p>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>판매 내역이 없습니다.</p>
           </div>
-
-        ))}
+        )}
       </div>
 
-
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button key={page} onClick={() => setCurrentPage(page)} className={`page-btn${page === currentPage ? " active" : ""}`}>
-            {page}
-          </button>
-        ))}
-      </div>
-
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button 
+                key={page} 
+                onClick={() => setCurrentPage(page)} 
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
+import { createProfile, UserProfileDTO } from '../hooks/profileApi';
+import { setToken } from '../utils/auth';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ const RegisterPage: React.FC = () => {
     privacyAgreed: false
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -25,9 +28,38 @@ const RegisterPage: React.FC = () => {
     }));
   };
 
+  // 로그인 처리 함수
+  const performLogin = async (email: string, password: string): Promise<string> => {
+    try {
+      const loginResponse = await fetch(
+        `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      const tokenText = await loginResponse.text();
+      
+      if (tokenText.startsWith('{"code"')) {
+        throw new Error("로그인에 실패했습니다.");
+      }
+
+      const token = tokenText.trim();
+      setToken(token);
+      return token;
+    } catch (err) {
+      console.error("자동 로그인 처리 중 오류:", err);
+      throw err;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     // 비밀번호 확인
     if (formData.password !== formData.confirmPassword) {
@@ -42,7 +74,8 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/ourlog/user/register', {
+      // 1. 회원가입 요청
+      const registerResponse = await fetch('http://localhost:8080/ourlog/user/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,13 +90,62 @@ const RegisterPage: React.FC = () => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!registerResponse.ok) {
+        const errorData = await registerResponse.json();
         throw new Error(errorData.message || '회원가입에 실패했습니다.');
       }
 
-      // 성공 시 로그인 페이지로 이동
-      navigate('/login');
+      // 2. 회원가입 응답에서 ID 추출
+      const userId = await registerResponse.json();
+      console.log("회원가입 성공 - 생성된 userId:", userId);
+
+      // 3. 회원가입 성공 후 자동 로그인하여 토큰 획득
+      try {
+        const token = await performLogin(formData.email, formData.password);
+        console.log("자동 로그인 완료, 토큰 획득:", token);
+        
+        // 4. 프로필 정보 생성 시도 (인증 토큰이 있는 상태에서)
+        try {
+          const defaultProfile: UserProfileDTO = {
+            user: userId,
+            nickname: formData.nickname,
+            introduction: `안녕하세요, ${formData.nickname}입니다.`,
+            email: formData.email,
+            name: formData.name,
+            location: '',
+            website: '',
+            originImagePath: '/images/mypage.png',
+            thumbnailImagePath: '/images/mypage.png',
+          };
+          
+          await createProfile(defaultProfile);
+          console.log("기본 프로필 생성 완료");
+        } catch (profileErr) {
+          console.error("프로필 생성 중 오류:", profileErr);
+          // 프로필 생성 실패해도 회원가입은 완료된 것으로 처리
+        }
+
+        // 5. 자동 로그인 세션 제거 (사용자가 명시적으로 로그인하도록)
+        localStorage.removeItem('token');
+        
+      } catch (loginErr) {
+        console.error("자동 로그인 중 오류:", loginErr);
+        // 로그인 실패해도 회원가입은 완료됨
+      }
+      
+      // 회원가입 성공 후 메시지 표시하고 로그인 페이지로 즉시 이동
+      setSuccess('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+      
+      // 1초 후 로그인 페이지로 이동 (사용자가 성공 메시지를 볼 수 있도록 짧은 딜레이 적용)
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { 
+            email: formData.email,
+            message: '회원가입이 완료되었습니다. 로그인해 주세요.' 
+          } 
+        });
+      }, 1000);
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
     }
@@ -74,13 +156,16 @@ const RegisterPage: React.FC = () => {
       <div className="login-form">
         {/* 회원가입 헤더 */}
         <img src="/images/OurLog.png" alt="Logo" className="logo" />
-        {/* <h1 className="login-title">
-          OurLog에 가입하기
-        </h1> */}
         
         {error && (
           <div className="error-message">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="success-message">
+            {success}
           </div>
         )}
 

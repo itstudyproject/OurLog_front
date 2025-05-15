@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
@@ -20,8 +20,8 @@ interface FormData {
 const PostRegister = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const category = queryParams.get("category") || "자유게시판";
+  const params = new URLSearchParams(location.search);
+  const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
@@ -29,21 +29,12 @@ const PostRegister = () => {
     content: "",
     images: [],
     thumbnailId: null,
-    category: category,
+    category: initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>("");
-
-  // 아트 게시판 접근 시 리다이렉트
-  useEffect(() => {
-    if (category === "아트게시판") {
-      alert("아트 작품은 아트 등록 페이지에서 작성해주세요.");
-      navigate("/art/register");
-      return;
-    }
-  }, [category, navigate]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
