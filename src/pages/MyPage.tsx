@@ -10,6 +10,7 @@ import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import DeleteAccountPage from "./DeleteAccountPage";
 import "../styles/WorkerPage.css";
 import "../styles/BidHistory.css";
+import "../styles/PurchaseBidPage.css";
 
 import {
   fetchProfile,
@@ -55,6 +56,16 @@ const MyPage: React.FC = () => {
       .catch((err) => console.error(err));
   }, [userId]);
 
+  // 메뉴 선택 상태 관리
+  const getCurrentTab = () => {
+    const path = location.pathname;
+    if (path === '/mypage') return 'recent';
+    if (path.includes('/purchase-bid')) return 'purchase-bid';
+    if (path.includes('/sale')) return 'sale';
+    if (path.includes('/bookmark')) return 'bookmark';
+    return 'recent';
+  };
+
   return (
     <div className="bid-history-container">
       <div className="bid-history-title">
@@ -88,8 +99,16 @@ const MyPage: React.FC = () => {
             <button
               className="detail-button"
               onClick={() => navigate("/mypage/account/edit")}
+              style={{ marginRight: "10px" }}
             >
               회원정보수정
+            </button>
+            <button 
+              className="detail-button"
+              onClick={() => navigate("/mypage/account/delete")}
+              style={{ backgroundColor: "#e74c3c" }}
+            >
+              회원탈퇴
             </button>
           </div>
         </div>
@@ -98,6 +117,7 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title" style={{ marginTop: "30px" }}>
         <h2>메뉴</h2>
       </div>
+<<<<<<< HEAD
 
       <div
         style={{
@@ -110,35 +130,52 @@ const MyPage: React.FC = () => {
           className={`bid-now-button ${
             location.pathname === "/mypage" ? "active" : ""
           }`}
+=======
+      
+      <div className="sub-tab-nav">
+        <button 
+          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`} 
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           최근 본 게시물
         </button>
+<<<<<<< HEAD
         <button
           className={`bid-now-button ${
             location.pathname.includes("/purchase-bid") ? "active" : ""
           }`}
+=======
+        <button 
+          className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage/purchase-bid")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           구매/입찰목록
         </button>
+<<<<<<< HEAD
         <button
           className={`bid-now-button ${
             location.pathname.includes("/sale") ? "active" : ""
           }`}
+=======
+        <button 
+          className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage/sale")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           판매목록/현황
         </button>
+<<<<<<< HEAD
         <button
           className={`bid-now-button ${
             location.pathname.includes("/bookmark") ? "active" : ""
           }`}
+=======
+        <button 
+          className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage/bookmark")}
-          style={{ flex: 1, margin: "0 5px", maxWidth: "200px" }}
         >
           북마크
         </button>

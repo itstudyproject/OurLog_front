@@ -10,7 +10,7 @@ interface Sale {
   artist: string;
   count: number;
   date: string;
-  price: string;
+  price: string | number;
   method: string;
 }
 
@@ -52,6 +52,7 @@ const SaleList: React.FC = () => {
         <h2>판매 내역</h2>
       </div>
       <div className="bid-list">
+<<<<<<< HEAD
         {currentItems.map((item) => (
           <div
             key={item.id}
@@ -68,8 +69,40 @@ const SaleList: React.FC = () => {
               <p className="bid-amount">판매금액: {item.price}</p>
               <p>판매방식: {item.method}</p>
               <p>판매날짜: {item.date}</p>
+=======
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.title} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>판매횟수: {item.count}</p>
+                <p className="bid-amount">판매금액: {typeof item.price === 'number' ? item.price.toLocaleString() : item.price}원</p>
+                <p>판매방식: {item.method}</p>
+                <p>판매날짜: {item.date}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.id}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
             </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>판매 내역이 없습니다.</p>
           </div>
+<<<<<<< HEAD
         ))}
       </div>
 
@@ -84,6 +117,26 @@ const SaleList: React.FC = () => {
           </button>
         ))}
       </div>
+=======
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button 
+                key={page} 
+                onClick={() => setCurrentPage(page)} 
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+>>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
     </div>
   );
 };

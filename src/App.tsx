@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
 import ChatPage from "./pages/ChatPage";
 import MyPage from "./pages/MyPage";
@@ -27,8 +26,8 @@ import SearchPage from "./pages/SearchPage";
 import PurchaseBidPage from "./pages/PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./pages/SalePage/SalePage";
 import BookmarkPage from "./pages/BookmarkPage";
-import AccountEdit from "./pages/AccountEdit";
-import ProfileEdit from "./pages/ProfileEdit";
+import AccountEditPage from "./pages/AccountEdit";
+import ProfileEditPage from "./pages/ProfileEdit";
 
 function App() {
   return (
@@ -81,7 +80,7 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/profile-edit"
-        element={<ProfileEditPage onBack={() => window.history.back()} />}
+        element={<ProfileEditPage profile={null} onBack={() => window.history.back()} onSave={async () => {}} />}
       />
 
       <Route path="/delete-account" element={<DeleteAccountPage />} />
