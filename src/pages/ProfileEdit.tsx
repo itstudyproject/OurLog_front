@@ -2,11 +2,16 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserProfileDTO } from "../hooks/profileApi";
 import '../styles/ProfileEdit.css';
 
+
 interface ProfileEditPageProps {
-  onBack?: () => void;
+  profile: UserProfileDTO | null;
+  onBack: () => void;
+  onSave: (updated: Partial<UserProfileDTO>) => Promise<void>;
 }
+
 
 const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   const navigate = useNavigate();
@@ -57,7 +62,7 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     try {
       // 실제 API 엔드포인트에 맞게 URL을 수정
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/users/update-profile', {
+      const res = await fetch('/users/update-profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

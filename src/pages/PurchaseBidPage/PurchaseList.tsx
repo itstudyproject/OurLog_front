@@ -2,64 +2,94 @@
 import React from 'react';
 import '../../styles/PurchaseList.css';
 
-const dummyData = [
-  {
-    image: '/images/sample1.jpg',
-    title: '자화상 - 일러스트',
-    artist: 'Allen Doichi',
-    date: '2025.03.07',
-    price: '20,000원',
-    method: '경매로 입찰',
-  },
-  {
-    image: '/images/sample2.jpg',
-    title: '작품명',
-    artist: '작가명',
-    date: '2025.03.07',
-    price: '25,000원',
-    method: '경매로 입찰',
-  },
-  {
-    image: '/images/sample3.jpg',
-    title: '작품명',
-    artist: '작가명',
-    date: '2025.03.07',
-    price: '10,000원',
-    method: '경매로 입찰',
-  },
-];
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
+
+interface Purchase {
+  tradeId: number;
+  postTitle: string;
+  artist: string;
+  price: number;
+  method: string;
+  date: string;
+  image: string;
+}
+
+const PurchaseList: React.FC = () => {
+  const navigate = useNavigate();
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+ useEffect(() => {
+  fetch("http://localhost:8080/ourlog/trades/mypage/purchases", {
+    headers: getAuthHeaders(),
+  })
+    .then((res) => {
+      console.log("응답 상태코드:", res.status); // 👈 이게 중요 (403이면 인증 문제)
+      if (!res.ok) throw new Error("Fetch 실패");
+      return res.json();
+    })
+    .then((data) => {
+      console.log("받은 데이터:", data); // 👈 이거도 확인
+      const mapped = data.map((item: any) => ({
+        tradeId: item.tradeId,
+        postTitle: item.postTitle,
+        artist: item.postDTO?.user?.nickname ?? "알 수 없음",
+        price: item.nowBuy ?? item.highestBid,
+        method: item.nowBuy ? "즉시구매" : "경매낙찰",
+        date: item.modifiedAt?.substring(0, 10) ?? "",
+        image: item.thumbnailPath || "/images/sample1.jpg",
+      }));
+      setPurchases(mapped);
+    })
+    .catch((err) => console.error("에러 발생:", err));
+}, []);
+
+
+  const currentItems = purchases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(purchases.length / itemsPerPage);
+
 
 const PurchaseList = () => {
   return (
-    <div className="purchase-list">
-      {/* 정렬 필터 */}
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+
+    <div className="bid-history-container">
+      <div className="bid-history-title">
+        <h2>구매 목록</h2>
       </div>
 
-      {/* 리스트 */}
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="purchase-item-title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>구매날짜 {item.date}</p>
-              <p>구매금액 {item.price}</p>
-              <p>구매방식 {item.method}</p>
+      <div className="bid-list">
+        {currentItems.map((item) => (
+          <div key={item.tradeId} className="bid-item" onClick={() => navigate(`/art/${item.tradeId}`)}>
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.postTitle} />
             </div>
-          </li>
+            <div className="bid-details">
+              <h3>{item.postTitle}</h3>
+              <p className="bid-amount">구매금액: {item.price.toLocaleString()}원</p>
+              <p>구매방식: {item.method}</p>
+              <p>구매날짜: {item.date}</p>
+            </div>
+          </div>
+
         ))}
       </ul>
 
-      {/* 페이지네이션 */}
+
       <div className="pagination">
-        {'<'} 1 2 3 4 5 6 7 {'>'}
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
+          >
+            {page}
+          </button>
+        ))}
+
       </div>
     </div>
   );

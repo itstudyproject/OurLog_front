@@ -1,68 +1,109 @@
-import React from 'react';
-import '../styles/PurchaseList.css';
 
-const bookmarkData = [
-  {
-    image: '/images/bookmark1.jpg',
-    title: 'Peach Garden',
-    artist: 'Minji',
-    bookmarkedDate: '2025.05.01',
-    method: '경매',
-    status: '입찰중',
-  },
-  {
-    image: '/images/bookmark2.jpg',
-    title: 'Summer Breeze',
-    artist: 'Yuna',
-    bookmarkedDate: '2025.04.22',
-    method: '개인의뢰',
-    status: '판매완료',
-  },
-  {
-    image: '/images/bookmark3.jpg',
-    title: 'Silent Night',
-    artist: 'Jisoo',
-    bookmarkedDate: '2025.04.10',
-    method: '경매',
-    status: '대기중',
-  },
-];
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuthHeaders } from '../utils/auth';
+import '../styles/BidHistory.css';
 
-const BookmarkPage = () => {
+interface Favorite {
+  favoriteId: number;
+  title: string;
+  artist: string;
+  imagePath: string;
+  postId: number;
+  favorited: boolean;
+  favoriteCnt: number;
+}
+
+const BookmarkPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  useEffect(() => {
+    fetch('http://localhost:8080/ourlog/favorites/mypage', {
+      headers: getAuthHeaders(),
+    })
+      .then(res => res.json())
+      .then(setFavorites)
+      .catch(console.error);
+  }, []);
+
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = favorites.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(favorites.length / itemsPerPage);
+
+  const handleUnfavorite = (postId: number) => {
+    const stored = localStorage.getItem("user");
+    const userId = stored ? JSON.parse(stored).id : null;
+    if (!userId) return;
+
+    fetch(`http://localhost:8080/api/favorites/toggle?userId=${userId}&postId=${postId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    })
+      .then(res => res.json())
+      .then(() => {
+        // 성공적으로 해제하면 목록 새로고침
+        setFavorites(prev => prev.filter(item => item.postId !== postId));
+      })
+      .catch(console.error);
+  };
+
   return (
-    <div className="purchase-list">
-      {/* 정렬 필터 */}
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      <div className="bid-history-title">
+        <h2>북마크한 작품들</h2>
       </div>
 
-      {/* 북마크 아이템 리스트 */}
-      <ul className="item-list">
-        {bookmarkData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>북마크 날짜 {item.bookmarkedDate}</p>
-              <p>판매방식 {item.method}</p>
-              <p>현재 상태 {item.status}</p>
-              <div className="button-group">
-                <button className="detail-btn">자세히 보기</button>
-                <button className="unbookmark-btn">북마크 해제</button>
-              </div>
+      <div className="bid-list">
+        {currentItems.map(item => (
+          <div
+            key={item.favoriteId}
+            className="bid-item"
+            onClick={() => navigate(`/art/${item.postId}`)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="bid-artwork">
+              <img src={item.imagePath || '/images/default.jpg'} alt={item.title} />
+            </div>
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p>작가: {item.artist}</p>
+              <p>총 좋아요: {item.favoriteCnt}</p>
+            </div>
+            <div className="bid-actions">
+              <button
+                className="bid-now-button"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleUnfavorite(item.postId);
+                }}
+              >
+                북마크 해제
+              </button>
+
             </div>
           </li>
         ))}
       </ul>
 
-      {/* 페이지네이션 */}
-      <div className="pagination">
-        {'<'} 1 2 3 4 5 6 7 {'>'}
+
+      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          <button
+            key={page}
+            className={`page-btn${page === currentPage ? ' active' : ''}`}
+            onClick={() => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
+            {page}
+          </button>
+        ))}
+
       </div>
     </div>
   );
