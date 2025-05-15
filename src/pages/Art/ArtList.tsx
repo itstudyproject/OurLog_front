@@ -138,6 +138,10 @@ const ArtList = () => {
     setCurrentPage(1);
   };
 
+  const handleRegisterClick = () => {
+    navigate('/register');
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -149,21 +153,6 @@ const ArtList = () => {
   return (
     <div className="art-list-container">
       <div className="art-list-header">
-        <h2 className="art-list-title">아트</h2>
-        <div className="art-search-bar-wrapper">
-          <form className="art-search-bar" onSubmit={handleSearchSubmit}>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              placeholder="작품명 또는 작가명으로 검색"
-              className="art-search-input"
-            />
-            <button type="submit" className="art-search-button">
-              <img src="/images/Search.png" alt="검색" className="art-search-icon" />
-            </button>
-          </form>
-        </div>
         <div className="art-list-tabs">
           <button
             className={`art-list-tab-btn${sortType === 'popular' ? ' active' : ''}`}
@@ -176,6 +165,27 @@ const ArtList = () => {
             onClick={() => { setSortType('latest'); setCurrentPage(1); }}
           >
             최신순
+          </button>
+        </div>
+        <h2 className="art-list-title">아트</h2>
+        <div className="art-search-section">
+          <form onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="키워드로 검색해주세요"
+            />
+            <button type="submit" className="art-search-button">
+              <img
+                src="/images/Search.png"
+                alt="검색"
+                className="search-icon"
+              />
+            </button>
+          </form>
+          <button onClick={handleRegisterClick} className="art-register-button">
+            아트 등록
           </button>
         </div>
       </div>
