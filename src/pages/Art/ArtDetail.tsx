@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/ArtDetail.css";
-import { ArtPost, ArtDetailResponse } from "../../types/art";
+
+interface ArtPost {
+  id: number;
+  title: string;
+  author: string;
+  description: string;
+  currentBid: number;
+  startingBid: number;
+  buyNowPrice: number;
+  endTime: string;
+  createdAt: string;
+  imageSrc: string;
+  likes: number;
+  artistProfileImg: string;
+  isFollowing: boolean;
+}
 
 const ArtDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,70 +24,35 @@ const ArtDetail = () => {
   const [post, setPost] = useState<ArtPost | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [bidAmount, setBidAmount] = useState<string>("");
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [showShareOptions, setShowShareOptions] = useState<boolean>(false);
-  const [countdown, setCountdown] = useState<string>("");
   const shareBtnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   
-  // 카운트다운 계산 함수
-  const calculateTimeLeft = (endTime: string) => {
-    const now = new Date().getTime();
-    const endDate = new Date(endTime).getTime();
-    const difference = endDate - now;
-
-    if (difference <= 0) {
-      return "경매 종료";
-    }
-
-    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-    return `${days}일 ${hours}시간 ${minutes}분 ${seconds}초`;
-  };
-
+  const [countdown, setCountdown] = useState<string>("");
   useEffect(() => {
     const fetchArtPost = async () => {
       try {
-        // TODO: API 연동
-        // const response = await fetch(`/api/arts/${id}`);
-        // const data: ArtDetailResponse = await response.json();
-        // setPost(data.data);
-        
-        // 테스트용 더미 데이터
-        const now = new Date();
-        const threeDaysLater = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
-
+        // 테스트용 1번 아트워크의 데이터
         const dummyPost: ArtPost = {
-          post_id: 1,
-          boardNo: 5,
+          id: 1,
           title: "뚱글뚱글 파스타",
-          content: "일러스트 디지털 드로잉 작품입니다. 파스타와 다양한 베이커리 음식들을 귀엽게 표현한 작품입니다. 주방이나 카페 등에 인테리어용으로 적합합니다.",
-          description: "일러스트 디지털 드로잉 작품입니다. 파스타와 다양한 베이커리 음식들을 귀엽게 표현한 작품입니다. 주방이나 카페 등에 인테리어용으로 적합합니다.",
-          author: {
-            id: 1,
-            name: "작가1",
-            profileImage: "/images/avatar.png",
-            isFollowing: false
-          },
-          auction: {
-            startingBid: 20000,
-            currentBid: 30000,
-            buyNowPrice: 50000,
-            endTime: threeDaysLater.toISOString(),
-            bidCount: 5
-          },
+          author: "작가1",
+          description:
+            "일러스트 디지털 드로잉 작품입니다. 파스타와 다양한 베이커리 음식들을 귀엽게 표현한 작품입니다. 주방이나 카페 등에 인테리어용으로 적합합니다.",
+          currentBid: 30000,
+          startingBid: 20000,
+          buyNowPrice: 50000,
+          endTime: "2023-12-31T23:59:59",
           createdAt: "2023.05.15",
-          updatedAt: "2023.05.15",
-          images: ["/images/파스타.jpg"],
+          imageSrc: "/images/파스타.jpg",
           likes: 128,
-          views: 256,
-          status: "ONGOING"
+          artistProfileImg: "/images/avatar.png",
+          isFollowing: false,
         };
-        
         setPost(dummyPost);
-        setBidAmount((dummyPost.auction.currentBid + 1000).toString());
+        setIsFollowing(dummyPost.isFollowing);
+        setBidAmount((dummyPost.currentBid + 1000).toString());
         setLoading(false);
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
@@ -81,18 +61,30 @@ const ArtDetail = () => {
     };
 
     fetchArtPost();
-  }, [id]);
-
-  // 카운트다운 타이머 설정
-  useEffect(() => {
-    if (!post?.auction.endTime) return;
-
+    // 카운트다운 타이머 설정
     const timer = setInterval(() => {
-      setCountdown(calculateTimeLeft(post.auction.endTime));
+      if (post) {
+        const endTime = new Date(post.endTime).getTime();
+        const now = new Date().getTime();
+        const distance = endTime - now;
+        if (distance < 0) {
+          clearInterval(timer);
+          setCountdown("경매 종료");
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          setCountdown(`${days}일 ${hours}:${minutes}:${seconds}`);
+        }
+      }
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [post?.auction.endTime]);
+  }, [id, post?.endTime]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -121,22 +113,15 @@ const ArtDetail = () => {
       return;
     }
     const bid = Number(bidAmount);
-    if (post && bid <= post.auction.currentBid) {
+    if (post && bid <= post.currentBid) {
       alert("현재 입찰가보다 높은 금액을 입력해주세요.");
       return;
     }
-    const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
+        const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
     if (!confirmBid) return;
     alert(`${bidAmount}원 입찰이 완료되었습니다.`);
     if (post) {
-      setPost({
-        ...post,
-        auction: {
-          ...post.auction,
-          currentBid: bid,
-          bidCount: post.auction.bidCount + 1
-        }
-      });
+      setPost({ ...post, currentBid: bid });
       setBidAmount((bid + 1000).toString());
     }
   };
@@ -144,16 +129,15 @@ const ArtDetail = () => {
   const handleBuyNow = () => {
     const confirmBuy = window.confirm("정말 즉시 구매하시겠습니까?");
     if (!confirmBuy) return;
-    navigate(`/Art/payment/${post?.post_id}`);
-  };
-
-  const handleOpenChat = () => {
+    navigate(`/Art/payment/${post?.id}`);
+  }; 
+    const handleOpenChat = () => {
     const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
     if (confirmChat) {
-      window.location.href = "/chat";
+      window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
     }
-  };
 
+  };  
   const handleBidHistory = () => {
     alert("입찰 내역을 확인합니다.");
   };
@@ -163,22 +147,14 @@ const ArtDetail = () => {
   };
 
   const handleFollow = () => {
+    setIsFollowing(!isFollowing);
     if (post) {
-      const newPost = {
-        ...post,
-        author: {
-          ...post.author,
-          isFollowing: !post.author.isFollowing
-        }
-      };
-      setPost(newPost);
-      const followMsg = !post.author.isFollowing
+      const followMsg = !isFollowing
         ? "작가님을 팔로우합니다."
         : "작가님 팔로우를 취소합니다.";
       alert(followMsg);
     }
   };
-
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -189,7 +165,7 @@ const ArtDetail = () => {
   };
 
   const handleArtistClick = () => {
-    navigate(`/worker/${post?.author.id}`);
+    navigate(`/worker/${post?.author}`);  // 작가의 페이지로 이동
   };
 
   if (loading) {
@@ -215,17 +191,12 @@ const ArtDetail = () => {
         <div className="left-content">
           <div className="art-image-container">
             <img
-              src={post.images?.[0] || '/images/placeholder.jpg'}
+              src={post.imageSrc}
               alt={post.title}
               className="art-main-image"
             />
           </div>
           <div className="artwork-description">
-            <div className="art-title">
-              <h2>{post.title}</h2>
-              <p className="art-date">등록일: {post.createdAt}</p>
-            </div>
-            <div className="description-divider"></div>
             <h3>작품 설명</h3>
             <div className="description-content">
               <p>{post.description}</p>
@@ -236,22 +207,22 @@ const ArtDetail = () => {
         <div className="art-info-container">
           <div className="artist-info">
             <div className="artist-avatar" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
-              <img src={post.author.profileImage} alt={`${post.author.name} 프로필`} />
+              <img src={post.artistProfileImg} alt={`${post.author} 프로필`} />
             </div>
             <div className="artist-detail" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
-              <h3>{post.author.name}</h3>
+              <h3>{post.author}</h3>
               <p>일러스트레이터</p>
             </div>
-            <div className="artist-buttons">
+            <div className="artist-buttons" style={{ position: 'relative' }}>
               <button
-                className={`follow-button ${post.author.isFollowing ? "following" : ""}`}
+                className={`follow-button ${isFollowing ? "following" : ""}`}
                 onClick={handleFollow}
               >
-                {post.author.isFollowing ? "팔로잉" : "팔로우"}
+                {isFollowing ? "팔로잉" : "팔로우"}
               </button>
               <button
                 className="share-button"
-                onClick={handleShareToggle}
+                onClick={() => setShowShareOptions((v) => !v)}
                 ref={shareBtnRef}
               >
                 공유
@@ -291,28 +262,31 @@ const ArtDetail = () => {
             </div>
           </div>
 
-          <button className="chat-button" onClick={handleOpenChat}>
-            <span className="chat-icon">💬</span> 작가와 1:1 채팅
-          </button>
+          <div className="art-title">
+            <h2>{post.title}</h2>
+            <p className="art-date">등록일: {post.createdAt}</p>
+          </div>
 
-          <div className="auction-info">
-            <div className="price-info">
-              <div className="price-box">
-                <div className="price-label">시작가</div>
-                <div className="price-value">{post.auction.startingBid.toLocaleString()}원</div>
-              </div>
-              <div className="price-box current-price">
-                <div className="price-label">현재 입찰가</div>
-                <div className="price-value">{post.auction.currentBid.toLocaleString()}원</div>
-              </div>
-              <div className="price-box">
-                <div className="price-label">즉시 구매가</div>
-                <div className="price-value">{post.auction.buyNowPrice.toLocaleString()}원</div>
-              </div>
+          <div className="bid-info">
+            <div className="bid-detail">
+              <span>시작가</span>
+              <p>{post.startingBid.toLocaleString()}원</p>
             </div>
-            <div className="countdown-box">
-              <div className="countdown-label">경매 종료까지</div>
-              <div className="countdown-value">{countdown}</div>
+            <div className="bid-detail current">
+              <span>현재 입찰가</span>
+              <p>{post.currentBid.toLocaleString()}원</p>
+            </div>
+            <div className="bid-detail">
+              <span>즉시 구매가</span>
+              <p>{post.buyNowPrice.toLocaleString()}원</p>
+            </div>
+          </div>
+
+          <div className="auction-timer">
+            <div className="timer-icon">⏱️</div>
+            <div className="timer-content">
+              <span>남은 시간</span>
+              <p>{countdown}</p>
             </div>
           </div>
 
@@ -335,6 +309,9 @@ const ArtDetail = () => {
                 즉시구매
               </button>
             </div>
+            <button className="chat-button" onClick={handleOpenChat}>
+              <span className="chat-icon">💬</span> 작가와 1:1 채팅
+            </button>
             <button className="bid-history-button" onClick={handleBidHistory}>
               입찰내역
             </button>

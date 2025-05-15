@@ -117,10 +117,29 @@
   align-items: center;
   justify-content: center;
   color: #888;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  position: relative;
+}
+
+.image-upload-placeholder.dragover {
+  border-color: #ffd700;
+  background-color: rgba(255, 215, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.image-upload-placeholder.dragover::after {
+  content: '이미지를 놓아주세요';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffd700;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .image-upload-placeholder:hover {
@@ -177,49 +196,34 @@
   resize: vertical;
 }
 
-.price-section {
-  margin: 20px 0;
-  padding: 20px;
-  background-color: #222;
-  border: 1px solid #333;
-  border-radius: 8px;
-}
-
-.price-grid {
+.price-info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .price-box {
-  padding: 15px;
-  background-color: #2a2a2a;
-  border: 1px solid #333;
-  border-radius: 6px;
+  background: #2a2a2a;
+  padding: 16px;
+  border-radius: 4px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.price-box.current-price {
-  background-color: #2a2a2a;
-  border: 1px solid #f8c147;
 }
 
 .price-label {
-  font-size: 0.9rem;
-  color: #999;
+  font-size: 13px;
+  color: #888;
   margin-bottom: 8px;
 }
 
 .price-value {
-  font-size: 1.2rem;
+  font-size: 19px;
   font-weight: bold;
   color: #fff;
 }
 
-.price-box.current-price .price-value {
-  color: #f8c147;
+.current-price {
+  background: #3a3a3a;
 }
 
 .bid-section {
