@@ -8,6 +8,11 @@ export interface UserProfileDTO {
   imagePath?: string;
   followerCount: number;
   followingCount: number;
+  email?: string;
+  name?: string;
+  introduction?: string;
+  location?: string;
+  website?: string;
 }
 
 export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {

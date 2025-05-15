@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/auth";
@@ -52,20 +51,21 @@ const BidStatusList: React.FC = () => {
               <p>시작가: {item.startPrice.toLocaleString()}원</p>
               <p className="bid-amount">낙찰가: {item.highestBid.toLocaleString()}원</p>
               {item.nowBuy && <p>즉시구매가: {item.nowBuy.toLocaleString()}원</p>}
-
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
-
+      </div>
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button key={page} onClick={() => setCurrentPage(page)} className={`page-btn${page === currentPage ? " active" : ""}`}>
+          <button 
+            key={page} 
+            onClick={() => setCurrentPage(page)} 
+            className={`page-btn${page === currentPage ? " active" : ""}`}
+          >
             {page}
           </button>
         ))}
-
       </div>
     </div>
   );
