@@ -86,6 +86,138 @@ const CustomerCenter: React.FC = () => {
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
 
+  const [inquiries, setInquiries] = useState<Question[]>([]);
+
+  // 운영자(Admin) 답글 달기
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [answerContent, setAnswerContent] = useState<Record<number, string>>(
+    {}
+  );
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+
+  // 사용자 권한 확인 함수 추가
+  const checkAdminStatus = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAdmin(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/user/check-admin",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsAdmin(data.isAdmin); // true면 관리자, false면 일반유저
+      } else {
+        setIsAdmin(false); // 인증 실패시 일반유저로 처리(혹은 로그아웃 처리)
+      }
+    } catch (error) {
+      setIsAdmin(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 호출
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin === null) return; // 아직 확인 전이면 아무것도 안 함
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    if (isAdmin) {
+      console.log("token : ", token);
+      fetchAllQuestions();
+    } else {
+      console.log("token : ", token);
+      fetchMyQuestions();
+    }
+    console.log("isAdmin 값 변경됨:", isAdmin);
+  }, [isAdmin]);
+
+  // 관리자용 전체 질문 목록 가져오기
+  const fetchAllQuestions = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/question/questionList",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+      console.log("📥 응답 상태 코드:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📦 전체 질문 목록 응답 데이터:", data);
+        data.dtoList.forEach((q) => console.log(q));
+        setAllQuestions(data.dtoList);
+      } else {
+        console.error("전체 질문 목록 조회 실패:", response.status);
+      }
+    } catch (error) {
+      console.error("전체 질문 목록 조회 실패:", error);
+    }
+  };
+
+  const fetchMyQuestions = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/question/my-questions",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setInquiries(data);
+      } else if (response.status === 401) {
+        console.error("인증이 만료되었습니다.");
+        localStorage.removeItem("token"); // 토큰 제거
+        // 로그인 페이지로 리다이렉트 또는 다른 처리
+      } else {
+        console.error("문의 목록 조회 실패:", response.status);
+      }
+    } catch (error) {
+      console.error("문의 목록 조회 실패:", error);
+    }
+  };
+
   // 검색어에 따른 FAQ 필터링
   const filteredFaqs = searchTerm
     ? faqs.filter(
@@ -94,29 +226,6 @@ const CustomerCenter: React.FC = () => {
           faq.content.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : faqs;
-
-  const [inquiries, setInquiries] = useState<Question[]>([
-    {
-      questionId: 5,
-      title: "로그인 오류",
-      content: "로그인이 계속 안 되는데 어떻게 해야 하나요?",
-      regDate: "2024-01-20",
-      modDate: "2024-01-20",
-      userDTO: {
-        id: 2,
-        email: "user@example.com",
-        nickname: "사용자",
-      },
-      answerDTO: {
-        answerId: 1,
-        contents:
-          "안녕하세요. 불편을 드려 죄송합니다. 로그인 시 발생하는 구체적인 오류 메시지와 함께 사용하시는 브라우저 정보를 알려주시면 확인 후 도움드리도록 하겠습니다.",
-        regDate: "2024-01-20",
-        modDate: "2024-01-20",
-      },
-      isOpen: false,
-    },
-  ]);
 
   const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
     setActiveSection(section);
@@ -149,6 +258,12 @@ const CustomerCenter: React.FC = () => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     const headers = {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -184,24 +299,6 @@ const CustomerCenter: React.FC = () => {
     setEditingInquiry(null);
     setShowInquiryModal(false);
   };
-  const fetchMyQuestions = async () => {
-    const token = localStorage.getItem("token");
-    const headers = {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-    const res = await fetch(
-      "http://localhost:8080/ourlog/question/my-questions",
-      { headers }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      setInquiries(data); // 문의 목록 갱신
-    }
-  };
-
-  useEffect(() => {
-    fetchMyQuestions();
-  }, []);
 
   const handleDeleteInquiry = (questionId: number) => {
     setSelectedQuestionId(questionId);
@@ -236,14 +333,14 @@ const CustomerCenter: React.FC = () => {
       if (!res.ok) {
         const errorText = await res.text();
         console.error("삭제 실패:", res.status, errorText);
-        alert(`삭제 실패: ${res.status} ${errorText}`);
+        setAlertMessage(`삭제 실패: ${res.status} ${errorText}`);
       } else {
         setShowDeleteModal(false);
         fetchMyQuestions();
       }
     } catch (e) {
       console.error("삭제 중 네트워크 에러:", e);
-      alert("삭제 중 네트워크 에러 발생");
+      setAlertMessage("삭제 중 네트워크 에러 발생");
     }
   };
 
@@ -256,24 +353,83 @@ const CustomerCenter: React.FC = () => {
     setShowAlertModal(true);
   };
 
+  const handleAnswerSubmit = async (
+    questionId: number,
+    answerContentValue: string
+  ) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("토큰이 없습니다.");
+      return;
+    }
+
+    console.log("token answer", token);
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/question-answer/${questionId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            contents: answerContentValue,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert("답변이 등록되었습니다.");
+        setAnswerContent((prev) => ({
+          ...prev,
+          [questionId]: "",
+        }));
+        fetchAllQuestions();
+      } else {
+        const errorText = await response.text();
+        alert("답변 등록 실패: " + errorText);
+      }
+    } catch (error) {
+      console.error("답변 등록 실패:", error);
+      alert("답변 등록 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
       <div className="cc-container">
         <nav className="cc-sidebar">
           <h2 className="cc-sidebar-title">고객센터</h2>
-          <div
-            className={`cc-nav-item ${activeSection === "faq" ? "active" : ""}`}
-            onClick={() => scrollToSection("faq")}
-          >
-            자주 묻는 질문
-          </div>
-          {!searchTerm && (
+          {isAdmin ? (
+            // 관리자일 때
+            <div
+              className={`cc-nav-item ${
+                activeSection === "questionlist" ? "active" : ""
+              }`}
+              onClick={() => setActiveSection("questionlist")}
+            >
+              전체 질문 목록
+            </div>
+          ) : (
+            // 일반 유저일 때
             <>
+              <div
+                className={`cc-nav-item ${
+                  activeSection === "faq" ? "active" : ""
+                }`}
+                onClick={() => setActiveSection("faq")}
+              >
+                자주 묻는 질문
+              </div>
               <div
                 className={`cc-nav-item ${
                   activeSection === "inquiry" ? "active" : ""
                 }`}
-                onClick={() => scrollToSection("inquiry")}
+                onClick={() => setActiveSection("inquiry")}
               >
                 1:1 문의하기
               </div>
@@ -281,7 +437,7 @@ const CustomerCenter: React.FC = () => {
                 className={`cc-nav-item ${
                   activeSection === "questionlist" ? "active" : ""
                 }`}
-                onClick={() => scrollToSection("questionlist")}
+                onClick={() => setActiveSection("questionlist")}
               >
                 1:1 문의내역
               </div>
@@ -290,53 +446,113 @@ const CustomerCenter: React.FC = () => {
         </nav>
 
         <div className="cc-content">
-          <section id="faq">
-            <h1 className="cc-styled-h1">
-              무엇이든 물어보세요
-              <br />
-              궁금하신 점 바로 풀어드립니다.
-            </h1>
-
-            <div className="cc-search-wrapper">
-              <input
-                type="text"
-                className="cc-search-input"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="cc-search-icon" />
-            </div>
-
-            <div className="cc-section-title">
-              {searchTerm
-                ? `"${searchTerm}"에 대한 검색 결과`
-                : "자주 묻는 질문"}
-            </div>
-
-            <div className="faq-list">
-              {filteredFaqs.map((faq) => (
-                <div className="faq-item" key={faq.questionId}>
+          {isAdmin ? (
+            <section id="questionlist">
+              <h2 className="cc-section-title">전체 질문 목록</h2>
+              {allQuestions.length === 0 ? (
+                <p className="no-results">등록된 질문이 없습니다.</p>
+              ) : (
+                allQuestions.map((question) => (
                   <div
-                    className="question-box"
-                    onClick={() => toggleQuestion(faq.questionId)}
-                    aria-expanded={faq.isOpen}
+                    key={question.questionId}
+                    className="admin-question-card"
                   >
-                    {faq.title}
-                  </div>
-                  <div className={`answer ${faq.isOpen ? "open" : ""}`}>
-                    {faq.content}
-                  </div>
-                </div>
-              ))}
-              {filteredFaqs.length === 0 && searchTerm && (
-                <p className="no-results">검색 결과가 없습니다.</p>
-              )}
-            </div>
-          </section>
+                    <p className="admin-question-writer">
+                      작성자 : {question.userDTO?.nickname || "익명"}
+                      <br />
+                      e-mail: {question.userDTO?.email || "익명"}
+                    </p>
+                    <h3 className="admin-question-title">
+                      제목 : {question.title}
+                    </h3>
+                    <h3 className="admin-question-content">
+                      내용 : {question.content}
+                    </h3>
 
-          {!searchTerm && (
+                    {question.answerDTO ? (
+                      <div className="answer-box">
+                        <strong className="answer-label">답변:</strong>
+                        <p className="answer-content">
+                          {question.answerDTO.contents}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="answer-form">
+                        <textarea
+                          value={answerContent[question.questionId] || ""}
+                          onChange={(e) =>
+                            setAnswerContent({
+                              ...answerContent,
+                              [question.questionId]: e.target.value,
+                            })
+                          }
+                          placeholder="답변을 입력하세요"
+                          className="admin-answer-textarea"
+                        />
+                        <button
+                          className="button"
+                          onClick={() =>
+                            handleAnswerSubmit(
+                              question.questionId,
+                              answerContent[question.questionId] || ""
+                            )
+                          }
+                        >
+                          답변 등록
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </section>
+          ) : (
             <>
+              <section id="faq">
+                <h1 className="cc-styled-h1">
+                  무엇이든 물어보세요
+                  <br />
+                  궁금하신 점 바로 풀어드립니다.
+                </h1>
+
+                <div className="cc-search-wrapper">
+                  <input
+                    type="text"
+                    className="cc-search-input"
+                    placeholder="검색어를 입력하세요"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <Search className="cc-search-icon" />
+                </div>
+
+                <div className="cc-section-title">
+                  {searchTerm
+                    ? `"${searchTerm}"에 대한 검색 결과`
+                    : "자주 묻는 질문"}
+                </div>
+
+                <div className="faq-list">
+                  {filteredFaqs.map((faq) => (
+                    <div className="faq-item" key={faq.questionId}>
+                      <div
+                        className="question-box"
+                        onClick={() => toggleQuestion(faq.questionId)}
+                        aria-expanded={faq.isOpen}
+                      >
+                        {faq.title}
+                      </div>
+                      <div className={`answer ${faq.isOpen ? "open" : ""}`}>
+                        {faq.content}
+                      </div>
+                    </div>
+                  ))}
+                  {filteredFaqs.length === 0 && searchTerm && (
+                    <p className="no-results">검색 결과가 없습니다.</p>
+                  )}
+                </div>
+              </section>
+
               <section id="inquiry">
                 <h2 className="cc-section-title">1:1 문의하기</h2>
                 <p className="info-text">
@@ -571,6 +787,7 @@ const CustomerCenter: React.FC = () => {
                   readOnly
                 />
               </div>
+
               {selectedInquiry.answerDTO && (
                 <div className="form-group">
                   <label>답변</label>
@@ -587,5 +804,4 @@ const CustomerCenter: React.FC = () => {
     </>
   );
 };
-
 export default CustomerCenter;

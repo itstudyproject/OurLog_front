@@ -1,31 +1,36 @@
 // src/pages/PurchaseBidPage/PurchaseBidPage.tsx
+
 import React, { useState } from "react";
 import PurchaseList from "./PurchaseList";
 import BidStatusList from "./BidStatusList";
 import "../../styles/PurchaseBidPage.css";
 import '../../styles/BidHistory.css';
 
-const PurchaseBidPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"purchase" | "bid">("purchase");
+const PurchaseBidPage = () => {
+  const [activeTab, setActiveTab] = useState<'purchase' | 'bid'>('purchase'); // 활성화된 탭 상태 관리
 
   return (
     <div className="purchase-bid-page">
+
       <div className="sub-tab-nav">
         <div
           className={`sub-tab ${activeTab === "purchase" ? "active" : ""}`}
           onClick={() => setActiveTab("purchase")}
+
         >
           구매목록
-        </div>
-        <div
-          className={`sub-tab ${activeTab === "bid" ? "active" : ""}`}
-          onClick={() => setActiveTab("bid")}
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'bid' ? 'active' : ''}`}
+          onClick={() => setActiveTab('bid')}
         >
           입찰현황
-        </div>
+        </button>
       </div>
 
+
       {activeTab === "purchase" ? <PurchaseList /> : <BidStatusList />}
+
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthHeaders } from '../utils/auth';
@@ -82,10 +83,12 @@ const BookmarkPage: React.FC = () => {
               >
                 북마크 해제
               </button>
+
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
+
 
       <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
@@ -100,6 +103,7 @@ const BookmarkPage: React.FC = () => {
             {page}
           </button>
         ))}
+
       </div>
     </div>
   );

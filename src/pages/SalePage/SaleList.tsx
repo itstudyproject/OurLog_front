@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/auth";
@@ -64,8 +65,10 @@ useEffect(() => {
               <p>판매날짜: {item.date}</p>
             </div>
           </div>
+
         ))}
-      </div>
+      </ul>
+
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -74,6 +77,7 @@ useEffect(() => {
           </button>
         ))}
       </div>
+
     </div>
   );
 };

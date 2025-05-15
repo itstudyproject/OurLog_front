@@ -16,6 +16,7 @@
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 32px;
   justify-content: space-between;
+  /* To separate the profile from the buttons */
 }
 
 /* 프로필 이미지 */
@@ -33,6 +34,7 @@
   flex: 1;
   display: flex;
   justify-content: space-between;
+  /* Space between name and stats/buttons */
   align-items: center;
 }
 
@@ -53,7 +55,9 @@
 .worker-stats {
   display: flex;
   flex-direction: row;
+  /* column → row */
   gap: 24px;
+  /* 팔로우/팔로잉 간 간격 추가 */
   margin-left: 16px;
 }
 
@@ -80,32 +84,35 @@
   justify-content: flex-end;
 }
 
-/* 공통 버튼 스타일 (팔로우 / 채팅) */
+/* 버튼 스타일 */
 .btn {
-  background-color: #000 !important; /* 검정색 */
-  color: #fff !important; /* 흰색 텍스트 */
-  border: none !important;
-  padding: 10px 18px !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
-  cursor: pointer !important;
-  transition: background-color 0.2s ease !important;
+  background-color: #000000;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .btn:hover {
-  background-color: #222 !important;
+  background-color: #222;
+  /* 혹은 원하는 hover 배경색 */
 }
 
 .btn:active,
 .btn:focus {
   outline: none;
   background-color: #000;
+  /* 클릭 시 색상 변경 */
 }
 
 /* 작품 카드 갤러리 */
 .worker-gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  /* 3개씩 가로 배치 */
   gap: 20px;
 }
 
@@ -129,6 +136,7 @@
   width: 100%;
   height: 0;
   padding-bottom: 75%;
+  /* 4:3 비율 */
   overflow: hidden;
 }
 
@@ -207,75 +215,31 @@
 }
 
 .page-btn {
-  margin: 0 5px;
-  padding: 8px 12px;
-  background-color: #222;
-  color: #ccc;
-  border: 1px solid #444;
-  border-radius: 4px;
+  background: none !important;
+  border: 0px solid #000000 !important;
+  color: #303030 !important;
+  padding: 6px 12px;
+  margin: 0 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  outline: none;
+  /* 👈 추가 */
 }
 
 .page-btn.active {
-  background-color: #f8c147;
-  color: #222;
-  border-color: #f8c147;
+  background-color: #000 !important;
+  color: #adadad !important;
+  border-color: #ff0000 !important;
 }
 
 .page-btn:hover {
-  background-color: #333;
-  color: #fff;
+  background-color: #000;
 }
 
-.page-btn.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-btn.arrow-button {
-  font-weight: bold;
-}
-
-.chat-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.chat-modal {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-}
-
-/* ✅ 추가: 큰 모달용 스타일 */
-.chat-modal.large {
-  width: 900px;
-  height: 600px;
-}
-
-/* 모달 내부 요소 스타일 */
-.chat-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
+.page-btn:focus {
+  outline: none;
+  /* 👈 클릭 후 포커스에도 제거 */
+  box-shadow: none;
+  /* 선택 사항: 포커스 강조 효과 제거 */
 }

@@ -67,8 +67,10 @@ useEffect(() => {
               <p className="bid-amount">상태: {item.status}</p>
             </div>
           </div>
+
         ))}
-      </div>
+      </ul>
+
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -77,6 +79,7 @@ useEffect(() => {
           </button>
         ))}
       </div>
+
     </div>
   );
 };

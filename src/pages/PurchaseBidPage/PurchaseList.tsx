@@ -1,4 +1,6 @@
 // src/pages/PurchaseBidPage/PurchaseList.tsx
+import React from 'react';
+import '../../styles/PurchaseList.css';
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -50,7 +52,10 @@ const PurchaseList: React.FC = () => {
   const currentItems = purchases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(purchases.length / itemsPerPage);
 
+
+const PurchaseList = () => {
   return (
+
     <div className="bid-history-container">
       <div className="bid-history-title">
         <h2>구매 목록</h2>
@@ -69,8 +74,10 @@ const PurchaseList: React.FC = () => {
               <p>구매날짜: {item.date}</p>
             </div>
           </div>
+
         ))}
-      </div>
+      </ul>
+
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -82,6 +89,7 @@ const PurchaseList: React.FC = () => {
             {page}
           </button>
         ))}
+
       </div>
     </div>
   );

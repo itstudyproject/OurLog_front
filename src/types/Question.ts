@@ -6,6 +6,8 @@ export interface UserDTO {
 
 export interface AnswerDTO {
   answerId: number;
+  question?: Question;
+  userDTO: UserDTO;
   contents: string;
   regDate: string;
   modDate: string;

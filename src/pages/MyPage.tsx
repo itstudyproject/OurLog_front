@@ -1,9 +1,10 @@
+
 // src/pages/MyPage.tsx
 
 import React, { useState, useEffect } from "react";
+
 import { useNavigate, Routes, Route } from "react-router-dom";
-import ProfileEdit from "./ProfileEdit";
-import AccountEditPage from "./AccountEdit";
+import ProfileEditPage from "./ProfileEditPage";
 import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
@@ -20,6 +21,7 @@ const recentPosts = [
 ];
 
 const MyPage: React.FC = () => {
+
   const navigate = useNavigate();
   const stored = localStorage.getItem("user");
   const userId = stored ? (JSON.parse(stored).id as number) : null;
@@ -106,6 +108,7 @@ const MyPage: React.FC = () => {
         <Route path="sale/*" element={<SalePage />} />
         <Route path="bookmark" element={<BookmarkPage />} />
       </Routes>
+
     </div>
   );
 };

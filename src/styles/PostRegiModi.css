@@ -9,34 +9,34 @@ body {
 .post-register-wrapper {
   width: 100%;
   min-height: 100vh;
-  padding-bottom: 5rem;
+  padding-bottom: 80px;
 }
 
 .post-register-container {
   max-width: 1200px;
-  margin: 1rem auto;
-  padding: 0 1.25rem;
+  margin: 16px auto;
+  padding: 0 20px;
 }
 
 .category-select {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .category-select select {
   background-color: #1f2937;
   color: #e5e7eb;
   border: 1px solid #374151;
-  padding: 0.25rem 0.5rem;
+  padding: 4px 8px;
   border-radius: 4px;
 }
 
 .title-input input {
   width: 100%;
-  padding: 0.75rem 0;
-  font-size: 1.125rem;
+  padding: 12px 0;
+  font-size: 18px;
   background: transparent;
   color: #e5e7eb;
   border: none;
@@ -47,17 +47,17 @@ body {
 .content-box {
   background-color: #1f2937;
   border: 1px solid #374151;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .file-upload button {
   background-color: #374151;
   color: white;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
+  padding: 8px 16px;
+  margin-bottom: 8px;
   border: 1px solid #4b5563;
-  border-radius: 0.375rem;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -82,7 +82,7 @@ body {
 }
 
 .file-guide {
-  font-size: 0.875rem;
+  font-size: 14px;
   color: #9ca3af;
 }
 
@@ -91,16 +91,16 @@ body {
   height: 450px;
   background-color: #111827;
   color: #e5e7eb;
-  padding: 1rem;
+  padding: 16px;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 6px;
   resize: none;
   outline: none;
 }
 
 .char-count {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
+  margin-top: 4px;
+  font-size: 14px;
   text-align: right;
   color: #9ca3af;
 }
@@ -108,13 +108,13 @@ body {
 .button-group {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 16px;
+  margin-top: 24px;
 }
 
 .button-group button {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 8px 16px;
+  font-size: 14px;
   border-radius: 9999px;
   border: 1px solid transparent;
   cursor: pointer;
