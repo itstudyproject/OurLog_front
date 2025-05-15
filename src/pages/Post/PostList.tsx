@@ -2,19 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import "../../styles/PostList.css";
+import { BasePost, PostListResponse } from "../../types/post";
 
-interface Post {
-  id: number;
-  boardId?: number;
-  title: string;
-  author: string;
-  createdAt: string;
-  thumbnail?: string;
-}
+const boardIdMap = {  "/post": 1,  "/post/news": 1,  "/post/free": 2,  "/post/promotion": 3,  "/post/request": 4,};
 
 const PostList = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const location = useLocation();
+  const [posts, setPosts] = useState<BasePost[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -22,6 +17,7 @@ const PostList = () => {
     boardIdMap[location.pathname as keyof typeof boardIdMap] || 1
   );
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalPosts, setTotalPosts] = useState<number>(0);
 
   const postsPerPage = 10;
 
@@ -40,54 +36,65 @@ const PostList = () => {
   const fetchPosts = () => {
     setLoading(true);
     const pageNumber = Math.max(1, currentPage);
-
+    
     const params = new URLSearchParams({
       page: String(pageNumber),
       size: String(postsPerPage),
       boardNo: String(selectedBoardId),
       type: "t",
-      keyword: searchTerm,
+      keyword: searchTerm
     });
-
+    
     fetch(`http://localhost:8080/ourlog/post/list?${params.toString()}`, {
-      method: "GET",
-      headers: getAuthHeaders(),
+      method: 'GET',
+      headers: getAuthHeaders()
     })
-      .then(async (res) => {
-        if (res.status === 403) {
-          removeToken();
-          navigate("/login");
-          throw new Error("인증이 필요합니다.");
-        }
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("서버 에러 응답:", text);
-          throw new Error(text || "서버 오류");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data.pageResultDTO) {
-          throw new Error("잘못된 응답 형식");
-        }
-        const { pageResultDTO } = data;
-        const mappedPosts = (pageResultDTO.dtoList || []).map((item: any) => ({
-          id: item.postId || item.id,
-          title: item.title,
-          author: item.userName || item.author || item.writer || "",
-          createdAt: item.regDate || item.createdAt || "",
-          thumbnail: item.fileName || item.thumbnail || "",
-          boardId: item.boardNo || item.boardId,
-        }));
-        setPosts(mappedPosts);
-        setTotalPages(pageResultDTO.totalPage || 1);
-      })
-      .catch((err) => {
-        console.error("게시글 불러오기 실패:", err);
-        setPosts([]);
-        setTotalPages(1);
-      })
-      .finally(() => setLoading(false));
+    .then(async (res) => {
+      if (res.status === 403) {
+        removeToken();
+        navigate('/login');
+        throw new Error("인증이 필요합니다.");
+      }
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("서버 에러 응답:", text);
+        throw new Error(text || "서버 오류");
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (!data.pageResultDTO) {
+        throw new Error("잘못된 응답 형식");
+      }
+      const { pageResultDTO } = data;
+      const mappedPosts: BasePost[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+        post_id: item.postId || item.id,
+        boardNo: item.boardNo || item.boardId,
+        title: item.title,
+        content: item.content || '',
+        author: {
+          id: item.userId || 0,
+          name: item.userName || item.author || item.writer || '',
+          profileImage: item.userProfileImage || '/images/default-avatar.png'
+        },
+        createdAt: item.regDate || item.createdAt || '',
+        updatedAt: item.modDate || item.updatedAt || '',
+        likes: item.likeCount || 0,
+        views: item.viewCount || 0,
+        images: item.fileName ? [item.fileName] : [],
+        isLiked: item.isLiked || false
+      }));
+      setPosts(mappedPosts);
+      setTotalPages(pageResultDTO.totalPage || 1);
+      setTotalPosts(pageResultDTO.total || 0);
+    })
+    .catch((err) => {
+      console.error("게시글 불러오기 실패:", err);
+      setPosts([]);
+      setTotalPages(1);
+      setTotalPosts(0);
+    })
+    .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -95,22 +102,64 @@ const PostList = () => {
   }, [selectedBoardId, currentPage, searchTerm]);
 
   const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
-  const handleRegisterClick = () => navigate("/Post/Register");
+  const handleRegisterClick = () => {
+    let category = "";
+    switch (selectedBoardId) {
+      case 1:
+        category = "새소식";
+        break;
+      case 2:
+        category = "자유게시판";
+        break;
+      case 3:
+        category = "홍보게시판";
+        break;
+      case 4:
+        category = "요청게시판";
+        break;
+      default:
+        category = "자유게시판";
+    }
+    navigate(`/Post/Register?category=${encodeURIComponent(category)}`);
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
   };
   const handlePageClick = (page: number) => {
-    const validPage = Math.max(1, page);
-    setCurrentPage(validPage);
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleTabClick = (boardId: number) => {
     setSelectedBoardId(boardId);
     setCurrentPage(1);
+    switch (boardId) {
+      case 1:
+        navigate("/post/news");
+        break;
+      case 2:
+        navigate("/post/free");
+        break;
+      case 3:
+        navigate("/post/promotion");
+        break;
+      case 4:
+        navigate("/post/request");
+        break;
+      default:
+        navigate("/post");
+    }
   };
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  // 페이지네이션 그룹 계산
+  const pageGroup = Math.floor((currentPage - 1) / 10);
+  const startPage = pageGroup * 10 + 1;
+  const endPage = Math.min(startPage + 9, totalPages);
+  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+  // 게시글 필터링 (boardNo 1~4만)
+  const filteredPosts = posts.filter(post => [1,2,3,4].includes(post.boardNo));
 
   if (loading) {
     return (
@@ -121,7 +170,7 @@ const PostList = () => {
   }
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-4">
+    <div className="w-full max-w-screen-xl px-4 mx-auto">
       <div className="tab-menu">
         <div
           className={selectedBoardId === 1 ? "active" : ""}
@@ -178,7 +227,7 @@ const PostList = () => {
             </button>
           </form>
           <button onClick={handleRegisterClick} className="register-button">
-            게시글/작품 등록
+            게시글 등록
           </button>
         </div>
       </div>
@@ -194,42 +243,33 @@ const PostList = () => {
           </tr>
         </thead>
         <tbody>
-          {posts.length === 0 ? (
-            <tr>
-              <td colSpan={5} style={{ textAlign: "center" }}>
-                게시글이 없습니다.
+          {filteredPosts.map((post, index) => (
+            <tr key={post.post_id} onClick={() => handlePostClick(post.post_id)}>
+              <td>{totalPosts - (currentPage - 1) * postsPerPage - index}</td>
+              <td>{post.title}</td>
+              <td>
+                {post.images && post.images.length > 0 && (
+                  <img
+                    src={post.images[0]}
+                    alt="썸네일"
+                    className="thumbnail-image"
+                  />
+                )}
               </td>
+              <td>{post.author.name}</td>
+              <td>{post.createdAt}</td>
             </tr>
-          ) : (
-            posts.map((post) => (
-              <tr key={post.id} onClick={() => handlePostClick(post.id)}>
-                <td>{post.id}</td>
-                <td>{post.title}</td>
-                <td>
-                  {post.thumbnail ? (
-                    <img
-                      src={post.thumbnail}
-                      alt={post.title}
-                      className="thumbnail"
-                    />
-                  ) : (
-                    <div className="thumbnail">없음</div>
-                  )}
-                </td>
-                <td>{post.author}</td>
-                <td>{post.createdAt}</td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
 
       <div className="pagination">
         <button
-          onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
+          disabled={startPage === 1}
+          className="arrow-button"
         >
-          {"<"}
+          &lt;
         </button>
         {pageNumbers.map((number) => (
           <button
@@ -241,12 +281,11 @@ const PostList = () => {
           </button>
         ))}
         <button
-          onClick={() =>
-            currentPage < totalPages && handlePageClick(currentPage + 1)
-          }
-          disabled={currentPage === totalPages}
+          onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
+          disabled={endPage === totalPages}
+          className="arrow-button"
         >
-          {">"}
+          &gt;
         </button>
       </div>
     </div>

@@ -7,7 +7,7 @@ export const useUser = () => {
 
   useEffect(() => {
     // 실제 API 호출로 교체
-    fetch("/api/me", {
+    fetch("/me", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

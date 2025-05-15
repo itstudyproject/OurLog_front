@@ -4,49 +4,77 @@ import { hasToken, removeToken } from "../utils/auth";
 // @ts-ignore
 import "../styles/header.css";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  scrollWidth?: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<{
     email: string;
+    userId?: number;
     profileImage?: string;
   } | null>(null);
   const [keyword, setKeyword] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-
-    if (hasToken() && storedUser) {
+    
+    if (token && storedUser) {
       try {
-        setUserInfo(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUserInfo(parsedUser);
         setIsLoggedIn(true);
+        
+        // 로그인 이벤트 발생 시에만 알림 표시
+        if (sessionStorage.getItem("loginEvent") === "true") {
+          setShowNotification(true);
+          // 플래그 제거
+          sessionStorage.removeItem("loginEvent");
+          // 5초 후 알림 숨기기
+          setTimeout(() => {
+            setShowNotification(false);
+          }, 5000);
+        }
       } catch (err) {
         console.error("user 정보 파싱 오류:", err);
+        setIsLoggedIn(false);
+        setUserInfo(null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
       }
     } else {
       setIsLoggedIn(false);
       setUserInfo(null);
     }
+  };
 
-    const handleAuthChange = () => {
-      const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    // 컴포넌트 마운트 시 로그인 상태 확인
+    checkLoginStatus();
 
-      if (hasToken() && storedUser) {
-        setIsLoggedIn(true);
-        setUserInfo(JSON.parse(storedUser));
-      } else {
-        setIsLoggedIn(false);
-        setUserInfo(null);
-      }
+    // 로그인/로그아웃 이벤트 리스너 등록
+    const handleLoginEvent = () => {
+      checkLoginStatus();
     };
 
-    window.addEventListener("login", handleAuthChange);
-    window.addEventListener("logout", handleAuthChange);
+    const handleLogoutEvent = () => {
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      setShowNotification(false);
+    };
+
+    window.addEventListener("login", handleLoginEvent);
+    window.addEventListener("logout", handleLogoutEvent);
 
     return () => {
-      window.removeEventListener("login", handleAuthChange);
-      window.removeEventListener("logout", handleAuthChange);
+      window.removeEventListener("login", handleLoginEvent);
+      window.removeEventListener("logout", handleLogoutEvent);
     };
   }, []);
 
@@ -62,6 +90,29 @@ const Header: React.FC = () => {
 
   return (
     <>
+      {showNotification && userInfo && (
+        <div className="login-notification">
+          <div className="notification-content">
+            <img src={userInfo.profileImage || "/images/mypage.png"} alt="프로필" className="notification-profile" />
+            <div className="notification-text">
+              <p className="notification-welcome">환영합니다!</p>
+              <p className="notification-info">
+                <span className="notification-label">이메일:</span> {userInfo.email}
+              </p>
+              <p className="notification-info">
+                <span className="notification-label">사용자 ID:</span> {userInfo.userId || '정보 없음'}
+              </p>
+            </div>
+            <button 
+              className="notification-close"
+              onClick={() => setShowNotification(false)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       <header className="header">
         <div className="header-inner">
           <div className="sidebar-button">
@@ -110,7 +161,7 @@ const Header: React.FC = () => {
                 <>
                   <Link to={"/mypage"}>
                     <img
-                      src={userInfo?.profileImage ?? "/images/mypage.png"}
+                      src={userInfo?.profileImage || "/images/mypage.png"}
                       alt="마이페이지"
                       className="mypage-icon"
                     />

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../../styles/BidHistory.css';  // BidHistory 스타일을 재활용
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
 
 interface Sale {
   id: number;
@@ -9,85 +10,95 @@ interface Sale {
   artist: string;
   count: number;
   date: string;
-  price: string;
+  price: string | number;
   method: string;
 }
 
-const dummyData: Sale[] = [
-  { id: 1, image: '/images/sample6.jpg', title: 'coconut', artist: 'coco', count: 20, date: '2025.03.05', price: '200,000원', method: '개인의뢰' },
-  { id: 2, image: '/images/sample7.jpg', title: 'peach',   artist: 'uouo', count: 15, date: '2025.03.10', price: '150,000원', method: '경매'     },
-  { id: 3, image: '/images/sample8.jpg', title: 'banana',  artist: 'bana', count: 10, date: '2025.03.15', price: '100,000원', method: '개인의뢰' },
-  { id: 4, image: '/images/sample9.jpg', title: 'apple',   artist: 'appl', count:  5, date: '2025.03.20', price: '120,000원', method: '경매'     },
-  { id: 5, image: '/images/sample9.jpg', title: 'apple',   artist: 'appl', count:  5, date: '2025.03.20', price: '120,000원', method: '경매'     },
-  { id: 6, image: '/images/sample9.jpg', title: 'apple',   artist: 'appl', count:  5, date: '2025.03.20', price: '120,000원', method: '경매'     },
-  { id: 7, image: '/images/sample9.jpg', title: 'apple',   artist: 'appl', count:  5, date: '2025.03.20', price: '120,000원', method: '경매'     },
-  { id: 8, image: '/images/sample9.jpg', title: 'apple',   artist: 'appl', count:  5, date: '2025.03.20', price: '120,000원', method: '경매'     },
-
-];
-
 const SaleList: React.FC = () => {
   const navigate = useNavigate();
-
-  // pagination state
+  const [sales, setSales] = useState<Sale[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  // pagination logic
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = dummyData.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(dummyData.length / itemsPerPage);
+useEffect(() => {
+  fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
+    headers: getAuthHeaders(),
+  })
+    .then(res => res.json())
+    .then(data => {
+      const mapped = data.map((item: any) => ({
+        id: item.tradeId,
+        image: item.thumbnailPath,
+        title: item.postTitle,
+        price: item.nowBuy ?? item.highestBid ?? 0,
+        method: item.nowBuy ? "즉시구매" : "경매",
+        date: item.createdAt?.substring(0, 10) ?? "",
+        count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
+        artist: item.postDTO?.user?.nickname ?? "나",
+      }));
+      setSales(mapped);
+    });
+}, []);
+
+
+  const currentItems = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sales.length / itemsPerPage);
 
   return (
     <div className="bid-history-container">
-      {/* 타이틀 */}
       <div className="bid-history-title">
         <h2>판매 내역</h2>
-        <p className="bid-date">2025.03.01 - 2025.03.31</p>
       </div>
-
-      {/* 리스트 */}
       <div className="bid-list">
-        {currentItems.map(item => (
-          <div
-            key={item.id}
-            className="bid-item"
-            onClick={() => navigate(`/Art/${item.id}`)}
-            style={{ cursor: 'pointer' }}
-          >
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.title} />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.title} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>판매횟수: {item.count}</p>
+                <p className="bid-amount">판매금액: {typeof item.price === 'number' ? item.price.toLocaleString() : item.price}원</p>
+                <p>판매방식: {item.method}</p>
+                <p>판매날짜: {item.date}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.id}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p>작가: {item.artist}</p>
-              <p>판매횟수: {item.count}</p>
-              <p className="bid-amount">판매금액: {item.price}</p>
-              <p>판매방식: {item.method}</p>
-              <p>판매날짜: {item.date}</p>
-            </div>
-            <div className="bid-actions">
-              <button className="detail-button">상세 ▶</button>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>판매 내역이 없습니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
-      {/* 페이지네이션 */}
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-          <button
-            key={page}
-            className={`page-btn${page === currentPage ? ' active' : ''}`}
-            onClick={() => {
-              setCurrentPage(page);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button 
+                key={page} 
+                onClick={() => setCurrentPage(page)} 
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -34,6 +34,13 @@ const DeleteAccountPage = () => {
 
       // 성공 시 처리
       localStorage.removeItem('token'); // 토큰 삭제
+      localStorage.removeItem('user'); // 사용자 정보 삭제
+      localStorage.removeItem('autoLoginUser'); // 자동 로그인 정보 삭제
+      
+      // 로그아웃 이벤트 발생
+      window.dispatchEvent(new Event('logout'));
+      
+      alert('회원 탈퇴가 완료되었습니다.');
       navigate('/'); // 홈페이지로 이동
     } catch (err) {
       setError(err instanceof Error ? err.message : '회원 탈퇴에 실패했습니다.');

@@ -1,166 +1,115 @@
 // src/pages/PurchaseBidPage/PurchaseList.tsx
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../../styles/BidHistory.css';  // 기존 스타일 재활용
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
+import "../../styles/PurchaseList.css";
 
 interface Purchase {
-  id: number;
-  image: string;
-  title: string;
+  tradeId: number;
+  postId: number;
+  postTitle: string;
   artist: string;
-  date: string;
-  price: string;
+  price: number;
   method: string;
+  date: string;
+  image: string;
 }
-
-const itemsPerPage = 4; // 한 페이지에 보여줄 아이템 개수
 
 const PurchaseList: React.FC = () => {
   const navigate = useNavigate();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
 
   useEffect(() => {
-    // TODO: 실제 API 호출로 대체
-    const dummy: Purchase[] = [
-      {
-        id: 1,
-        image: '/images/sample1.jpg',
-        title: '자화상 - 일러스트',
-        artist: 'Allen Doichi',
-        date: '2025.03.07',
-        price: '20,000원',
-        method: '경매로 입찰',
-      },
-      {
-        id: 2,
-        image: '/images/sample2.jpg',
-        title: '작품명',
-        artist: '작가명',
-        date: '2025.03.07',
-        price: '25,000원',
-        method: '경매로 입찰',
-      },
-      {
-        id: 3,
-        image: '/images/sample3.jpg',
-        title: '작품명',
-        artist: '작가명',
-        date: '2025.03.07',
-        price: '10,000원',
-        method: '경매로 입찰',
-      },
-      {
-        id: 4,
-        image: '/images/sample4.jpg',
-        title: '추가 작품명',
-        artist: '작가명',
-        date: '2025.03.08',
-        price: '30,000원',
-        method: '즉시 구매',
-      },
-      {
-        id: 5,
-        image: '/images/sample5.jpg',
-        title: '추가 작품명',
-        artist: '작가명',
-        date: '2025.03.08',
-        price: '30,000원',
-        method: '즉시 구매',
-      },
-      {
-        id: 6,
-        image: '/images/sample6.jpg',
-        title: '추가 작품명',
-        artist: '작가명',
-        date: '2025.03.08',
-        price: '30,000원',
-        method: '즉시 구매',
-      },
-      {
-        id: 7,
-        image: '/images/sample7.jpg',
-        title: '추가 작품명',
-        artist: '작가명',
-        date: '2025.03.08',
-        price: '30,000원',
-        method: '즉시 구매',
-      },
-      {
-        id: 8,
-        image: '/images/sample8.jpg',
-        title: '추가 작품명',
-        artist: '작가명',
-        date: '2025.03.08',
-        price: '30,000원',
-        method: '즉시 구매',
-      },
-    ];
-    setPurchases(dummy);
-    setLoading(false);
+    fetch("http://localhost:8080/ourlog/trades/mypage/purchases", {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Fetch 실패");
+        return res.json();
+      })
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          tradeId: item.tradeId,
+          postId: item.postDTO?.postId,
+          postTitle: item.postTitle || "제목 없음",
+          artist: item.postDTO?.user?.nickname ?? "알 수 없음",
+          price: item.nowBuy ?? item.highestBid ?? 0,
+          method: item.nowBuy ? "즉시구매" : "경매낙찰",
+          date: item.modifiedAt?.substring(0, 10) ?? "",
+          image: item.thumbnailPath || "/images/sample1.jpg",
+        }));
+        setPurchases(mapped);
+      })
+      .catch((err) => console.error("에러 발생:", err));
   }, []);
 
-  // 페이지네이션 로직
+  const currentItems = purchases.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(purchases.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const currentItems = purchases.slice(startIdx, startIdx + itemsPerPage);
-
-  // 로딩 상태
-  if (loading) {
-    return (
-      <div className="loading">
-        <p>로딩 중...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="bid-history-container">
-      {/* 구매 목록 타이틀 */}
       <div className="bid-history-title">
         <h2>구매 목록</h2>
-        <p className="bid-date">2025.03.01 - 2025.03.07</p>
       </div>
 
-      {/* 현재 페이지만큼의 아이템 리스트 */}
       <div className="bid-list">
-        {currentItems.map(item => (
-          <div
-            key={item.id}
-            className="bid-item"
-            onClick={() => navigate(`/Art/${item.id}`)}
-          >
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.title} />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div
+              key={item.tradeId}
+              className="bid-item"
+              onClick={() => navigate(`/art/${item.postId}`)}
+            >
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.postTitle} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.postTitle}</h3>
+                <p className="bid-amount">구매금액: {item.price.toLocaleString()}원</p>
+                <p>구매방식: {item.method}</p>
+                <p>구매날짜: {item.date}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.postId}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p className="bid-amount">구매금액 {item.price}</p>
-              <p>구매방식: {item.method}</p>
-              <p>구매날짜: {item.date}</p>
-            </div>
-            <div className="bid-actions">
-              <button className="detail-button">상세 ▶</button>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>구매 내역이 없습니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
-      {/* 페이지네이션 버튼 */}
-      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-          <button
-            key={page}
-            className={`page-btn${page === currentPage ? ' active' : ''}`}
-            onClick={() => setCurrentPage(page)}
-            style={{ margin: '0 4px' }}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
