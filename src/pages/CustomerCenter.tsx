@@ -450,34 +450,34 @@ const CustomerCenter: React.FC = () => {
             <section id="questionlist">
               <h2 className="cc-section-title">전체 질문 목록</h2>
               {allQuestions.length === 0 ? (
-                <p className="no-results">등록된 질문이 없습니다.</p>
+                <p className="cc-no-results">등록된 질문이 없습니다.</p>
               ) : (
                 allQuestions.map((question) => (
                   <div
                     key={question.questionId}
-                    className="admin-question-card"
+                    className="cc-admin-question-card"
                   >
-                    <p className="admin-question-writer">
+                    <p className="cc-admin-question-writer">
                       작성자 : {question.userDTO?.nickname || "익명"}
                       <br />
                       e-mail: {question.userDTO?.email || "익명"}
                     </p>
-                    <h3 className="admin-question-title">
+                    <h3 className="cc-admin-question-title">
                       제목 : {question.title}
                     </h3>
-                    <h3 className="admin-question-content">
+                    <h3 className="cc-admin-question-content">
                       내용 : {question.content}
                     </h3>
 
                     {question.answerDTO ? (
-                      <div className="answer-box">
-                        <strong className="answer-label">답변:</strong>
-                        <p className="answer-content">
+                      <div className="cc-answer-box">
+                        <strong className="cc-answer-label">답변:</strong>
+                        <p className="cc-answer-content">
                           {question.answerDTO.contents}
                         </p>
                       </div>
                     ) : (
-                      <div className="answer-form">
+                      <div className="cc-answer-form">
                         <textarea
                           value={answerContent[question.questionId] || ""}
                           onChange={(e) =>
@@ -487,10 +487,10 @@ const CustomerCenter: React.FC = () => {
                             })
                           }
                           placeholder="답변을 입력하세요"
-                          className="admin-answer-textarea"
+                          className="cc-admin-answer-textarea"
                         />
                         <button
-                          className="button"
+                          className="cc-button"
                           onClick={() =>
                             handleAnswerSubmit(
                               question.questionId,
@@ -532,39 +532,39 @@ const CustomerCenter: React.FC = () => {
                     : "자주 묻는 질문"}
                 </div>
 
-                <div className="faq-list">
+                <div className="cc-faq-list">
                   {filteredFaqs.map((faq) => (
-                    <div className="faq-item" key={faq.questionId}>
+                    <div className="cc-faq-item" key={faq.questionId}>
                       <div
-                        className="question-box"
+                        className="cc-question-box"
                         onClick={() => toggleQuestion(faq.questionId)}
                         aria-expanded={faq.isOpen}
                       >
                         {faq.title}
                       </div>
-                      <div className={`answer ${faq.isOpen ? "open" : ""}`}>
+                      <div className={`cc-answer ${faq.isOpen ? "open" : ""}`}>
                         {faq.content}
                       </div>
                     </div>
                   ))}
                   {filteredFaqs.length === 0 && searchTerm && (
-                    <p className="no-results">검색 결과가 없습니다.</p>
+                    <p className="cc-no-results">검색 결과가 없습니다.</p>
                   )}
                 </div>
               </section>
 
               <section id="inquiry">
                 <h2 className="cc-section-title">1:1 문의하기</h2>
-                <p className="info-text">
+                <p className="cc-info-text">
                   서비스 이용 중 불편하신 점이나 문의사항을 남겨주시면 신속하게
                   답변 드리도록 하겠습니다.
                 </p>
-                <p className="info-text">
+                <p className="cc-info-text">
                   영업일 기준(주말·공휴일 제외) 3일 이내에 답변드리겠습니다. 단,
                   문의가 집중되는 경우 답변이 지연될 수 있는 점 너그러이 양해
                   부탁드립니다.
                 </p>
-                <div className="warning-box">
+                <div className="cc-warning-box">
                   산업안전보건법에 따라 폭언, 욕설, 성희롱, 반말, 비하, 반복적인
                   요구 등에는 회신 없이 상담을 즉시 종료하며, 이후 다른 문의에도
                   회신하지 않습니다. 고객응대 근로자를 보호하기 위해 이같은
@@ -572,7 +572,7 @@ const CustomerCenter: React.FC = () => {
                   민형사상 조치를 취할 수 있음을 알려드립니다.
                 </div>
                 <button
-                  className="button"
+                  className="cc-button"
                   onClick={() => setShowInquiryModal(true)}
                 >
                   문의하기
@@ -581,22 +581,22 @@ const CustomerCenter: React.FC = () => {
 
               <section id="questionlist">
                 <h2 className="cc-section-title">1:1 문의내역</h2>
-                <table className="table">
+                <table className="cc-table">
                   <thead>
                     <tr>
-                      <th className="th">번호</th>
-                      <th className="th">제목</th>
-                      <th className="th">작성일</th>
-                      <th className="th">상태</th>
-                      <th className="th">관리</th>
+                      <th className="cc-th">번호</th>
+                      <th className="cc-th">제목</th>
+                      <th className="cc-th">작성일</th>
+                      <th className="cc-th">상태</th>
+                      <th className="cc-th">관리</th>
                     </tr>
                   </thead>
                   <tbody>
                     {inquiries.map((inquiry) => (
                       <tr key={inquiry.questionId}>
-                        <td className="td">{inquiry.questionId}</td>
+                        <td className="cc-td">{inquiry.questionId}</td>
                         <td
-                          className="td"
+                          className="cc-td"
                           onClick={() => {
                             console.log("문의글 클릭:", inquiry);
                             setSelectedInquiry(inquiry);
@@ -609,22 +609,22 @@ const CustomerCenter: React.FC = () => {
                         >
                           {inquiry.title}
                         </td>
-                        <td className="td">
+                        <td className="cc-td">
                           {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
                         </td>
-                        <td className="td">
+                        <td className="cc-td">
                           <span
-                            className={`status-badge ${
+                            className={`cc-status-badge ${
                               inquiry.answerDTO ? "completed" : "waiting"
                             }`}
                           >
                             {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
                           </span>
                         </td>
-                        <td className="td">
-                          <div className="button-group">
+                        <td className="cc-td">
+                          <div className="cc-button-group">
                             <button
-                              className="action-button"
+                              className="cc-action-button"
                               onClick={() =>
                                 inquiry.answerDTO
                                   ? handleRestrictedAction("edit")
@@ -634,7 +634,7 @@ const CustomerCenter: React.FC = () => {
                               수정
                             </button>
                             <button
-                              className="action-button delete"
+                              className="cc-action-button delete"
                               onClick={() =>
                                 inquiry.answerDTO
                                   ? handleRestrictedAction("delete")
@@ -656,12 +656,12 @@ const CustomerCenter: React.FC = () => {
       </div>
 
       {showInquiryModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h2>{editingInquiry ? "문의 수정하기" : "1:1 문의하기"}</h2>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => {
                   setShowInquiryModal(false);
                   setEditingInquiry(null);
@@ -672,7 +672,7 @@ const CustomerCenter: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleInquirySubmit}>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>제목</label>
                 <input
                   type="text"
@@ -683,7 +683,7 @@ const CustomerCenter: React.FC = () => {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>내용</label>
                 <textarea
                   value={inquiryForm.content}
@@ -693,7 +693,7 @@ const CustomerCenter: React.FC = () => {
                   required
                 />
               </div>
-              <button type="submit" className="button">
+              <button type="submit" className="cc-button">
                 {editingInquiry ? "수정하기" : "제출하기"}
               </button>
             </form>
@@ -702,21 +702,21 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showDeleteModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h3>삭제 확인</h3>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowDeleteModal(false)}
               >
                 <X />
               </button>
             </div>
             <p>문의를 삭제하시겠습니까?</p>
-            <div className="modal-button-group">
+            <div className="cc-modal-button-group">
               <button
-                className="modal-button cancel"
+                className="cc-modal-button cancel"
                 onClick={() => setShowDeleteModal(false)}
               >
                 취소
@@ -730,21 +730,21 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showAlertModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h3>알림</h3>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowAlertModal(false)}
               >
                 <X />
               </button>
             </div>
             <p>{alertMessage}</p>
-            <div className="modal-button-group">
+            <div className="cc-modal-button-group">
               <button
-                className="modal-button"
+                className="cc-modal-button"
                 onClick={() => setShowAlertModal(false)}
               >
                 확인
@@ -755,27 +755,27 @@ const CustomerCenter: React.FC = () => {
       )}
 
       {showDetailModal && selectedInquiry && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
               <h3>문의 상세</h3>
               <button
-                className="close-button"
+                className="cc-close-button"
                 onClick={() => setShowDetailModal(false)}
               >
                 <X />
               </button>
             </div>
             <form>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>제목</label>
                 <input type="text" value={selectedInquiry.title} readOnly />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>내용</label>
                 <textarea value={selectedInquiry.content} readOnly />
               </div>
-              <div className="form-group">
+              <div className="cc-form-group">
                 <label>작성일</label>
                 <input
                   type="text"
@@ -789,7 +789,7 @@ const CustomerCenter: React.FC = () => {
               </div>
 
               {selectedInquiry.answerDTO && (
-                <div className="form-group">
+                <div className="cc-form-group">
                   <label>답변</label>
                   <textarea
                     value={selectedInquiry.answerDTO.contents}
