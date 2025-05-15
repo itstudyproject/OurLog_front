@@ -26,7 +26,7 @@ const MyPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const stored = localStorage.getItem("user");
-  const userId = stored ? (JSON.parse(stored).id as number) : null;
+  const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
