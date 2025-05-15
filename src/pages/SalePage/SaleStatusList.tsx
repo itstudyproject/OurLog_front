@@ -54,39 +54,60 @@ const SaleStatusList: React.FC = () => {
         <h2>판매 현황</h2>
       </div>
       <div className="bid-list">
-        {currentItems.map((item) => (
-          <div
-            key={item.id}
-            className="bid-item"
-            onClick={() => navigate(`/art/${item.id}`)}
-          >
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.title} />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div
+              key={item.id}
+              className="bid-item"
+              onClick={() => navigate(`/art/${item.id}`)}
+            >
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.title} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>등록일: {item.regDate}</p>
+                <p>경매시작: {item.auctionStart}</p>
+                <p>판매마감: {item.saleEnd}</p>
+                <p>방식: {item.method}</p>
+                <p className="bid-amount">상태: {item.status}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.id}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p>작가: {item.artist}</p>
-              <p>등록일: {item.regDate}</p>
-              <p>경매시작: {item.auctionStart}</p>
-              <p>판매마감: {item.saleEnd}</p>
-              <p>방식: {item.method}</p>
-              <p className="bid-amount">상태: {item.status}</p>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>판매 현황이 없습니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`page-btn${page === currentPage ? " active" : ""}`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

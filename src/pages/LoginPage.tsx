@@ -11,6 +11,15 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // 이미 로그인되어 있는지 확인
+    const token = localStorage.getItem("token");
+    
+    if (token) {
+      navigate("/");
+      return;
+    }
+    
+    // 자동 로그인 처리
     const savedUser = localStorage.getItem("autoLoginUser");
     if (savedUser) {
       try {
@@ -23,15 +32,17 @@ const LoginPage: React.FC = () => {
             "user",
             JSON.stringify({
               email: userData.email,
-              profileImage: "/images/default-profile.png",
+              userId: userData.userId || userData.id,
+              profileImage: userData.profileImage || "/images/mypage.png",
             })
           );
           
           // 로그인 이벤트 발생
           setTimeout(() => {
+            sessionStorage.setItem("loginEvent", "true");
             window.dispatchEvent(new Event("login"));
             navigate("/");
-          }, 100);
+          }, 200);
         }
       } catch (error) {
         console.error("자동 로그인 처리 중 오류 발생:", error);
@@ -51,10 +62,13 @@ const LoginPage: React.FC = () => {
       "user",
       JSON.stringify({
         email: userData.email,
-        profileImage: "/images/default-profile.png",
+        userId: userData.userId || userData.id,
+        profileImage: userData.profileImage || "/images/mypage.png",
       })
     );
     
+    // 로그인 알림 표시를 위한 플래그 설정
+    sessionStorage.setItem("loginEvent", "true");
     window.dispatchEvent(new Event("login"));
     navigate("/");
   };
@@ -69,7 +83,8 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(
+      // 1. 로그인 요청
+      const loginResponse = await fetch(
         `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
         {
           method: "POST",
@@ -79,16 +94,38 @@ const LoginPage: React.FC = () => {
         }
       );
 
-      const token = await response.text();
+      // 2. 토큰 추출
+      const tokenText = await loginResponse.text();
       
-      if (token.startsWith('{"code"')) {
+      if (tokenText.startsWith('{"code"')) {
         setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
         return;
       }
 
+      const token = tokenText.trim();
+      setToken(token);
+
+      // 3. 토큰으로 사용자 정보 요청
+      const userResponse = await fetch(`http://localhost:8080/ourlog/user/get?email=${encodeURIComponent(email)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("사용자 정보를 가져오는데 실패했습니다.");
+      }
+
+      const userInfo = await userResponse.json();
+      console.log("사용자 정보:", userInfo);
+
+      // 4. 사용자 정보 저장 및 로그인 처리
       const userData = {
-        email,
-        token: token.trim(),
+        email: email,
+        userId: userInfo.id || userInfo.userId,
+        token: token,
+        profileImage: userInfo.profileImage || "/images/mypage.png",
       };
       
       handleLoginSuccess(userData, autoLogin);

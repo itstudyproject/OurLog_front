@@ -54,6 +54,10 @@
   display: flex;
   border-bottom: 2px solid #333;
   margin-bottom: 20px;
+  gap: 5px;
+  background-color: #1a1a1a;
+  padding: 10px 20px 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .sub-tab {
@@ -66,14 +70,31 @@
   margin-right: 5px;
   font-size: 16px;
   transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  top: 2px;
 }
 
 .sub-tab:hover {
   background-color: #2a2a2a;
+  color: #f0f0f0;
 }
 
 .sub-tab.active {
   background-color: #f8c147;
   color: #111;
   font-weight: bold;
+  border-bottom: 2px solid #f8c147;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .sub-tab-nav {
+    padding: 5px 10px 0;
+  }
+  
+  .sub-tab {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
 }
