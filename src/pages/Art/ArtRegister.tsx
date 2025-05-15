@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ko } from "date-fns/locale";
 import DatePicker from "react-datepicker";
@@ -187,6 +187,58 @@ const ArtRegister = () => {
     }
   };
 
+  // 드래그 앤 드롭 핸들러 추가
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.add('dragover');
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.remove('dragover');
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.remove('dragover');
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const newImage: ImageFile = {
+            file,
+            preview: reader.result as string,
+            id: Math.random().toString(36).substring(7),
+          };
+          setForm((prev) => ({
+            ...prev,
+            images: [...prev.images, newImage],
+            thumbnailId: prev.thumbnailId || newImage.id,
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }, []);
+
   return (
     <div className="art-register-container">
       <div className="art-register-grid">
@@ -231,7 +283,12 @@ const ArtRegister = () => {
                 </div>
               </div>
             ) : (
-              <div className="image-upload-placeholder">
+              <div 
+                className="image-upload-placeholder"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -242,7 +299,7 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-main">
                   <span>메인 이미지를 업로드해주세요</span>
-                  <span className="mt-2 text-sm">(클릭하여 파일 선택)</span>
+                  <span className="mt-2 text-sm">(클릭 또는 드래그하여 파일 선택)</span>
                 </label>
               </div>
             )}
