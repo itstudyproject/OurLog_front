@@ -2,7 +2,7 @@
 import { getAuthHeaders } from "../utils/auth";
 
 export interface UserProfileDTO {
-  id: number;
+  userId: number;
   user: number;
   nickname: string;
   imagePath?: string;
