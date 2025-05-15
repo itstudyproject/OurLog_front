@@ -457,11 +457,18 @@ const CustomerCenter: React.FC = () => {
                     key={question.questionId}
                     className="admin-question-card"
                   >
-                    <h3 className="admin-question-title">{question.title}</h3>
-                    <p className="admin-question-content">{question.content}</p>
                     <p className="admin-question-writer">
-                      작성자: {question.userDTO?.nickname || "익명"}
+                      작성자 : {question.userDTO?.nickname || "익명"}
+                      <br />
+                      e-mail: {question.userDTO?.email || "익명"}
                     </p>
+                    <h3 className="admin-question-title">
+                      제목 : {question.title}
+                    </h3>
+                    <h3 className="admin-question-content">
+                      내용 : {question.content}
+                    </h3>
+
                     {question.answerDTO ? (
                       <div className="answer-box">
                         <strong className="answer-label">답변:</strong>
