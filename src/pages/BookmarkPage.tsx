@@ -60,56 +60,71 @@ const BookmarkPage: React.FC = () => {
       </div>
 
       <div className="bid-list">
-        {currentItems.map((item) => (
-          <div
-            key={item.favoriteId}
-            className="bid-item"
-            onClick={() => navigate(`/art/${item.postId}`)}
-            style={{ cursor: "pointer" }}
-          >
-            <div className="bid-artwork">
-              <img
-                src={item.imagePath || "/images/default.jpg"}
-                alt={item.title}
-              />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div
+              key={item.favoriteId}
+              className="bid-item"
+              onClick={() => navigate(`/art/${item.postId}`)}
+            >
+              <div className="bid-artwork">
+                <img
+                  src={item.imagePath || "/images/default.jpg"}
+                  alt={item.title}
+                />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>총 좋아요: {item.favoriteCnt}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.postId}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+                <button
+                  className="bid-now-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUnfavorite(item.postId);
+                  }}
+                >
+                  북마크 해제
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p>작가: {item.artist}</p>
-              <p>총 좋아요: {item.favoriteCnt}</p>
-            </div>
-            <div className="bid-actions">
-              <button
-                className="bid-now-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUnfavorite(item.postId);
-                }}
-              >
-                북마크 해제
-              </button>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>북마크한 작품이 없습니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
-      <div
-        className="pagination"
-        style={{ textAlign: "center", marginTop: "1rem" }}
-      >
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            className={`page-btn${page === currentPage ? " active" : ""}`}
-            onClick={() => {
-              setCurrentPage(page);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => {
+                  setCurrentPage(page);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
