@@ -1,57 +1,64 @@
 .profile-container {
   min-height: 100vh;
+  background-color: #1a1a1a;
+  color: #ccc;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background-color: black;
-  padding: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
 }
 
+/* 헤더 */
 .profile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
   border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
 }
 
 .back-button {
   background: none;
   border: none;
-  color: #9bcabf;
-  font-size: 16px;
+  color: #f8c147;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .back-button:hover {
   text-decoration: underline;
 }
 
+/* 본문 */
 .profile-content {
   display: flex;
-  gap: 32px;
-  flex: 1;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.profile-sidebar {
-  width: 250px;
-  flex-shrink: 0;
-}
-
+/* 프로필 사진 */
 .profile-photo-container {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   overflow: hidden;
-  margin-bottom: 24px;
-  position: relative;
-  background-color: #1a1a1a;
+  background-color: #232323;
   border: 2px solid #333;
+  position: relative;
+  margin: 0 auto 20px;
 }
 
 .profile-photo {
@@ -92,120 +99,65 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.profile-main {
-  flex: 1;
-}
-
+/* 폼 영역 */
 .form-section {
-  margin-bottom: 32px;
-  border-radius: 8px;
-  background-color: #1a1a1a;
+  background-color: #232323;
   padding: 24px;
+  border-radius: 8px;
 }
 
 .section-title {
   font-size: 20px;
+  font-weight: 500;
   color: #fff;
   margin-bottom: 24px;
-  font-weight: 500;
 }
 
+/* 폼 필드 공통 */
 .form-row {
   display: flex;
-  gap: 32px;
-  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .form-group {
-  flex: 1;
-  margin-bottom: 24px;
-}
-
-.form-label {
-  display: block;
-  font-size: 14.4px;
-  color: #d1d5db;
-  margin-bottom: 8px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 16px;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #e5e7eb;
-}
-
-.form-input::placeholder {
-  color: #8b8b8b;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #9bcabf;
-}
-
-.form-select {
-  width: 100%;
-  padding: 12px 16px;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #e5e7eb;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239bcabf' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-}
-
-.spotify-connect {
+  flex: 1 1 45%;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 16px;
+  flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.spotify-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+.form-group.full-width {
+  flex: 1 1 100%;
 }
 
-.spotify-text {
-  color: #d1d5db;
-  font-size: 14.4px;
-}
-
-.connect-button {
-  padding: 8px 16px;
-  background-color: #1db954;
-  color: white;
-  border: none;
-  border-radius: 9999px;
+.form-group label {
   font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  color: #999;
+  margin-bottom: 6px;
 }
 
-.connect-button:hover {
-  background-color: #1ed760;
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #ccc;
+  background-color: #232323;
+  border: 1px solid #333;
+  border-radius: 8px;
+  transition: border-color 0.2s;
 }
 
-.connected-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #9bcabf;
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #f8c147;
 }
 
-.connected-status svg {
-  width: 20px;
-  height: 20px;
-}
-
+/* 버튼 영역 */
 .action-buttons {
   display: flex;
   justify-content: flex-end;
@@ -213,33 +165,42 @@
   margin-top: 32px;
 }
 
-.cancel-button {
-  padding: 12px 24px;
-  background-color: transparent;
-  border: 1px solid #9bcabf;
-  color: #9bcabf;
-  border-radius: 9999px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.cancel-button:hover {
-  background-color: rgba(155, 202, 191, 0.1);
-}
-
-.save-button {
-  padding: 12px 24px;
-  background-color: #8bd7b5;
-  border: 1px solid #a7ecd6;
-  color: #23332c;
-  border-radius: 9999px;
-  font-size: 16px;
+.primary-button,
+.secondary-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.3s;
+  border: none;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
-.save-button:hover {
+.primary-button {
+  background-color: #f8c147;
+  color: #111;
+}
+
+.primary-button:hover {
   opacity: 0.9;
+}
+
+.save-button{
+    background-color: #f8c147;
+ color: #111;
+}
+.secondary-button {
+  background-color: #333;
+  color: #ccc;
+}
+
+.secondary-button:hover {
+  background-color: #444;
+}
+
+/* 메시지 */
+.message {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #999;
 }

@@ -26,7 +26,7 @@ const MyPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const stored = localStorage.getItem("user");
-  const userId = stored ? (JSON.parse(stored).id as number) : null;
+  const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
@@ -56,7 +56,7 @@ const MyPage: React.FC = () => {
       <div className="bid-item" style={{ padding: "20px" }}>
         <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
           <img
-            src={profile?.imagePath || "/images/mypage/default.png"}
+            src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
           />
         </div>
