@@ -1,38 +1,37 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useNavigate } from "react-router-dom";
 import "../../styles/PostRegiModi.css";
 
 interface ImageFile {
-  file: File;
+  file: File | null;
   preview: string;
-  id: string;
+  id: string; // 서버에 저장된 파일명
 }
 
 interface FormData {
   title: string;
   content: string;
-  images: ImageFile[];
-  thumbnailId: string | null;
+  thumbnail: File | null;
+  categoryType: "그림 게시판" | "글 게시판";
   category: string;
 }
 
 const PostRegister = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
     content: "",
-    images: [],
-    thumbnailId: null,
-    category: initialCategory,
+    thumbnail: null,
+    categoryType: "글 게시판",
+    category: "자유게시판",
   });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState<string>("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -48,6 +47,14 @@ const PostRegister = () => {
     }
   };
 
+  const handleCategoryTypeChange = (type: "그림 게시판" | "글 게시판") => {
+    setFormData((prev) => ({
+      ...prev,
+      categoryType: type,
+      category: type === "그림 게시판" ? "그림" : "자유게시판",
+    }));
+  };
+
   const handleCategoryChange = (category: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -56,13 +63,30 @@ const PostRegister = () => {
   };
 
   const validateImage = (file: File): string | null => {
-    if (!file.type.startsWith('image/')) {
-      return '이미지 파일만 업로드 가능합니다.';
+    if (!file.type.startsWith("image/")) {
+      return "이미지 파일만 업로드 가능합니다.";
     }
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-      return '파일 크기는 10MB 이하여야 합니다.';
+    if (file.size > 10 * 1024 * 1024) {
+      return "파일 크기는 10MB 이하여야 합니다.";
     }
     return null;
+  };
+
+  // 이미지 업로드 API 호출
+  const uploadImage = async (file: File) => {
+    const fd = new FormData();
+    fd.append("files", file);
+    const token = localStorage.getItem("token");
+    const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
+      method: "POST",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+      body: fd,
+    });
+    if (!res.ok) throw new Error("이미지 업로드 실패");
+    const data = await res.json();
+    return data[0];
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,38 +100,32 @@ const PostRegister = () => {
       const processedImages = await Promise.all(
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
-          if (error) {
-            throw new Error(error);
-          }
+          if (error) throw new Error(error);
 
-          return new Promise<ImageFile>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              resolve({
-                file,
-                preview: reader.result as string,
-                id: Math.random().toString(36).substring(7),
-              });
-            };
-            reader.onerror = () => reject(new Error('이미지 로드 중 오류가 발생했습니다.'));
-            reader.readAsDataURL(file);
-          });
+          // 서버에 업로드
+          const uploaded = await uploadImage(file);
+          return {
+            file: null, // 업로드 후에는 필요 없음
+            preview: `/uploads/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
+            id: uploaded.uuid, // 또는 picId 등
+            picId: uploaded.picId,
+            uuid: uploaded.uuid,
+            picName: uploaded.picName,
+            path: uploaded.path,
+          };
         })
       );
 
       const newImages = [...formData.images, ...processedImages];
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        thumbnailId:
+          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('이미지 업로드 중 오류가 발생했습니다.');
-      }
+      alert(error instanceof Error ? error.message : "이미지 업로드 오류");
     }
   };
 
@@ -116,20 +134,23 @@ const PostRegister = () => {
   };
 
   const handleRemoveImage = (id: string) => {
-    setFormData(prev => {
-      const newImages = prev.images.filter(img => img.id !== id);
+    setFormData((prev) => {
+      const newImages = prev.images.filter((img) => img.id !== id);
       return {
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId === id 
-          ? (newImages.length > 0 ? newImages[0].id : null)
-          : prev.thumbnailId,
+        thumbnailId:
+          prev.thumbnailId === id
+            ? newImages.length > 0
+              ? newImages[0].id
+              : null
+            : prev.thumbnailId,
       };
     });
   };
 
   const handleThumbnailSelect = (id: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       thumbnailId: id,
     }));
@@ -137,12 +158,11 @@ const PostRegister = () => {
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
-
     const items = Array.from(formData.images);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       images: items,
     }));
@@ -152,22 +172,64 @@ const PostRegister = () => {
     if (!result.destination) return;
 
     const content = formData.content;
-    const lines = content.split('\n');
-    const imageLines = lines.filter(line => line.startsWith('!['));
+    const lines = content.split("\n");
+    const imageLines = lines.filter((line) => line.startsWith("!["));
     const [movedImage] = imageLines.splice(result.source.index, 1);
     imageLines.splice(result.destination.index, 0, movedImage);
 
-    const newContent = lines.map(line => {
-      if (line.startsWith('![')) {
-        return imageLines.shift() || line;
-      }
-      return line;
-    }).join('\n');
+    const newContent = lines
+      .map((line) => {
+        if (line.startsWith("![")) {
+          return imageLines.shift() || line;
+        }
+        return line;
+      })
+      .join("\n");
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       content: newContent,
     }));
+  };
+
+  const getBoardNo = (category: string): number => {
+    switch (category) {
+      case "새소식":
+        return 1;
+      case "자유게시판":
+        return 2;
+      case "홍보게시판":
+        return 3;
+      case "요청게시판":
+        return 4;
+      default:
+        return 2;
+    }
+  };
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagInput(e.target.value);
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Enter" || e.key === ",") && tagInput.trim()) {
+      e.preventDefault();
+      if (!tags.includes(tagInput.trim())) {
+        setTags([...tags, tagInput.trim()]);
+      }
+      setTagInput("");
+    }
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (removeTag: string) => {
+    setTags(tags.filter((tag) => tag !== removeTag));
   };
 
   const handleSubmit = async () => {
@@ -179,11 +241,35 @@ const PostRegister = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("제출할 데이터:", formData);
+      const postDTO = {
+        title: formData.title,
+        content: formData.content,
+        boardNo: getBoardNo(formData.category),
+        fileName: formData.thumbnailId,
+        images: formData.images.map((img) => img.id),
+        userDTO: {
+          userId: 5,
+          nickname: "테스트유저",
+        },
+        tags,
+      };
+
+      const response = await fetch(
+        "http://localhost:8080/ourlog/post/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(postDTO),
+        }
+      );
+
+      if (!response.ok) throw new Error("게시물 등록에 실패했습니다.");
       alert("게시물이 성공적으로 등록되었습니다.");
       navigate("/post");
     } catch (error) {
-      console.error("게시물 등록 중 오류:", error);
       alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
@@ -191,7 +277,11 @@ const PostRegister = () => {
   };
 
   const handleCancel = () => {
-    if (confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
+    if (
+      window.confirm(
+        "작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
+      )
+    ) {
       navigate("/post");
     }
   };
@@ -205,15 +295,32 @@ const PostRegister = () => {
     <div className="post-register-wrapper">
       <div className="post-register-container">
         <div className="category-select">
-          <label>카테고리:</label>
+          <label>게시판:</label>
           <select
-            value={formData.category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
+            value={formData.categoryType}
+            onChange={(e) =>
+              handleCategoryTypeChange(
+                e.target.value as "그림 게시판" | "글 게시판"
+              )
+            }
           >
-            <option value="자유게시판">자유게시판</option>
-            <option value="요청게시판">요청게시판</option>
-            <option value="홍보게시판">홍보게시판</option>
+            <option value="그림 게시판">그림 게시판</option>
+            <option value="글 게시판">글 게시판</option>
           </select>
+
+          {formData.categoryType === "글 게시판" && (
+            <>
+              <label>카테고리:</label>
+              <select
+                value={formData.category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
+                <option value="자유게시판">자유게시판</option>
+                <option value="요청게시판">요청게시판</option>
+                <option value="홍보게시판">홍보게시판</option>
+              </select>
+            </>
+          )}
         </div>
       </div>
 
@@ -232,27 +339,28 @@ const PostRegister = () => {
       <div className="post-register-container">
         <div className="content-box">
           <div className="file-upload">
-            <button type="button" onClick={handleFileButtonClick}>이미지 업로드</button>
+            <button type="button" onClick={handleFileButtonClick}>
+              이미지 업로드
+            </button>
             <input
               type="file"
               ref={fileInputRef}
               style={{ display: "none" }}
               onChange={handleFileChange}
               accept="image/*"
-              multiple
             />
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
-                  <div 
+                  <div
                     className="image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
                     {formData.images.map((image, index) => (
-                      <Draggable 
-                        key={image.id} 
-                        draggableId={image.id} 
+                      <Draggable
+                        key={image.id}
+                        draggableId={image.id}
                         index={index}
                       >
                         {(provided, snapshot) => (
@@ -260,11 +368,17 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${snapshot.isDragging ? 'dragging' : ''} ${formData.thumbnailId === image.id ? 'thumbnail-selected' : ''}`}
+                            className={`image-item ${
+                              snapshot.isDragging ? "dragging" : ""
+                            } ${
+                              formData.thumbnailId === image.id
+                                ? "thumbnail-selected"
+                                : ""
+                            }`}
                           >
-                            <img 
-                              src={image.preview} 
-                              alt="업로드 이미지" 
+                            <img
+                              src={image.preview}
+                              alt="업로드 이미지"
                               className="preview-img"
                               onClick={() => handleThumbnailSelect(image.id)}
                             />
@@ -282,7 +396,9 @@ const PostRegister = () => {
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => handleThumbnailSelect(image.id)}
+                                  onClick={() =>
+                                    handleThumbnailSelect(image.id)
+                                  }
                                   className="thumbnail-button"
                                 >
                                   썸네일로 설정
@@ -299,8 +415,8 @@ const PostRegister = () => {
               </Droppable>
             </DragDropContext>
             <p className="file-guide">
-              {formData.images.length === 0 
-                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)" 
+              {formData.images.length === 0
+                ? "썸네일로 사용할 이미지를 업로드해주세요. (최대 10MB)"
                 : `${formData.images.length}/10개 이미지 업로드됨`}
             </p>
           </div>
@@ -308,15 +424,15 @@ const PostRegister = () => {
           <DragDropContext onDragEnd={handleContentImageDragEnd}>
             <Droppable droppableId="content-images" direction="horizontal">
               {(provided) => (
-                <div 
+                <div
                   className="content-images"
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
                   {formData.images.map((image, index) => (
-                    <Draggable 
-                      key={image.id} 
-                      draggableId={`content-${image.id}`} 
+                    <Draggable
+                      key={image.id}
+                      draggableId={`content-${image.id}`}
                       index={index}
                     >
                       {(provided, snapshot) => (
@@ -324,11 +440,13 @@ const PostRegister = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${snapshot.isDragging ? 'dragging' : ''}`}
+                          className={`content-image-wrapper ${
+                            snapshot.isDragging ? "dragging" : ""
+                          }`}
                         >
-                          <img 
-                            src={image.preview} 
-                            alt="내용 이미지" 
+                          <img
+                            src={image.preview}
+                            alt="내용 이미지"
                             className="content-image"
                           />
                         </div>
@@ -346,8 +464,47 @@ const PostRegister = () => {
             value={formData.content}
             onChange={handleInputChange}
             placeholder="내용을 입력하세요"
+            className="content-textarea"
+            rows={8}
           />
           <div className="char-count">{characterCount}자</div>
+
+          {/* 태그 입력 UI */}
+          <div className="tag-input-area">
+            <div className="tag-list">
+              {tags.map((tag) => (
+                <span className="tag-pill" key={tag}>
+                  {tag}
+                  <button
+                    type="button"
+                    className="tag-remove-btn"
+                    onClick={() => handleRemoveTag(tag)}
+                    aria-label="태그 삭제"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="tag-input-row">
+              <input
+                type="text"
+                className="tag-input-box"
+                value={tagInput}
+                onChange={handleTagInputChange}
+                onKeyDown={handleTagInputKeyDown}
+                placeholder="태그"
+                maxLength={15}
+              />
+              <button
+                type="button"
+                className="tag-add-btn"
+                onClick={handleAddTag}
+              >
+                추가
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -357,7 +514,7 @@ const PostRegister = () => {
           임시저장
         </button>
         <button onClick={handleSubmit} disabled={isSubmitting}>
-          등록하기
+          등록
         </button>
       </div>
     </div>

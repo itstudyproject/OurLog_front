@@ -152,10 +152,13 @@ const ChatPage: React.FC = () => {
       ...prev,
       [currentUser || ""]: prev[currentUser || ""]
         .map((msg, i) =>
-          i === index ? {
-            ...msg, isPaymentFormVisible: false,
-            isPaymentComplete: true,
-          } : msg
+          i === index
+            ? {
+                ...msg,
+                isPaymentFormVisible: false,
+                isPaymentComplete: true,
+              }
+            : msg
         )
         .concat(paymentSuccessMessage),
     }));
@@ -183,7 +186,7 @@ const ChatPage: React.FC = () => {
                     <p>
                       {messagesByUser[user] && messagesByUser[user].length > 0
                         ? messagesByUser[user][messagesByUser[user].length - 1]
-                          .message
+                            .message
                         : "대화를 시작해보세요"}
                     </p>
                   </div>
@@ -225,8 +228,9 @@ const ChatPage: React.FC = () => {
                   />
                 )}
                 <div
-                  className={`message ${msg.sender === "Me" ? "me-message" : "you-message"
-                    }`}
+                  className={`message ${
+                    msg.sender === "Me" ? "me-message" : "you-message"
+                  }`}
                 >
                   {msg.message.split("\n").map((line, i) => (
                     <div key={i}>{line}</div>

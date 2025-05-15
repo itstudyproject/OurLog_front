@@ -1,26 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { hasToken, removeToken } from "../utils/auth";
 // @ts-ignore
 import "../styles/header.css";
 
 const Header: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 처음엔 로그아웃 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<{
     email: string;
     profileImage?: string;
   } | null>(null);
-
-  const [keyword, setKeyword] = useState(""); // ✅ 검색어 상태 추가
-
+  const [keyword, setKeyword] = useState("");
   const navigate = useNavigate();
 
-  // 로그인 상태 및 유저 정보 확인
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
-    if (token && storedUser) {
+    if (hasToken() && storedUser) {
       try {
         setUserInfo(JSON.parse(storedUser));
         setIsLoggedIn(true);
@@ -33,10 +30,9 @@ const Header: React.FC = () => {
     }
 
     const handleAuthChange = () => {
-      const token = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
 
-      if (token && storedUser) {
+      if (hasToken() && storedUser) {
         setIsLoggedIn(true);
         setUserInfo(JSON.parse(storedUser));
       } else {
@@ -53,6 +49,16 @@ const Header: React.FC = () => {
       window.removeEventListener("logout", handleAuthChange);
     };
   }, []);
+
+  const handleLogout = () => {
+    removeToken();
+    localStorage.removeItem("user");
+    localStorage.removeItem("autoLoginUser");
+    setIsLoggedIn(false);
+    setUserInfo(null);
+    window.dispatchEvent(new Event("logout"));
+    navigate("/");
+  };
 
   return (
     <>
@@ -104,22 +110,14 @@ const Header: React.FC = () => {
                 <>
                   <Link to={"/mypage"}>
                     <img
-                      src={userInfo?.profileImage || "/images/mypage.png"}
+                      src={userInfo?.profileImage ?? "/images/mypage.png"}
                       alt="마이페이지"
                       className="mypage-icon"
                     />
                   </Link>
                   <div
                     className="logout"
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("user");
-                      localStorage.removeItem("autoLoginUser");
-                      setIsLoggedIn(false);
-                      setUserInfo(null);
-                      window.dispatchEvent(new Event("logout"));
-                      navigate("/");
-                    }}
+                    onClick={handleLogout}
                   >
                     LOGOUT
                   </div>

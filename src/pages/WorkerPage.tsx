@@ -1,25 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/WorkerPage.css";
 
-const cardData = [
-  { id: 1, image: "/images/파스타.jpg", title: "작품 제목 1" },
-  { id: 2, image: "/images/22.jpg", title: "작품 제목 2" },
-  { id: 3, image: "/images/33.jpg", title: "작품 제목 3" },
-  { id: 4, image: "/images/44.jpg", title: "작품 제목 4" },
-  { id: 5, image: "/images/55.jpg", title: "작품 제목 5" },
-  { id: 6, image: "/images/66.jpg", title: "작품 제목 6" },
-  { id: 7, image: "/images/77.jpg", title: "작품 제목 7" },
-  { id: 8, image: "/images/88.jpg", title: "작품 제목 8" },
-  { id: 9, image: "/images/99.jpg", title: "작품 제목 9" },
-];
+interface Post {
+  id: number;
+  title: string;
+  image: string;
+}
+
+interface LikeStatus {
+  liked: boolean;
+  count: number;
+}
+
+const userId = 1;
 
 const WorkerPage: React.FC = () => {
+  const [cardData, setCardData] = useState<Post[]>([]);
+  const [likes, setLikes] = useState<LikeStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [followCount, setFollowCount] = useState(120);
   const [isFollowing, setIsFollowing] = useState(false);
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const cardsPerPage = 6;
   const totalPages = Math.ceil(cardData.length / cardsPerPage);
 
@@ -28,19 +31,113 @@ const WorkerPage: React.FC = () => {
     currentPage * cardsPerPage
   );
 
+  useEffect(() => {
+    const fetchPostsAndLikes = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/ourlog/post", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) throw new Error("게시글 불러오기 실패");
+
+        const posts: Post[] = await res.json();
+        setCardData(posts);
+
+        const likeResults = await Promise.all(
+          posts.map(async (post) => {
+            try {
+              const likedRes = await fetch(
+                `http://localhost:8080/ourlog/favorites/${userId}/${post.id}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                  },
+                  credentials: "include",
+                }
+              );
+
+              const likedText = await likedRes.text();
+              const liked = JSON.parse(likedText);
+
+              const countRes = await fetch(
+                `http://localhost:8080/ourlog/favorites/count/${post.id}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                  },
+                  credentials: "include",
+                }
+              );
+              const count = await countRes.json();
+
+              return { liked, count };
+            } catch (err) {
+              console.error(
+                `Error fetching like data for post ${post.id}`,
+                err
+              );
+              return { liked: false, count: 0 };
+            }
+          })
+        );
+
+        setLikes(likeResults);
+      } catch (err) {
+        console.error("데이터 불러오기 실패:", err);
+      }
+    };
+
+    fetchPostsAndLikes();
+  }, []);
+
   const handleFollowToggle = () => {
-    const newFollowing = !isFollowing;
-    setIsFollowing(newFollowing);
-    setFollowCount((prev) => (newFollowing ? prev + 1 : prev - 1));
+    const newFollow = !isFollowing;
+    setIsFollowing(newFollow);
+    setFollowCount((prev) => (newFollow ? prev + 1 : prev - 1));
   };
 
   const handleOpenChat = () => {
-    // 새 탭 또는 새 창에서 ChatPage 열기
     window.open("/chat", "_blank", "noopener,noreferrer");
   };
 
   const handleCardClick = (id: number) => {
     navigate(`/Art/${id}`);
+  };
+
+  const handleLikeToggle = async (index: number, postId: number) => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/ourlog/favorites/toggle",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            userDTO: { userId },
+            postDTO: { postId },
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("좋아요 토글 실패");
+
+      const result = await response.json(); // { favorited, favoriteCount }
+
+      setLikes((prevLikes) =>
+        prevLikes.map((like, i) =>
+          i === index
+            ? { liked: result.favorited, count: result.favoriteCount }
+            : like
+        )
+      );
+    } catch (err) {
+      console.error("좋아요 토글 실패:", err);
+    }
   };
 
   return (
@@ -77,25 +174,39 @@ const WorkerPage: React.FC = () => {
       </div>
 
       <section className="worker-gallery">
-        {currentCards.map((card) => (
-          <div
-            key={card.id}
-            className="worker-card"
-            onClick={() => handleCardClick(card.id)}
-            style={{ cursor: "pointer" }}
-          >
-            <figure className="card-image-wrapper">
-              <img
-                src={card.image || "/default-image.png"}
-                alt={`작품 ${card.id}`}
-                className="card-image"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">{card.title}</h2>
+        {currentCards.map((card, index) => {
+          const globalIndex = (currentPage - 1) * cardsPerPage + index;
+          const like = likes[globalIndex] || { liked: false, count: 0 };
+
+          return (
+            <div
+              key={card.id}
+              className="worker-card"
+              onClick={() => handleCardClick(card.id)}
+              style={{ cursor: "pointer", position: "relative" }}
+            >
+              <figure className="card-image-wrapper">
+                <img
+                  src={card.image || "/default-image.png"}
+                  alt={`작품 ${card.id}`}
+                  className="card-image"
+                />
+                <button
+                  className="like-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLikeToggle(globalIndex, card.id);
+                  }}
+                >
+                  ♥ {like.count}
+                </button>
+              </figure>
+              <div className="card-body">
+                <h2 className="card-title">{card.title}</h2>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       <div className="pagination">
