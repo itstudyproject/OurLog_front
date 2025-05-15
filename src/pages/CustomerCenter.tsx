@@ -86,6 +86,8 @@ const CustomerCenter: React.FC = () => {
 
   const [faqs, setFaqs] = useState<Question[]>(originalFaqs);
 
+  const [inquiries, setInquiries] = useState<Question[]>([]);
+
   // 운영자(Admin) 답글 달기
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [answerContent, setAnswerContent] = useState<Record<number, string>>(
@@ -225,8 +227,6 @@ const CustomerCenter: React.FC = () => {
       )
     : faqs;
 
-  const [inquiries, setInquiries] = useState<Question[]>([]);
-
   const scrollToSection = (section: "faq" | "inquiry" | "questionlist") => {
     setActiveSection(section);
     const sectionRefs = {
@@ -355,13 +355,16 @@ const CustomerCenter: React.FC = () => {
 
   const handleAnswerSubmit = async (
     questionId: number,
-    answerContent: string
+    answerContentValue: string
   ) => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       console.error("토큰이 없습니다.");
       return;
     }
+
+    console.log("token answer", token);
 
     try {
       const response = await fetch(
@@ -374,18 +377,18 @@ const CustomerCenter: React.FC = () => {
           },
           credentials: "include",
           body: JSON.stringify({
-            contents: answerContent,
+            contents: answerContentValue,
           }),
         }
       );
 
       if (response.ok) {
         alert("답변이 등록되었습니다.");
-        setAnswerContent({
-          ...answerContent,
+        setAnswerContent((prev) => ({
+          ...prev,
           [questionId]: "",
-        });
-        fetchAllQuestions(); // 목록 새로고침
+        }));
+        fetchAllQuestions();
       } else {
         const errorText = await response.text();
         alert("답변 등록 실패: " + errorText);
@@ -454,11 +457,18 @@ const CustomerCenter: React.FC = () => {
                     key={question.questionId}
                     className="admin-question-card"
                   >
-                    <h3 className="admin-question-title">{question.title}</h3>
-                    <p className="admin-question-content">{question.content}</p>
                     <p className="admin-question-writer">
-                      작성자: {question.userDTO?.nickname || "익명"}
+                      작성자 : {question.userDTO?.nickname || "익명"}
+                      <br />
+                      e-mail: {question.userDTO?.email || "익명"}
                     </p>
+                    <h3 className="admin-question-title">
+                      제목 : {question.title}
+                    </h3>
+                    <h3 className="admin-question-content">
+                      내용 : {question.content}
+                    </h3>
+
                     {question.answerDTO ? (
                       <div className="answer-box">
                         <strong className="answer-label">답변:</strong>
