@@ -1,8 +1,7 @@
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAuthHeaders } from '../utils/auth';
-import '../styles/BidHistory.css';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../utils/auth";
+import "../styles/BidHistory.css";
 
 interface Favorite {
   favoriteId: number;
@@ -21,10 +20,10 @@ const BookmarkPage: React.FC = () => {
   const itemsPerPage = 4;
 
   useEffect(() => {
-    fetch('http://localhost:8080/ourlog/favorites/mypage', {
+    fetch("http://localhost:8080/ourlog/favorites/mypage", {
       headers: getAuthHeaders(),
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setFavorites)
       .catch(console.error);
   }, []);
@@ -39,14 +38,17 @@ const BookmarkPage: React.FC = () => {
     const userId = stored ? JSON.parse(stored).id : null;
     if (!userId) return;
 
-    fetch(`http://localhost:8080/api/favorites/toggle?userId=${userId}&postId=${postId}`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    })
-      .then(res => res.json())
+    fetch(
+      `http://localhost:8080/api/favorites/toggle?userId=${userId}&postId=${postId}`,
+      {
+        method: "POST",
+        headers: getAuthHeaders(),
+      }
+    )
+      .then((res) => res.json())
       .then(() => {
         // 성공적으로 해제하면 목록 새로고침
-        setFavorites(prev => prev.filter(item => item.postId !== postId));
+        setFavorites((prev) => prev.filter((item) => item.postId !== postId));
       })
       .catch(console.error);
   };
@@ -58,15 +60,18 @@ const BookmarkPage: React.FC = () => {
       </div>
 
       <div className="bid-list">
-        {currentItems.map(item => (
+        {currentItems.map((item) => (
           <div
             key={item.favoriteId}
             className="bid-item"
             onClick={() => navigate(`/art/${item.postId}`)}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           >
             <div className="bid-artwork">
-              <img src={item.imagePath || '/images/default.jpg'} alt={item.title} />
+              <img
+                src={item.imagePath || "/images/default.jpg"}
+                alt={item.title}
+              />
             </div>
             <div className="bid-details">
               <h3>{item.title}</h3>
@@ -76,34 +81,34 @@ const BookmarkPage: React.FC = () => {
             <div className="bid-actions">
               <button
                 className="bid-now-button"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation();
                   handleUnfavorite(item.postId);
                 }}
               >
                 북마크 해제
               </button>
-
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
-
-      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+      <div
+        className="pagination"
+        style={{ textAlign: "center", marginTop: "1rem" }}
+      >
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}
-            className={`page-btn${page === currentPage ? ' active' : ''}`}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
             onClick={() => {
               setCurrentPage(page);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             {page}
           </button>
         ))}
-
       </div>
     </div>
   );

@@ -21,29 +21,31 @@ const SaleStatusList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-useEffect(() => {
-  fetch("http://localhost:8080/ourlog/trades/mypage/sale-status", {
-    headers: getAuthHeaders(),
-  })
-    .then(res => res.json())
-    .then(data => {
-      const mapped = data.map((item: any) => ({
-        id: item.tradeId,
-        title: item.postTitle,
-        image: item.thumbnailPath,
-        artist: item.postDTO?.user?.nickname ?? "나",
-        regDate: item.createdAt?.substring(0, 10) ?? "",
-        auctionStart: item.createdAt?.substring(0, 10) ?? "", // 실제 시작시간 필요시 수정
-        saleEnd: item.expiredAt?.substring(0, 10) ?? "",      // 필요시 Trade에 추가
-        method: item.nowBuy ? "즉시구매" : "경매",
-        status: item.tradeStatus ? "진행중" : "마감",
-      }));
-      setStatuses(mapped);
-    });
-}, []);
+  useEffect(() => {
+    fetch("http://localhost:8080/ourlog/trades/mypage/sale-status", {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item.tradeId,
+          title: item.postTitle,
+          image: item.thumbnailPath,
+          artist: item.postDTO?.user?.nickname ?? "나",
+          regDate: item.createdAt?.substring(0, 10) ?? "",
+          auctionStart: item.createdAt?.substring(0, 10) ?? "", // 실제 시작시간 필요시 수정
+          saleEnd: item.expiredAt?.substring(0, 10) ?? "", // 필요시 Trade에 추가
+          method: item.nowBuy ? "즉시구매" : "경매",
+          status: item.tradeStatus ? "진행중" : "마감",
+        }));
+        setStatuses(mapped);
+      });
+  }, []);
 
-
-  const currentItems = statuses.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = statuses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(statuses.length / itemsPerPage);
 
   return (
@@ -53,7 +55,11 @@ useEffect(() => {
       </div>
       <div className="bid-list">
         {currentItems.map((item) => (
-          <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => navigate(`/art/${item.id}`)}
+          >
             <div className="bid-artwork">
               <img src={item.image} alt={item.title} />
             </div>
@@ -67,19 +73,20 @@ useEffect(() => {
               <p className="bid-amount">상태: {item.status}</p>
             </div>
           </div>
-
         ))}
-      </ul>
-
+      </div>
 
       <div className="pagination">
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button key={page} onClick={() => setCurrentPage(page)} className={`page-btn${page === currentPage ? " active" : ""}`}>
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
+          >
             {page}
           </button>
         ))}
       </div>
-
     </div>
   );
 };

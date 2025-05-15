@@ -1,4 +1,4 @@
-// src/pages/ProfileEditPage.tsx
+// src/pages/ProfileEdit.tsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,24 +6,24 @@ import { UserProfileDTO } from "../hooks/profileApi";
 import '../styles/ProfileEdit.css';
 
 
-interface ProfileEditPageProps {
+interface ProfileEditProps {
   profile: UserProfileDTO | null;
   onBack: () => void;
   onSave: (updated: Partial<UserProfileDTO>) => Promise<void>;
 }
 
 
-const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
+const ProfileEdit: React.FC<ProfileEditProps> = ({ profile, onBack, onSave }) => {
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState({
-    username: 'art_lover',
-    email: 'user@example.com',
-    fullName: '김예술',
-    bio: '현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.',
-    location: '서울특별시',
-    website: 'https://myartblog.com',
-    profilePicture: '/images/Logo.png',
+    username: profile?.nickname || 'art_lover',
+    email: profile?.email || 'user@example.com',
+    fullName: profile?.name || '김예술',
+    bio: profile?.introduction || '현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.',
+    location: profile?.location || '서울특별시',
+    website: profile?.website || 'https://myartblog.com',
+    profilePicture: profile?.imagePath || '/images/Logo.png',
   });
 
   // 입력 필드 변경 핸들러
@@ -60,21 +60,16 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
     e.preventDefault();
 
     try {
-      // 실제 API 엔드포인트에 맞게 URL을 수정
-      const token = localStorage.getItem('token');
-      const res = await fetch('/users/update-profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(profileData),
+      // 프로필 업데이트를 onSave prop 함수를 사용하여 처리
+      await onSave({
+        nickname: profileData.username,
+        email: profileData.email,
+        name: profileData.fullName,
+        introduction: profileData.bio,
+        location: profileData.location,
+        website: profileData.website,
+        imagePath: profileData.profilePicture
       });
-      if (!res.ok) throw new Error('Network response was not ok');
-
-      //  응답으로 받은 최신 프로필 데이터로 상태 갱신 가능
-      // const updated = await res.json();
-      // setProfileData(updated);
 
       // 성공 알림 후 돌아가기
       alert('프로필이 성공적으로 업데이트되었습니다.');
@@ -232,4 +227,4 @@ const ProfileEditPage: React.FC<ProfileEditPageProps> = ({ onBack }) => {
   );
 };
 
-export default ProfileEditPage;
+export default ProfileEdit;
