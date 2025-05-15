@@ -127,8 +127,8 @@ const PostList = () => {
     setCurrentPage(1);
   };
   const handlePageClick = (page: number) => {
-    const validPage = Math.max(1, page);
-    setCurrentPage(validPage);
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleTabClick = (boardId: number) => {
@@ -152,7 +152,11 @@ const PostList = () => {
     }
   };
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  // 페이지네이션 그룹 계산
+  const pageGroup = Math.floor((currentPage - 1) / 10);
+  const startPage = pageGroup * 10 + 1;
+  const endPage = Math.min(startPage + 9, totalPages);
+  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   // 게시글 필터링 (boardNo 1~4만)
   const filteredPosts = posts.filter(post => [1,2,3,4].includes(post.boardNo));
@@ -260,6 +264,13 @@ const PostList = () => {
       </table>
 
       <div className="pagination">
+        <button
+          onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
+          disabled={startPage === 1}
+          className="arrow-button"
+        >
+          &lt;
+        </button>
         {pageNumbers.map((number) => (
           <button
             key={number}
@@ -269,6 +280,13 @@ const PostList = () => {
             {number}
           </button>
         ))}
+        <button
+          onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
+          disabled={endPage === totalPages}
+          className="arrow-button"
+        >
+          &gt;
+        </button>
       </div>
     </div>
   );

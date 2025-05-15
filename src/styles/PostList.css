@@ -206,29 +206,40 @@ tbody td:nth-child(5) {
 .pagination {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
+  margin: 40px 0 20px;
+  gap: 5px;
 }
 
 .pagination button {
-  margin: 0 5px;
-  padding: 6px 10px;
-  background-color: #2a2a2a;
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #222;
   color: #ccc;
   border: 1px solid #444;
-  cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 32px;
 }
 
-.pagination button:hover {
-  background-color: #444;
+.pagination button:hover:not(:disabled) {
+  background-color: #333;
   color: #fff;
 }
 
-.pagination .active {
-  background-color: #0066cc;
-  color: #fff;
-  border: none;
+.pagination button.active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination .arrow-button {
+  font-weight: bold;
 }
 
 /* 로딩 화면 */
