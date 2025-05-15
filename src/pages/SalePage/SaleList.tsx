@@ -1,66 +1,83 @@
-// src/pages/SalePage/SaleList.tsx
-import React from 'react';
-import '../../styles/SaleList.css';
+
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
+
+interface Sale {
+  id: number;
+  image: string;
+  title: string;
+  artist: string;
+  count: number;
+  date: string;
+  price: string;
+  method: string;
+}
+
+const SaleList: React.FC = () => {
+  const navigate = useNavigate();
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+useEffect(() => {
+  fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
+    headers: getAuthHeaders(),
+  })
+    .then(res => res.json())
+    .then(data => {
+      const mapped = data.map((item: any) => ({
+        id: item.tradeId,
+        image: item.thumbnailPath,
+        title: item.postTitle,
+        price: item.nowBuy ?? item.highestBid ?? 0,
+        method: item.nowBuy ? "즉시구매" : "경매",
+        date: item.createdAt?.substring(0, 10) ?? "",
+        count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
+        artist: item.postDTO?.user?.nickname ?? "나",
+      }));
+      setSales(mapped);
+    });
+}, []);
 
 
-const dummyData = [
-  {
-    image: '/images/sample6.jpg',
-    title: 'coconut',
-    artist: 'coco',
-    count: 20,
-    date: '2025.03.05',
-    price: '200,000원',
-    method: '개인의뢰',
-  },
-  {
-    image: '/images/sample6.jpg',
-    title: 'coconut',
-    artist: 'coco',
-    count: 20,
-    date: '2025.03.05',
-    price: '200,000원',
-    method: '개인의뢰',
-  },
-  {
-    image: '/images/sample6.jpg',
-    title: 'coconut',
-    artist: 'coco',
-    count: 20,
-    date: '2025.03.05',
-    price: '200,000원',
-    method: '개인의뢰',
-  },
-];
+  const currentItems = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(sales.length / itemsPerPage);
 
-const SaleList = () => {
   return (
-    <div className="purchase-list">
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      <div className="bid-history-title">
+        <h2>판매 내역</h2>
+      </div>
+      <div className="bid-list">
+        {currentItems.map((item) => (
+          <div key={item.id} className="bid-item" onClick={() => navigate(`/art/${item.id}`)}>
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.title} />
+            </div>
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p>작가: {item.artist}</p>
+              <p>판매횟수: {item.count}</p>
+              <p className="bid-amount">판매금액: {item.price}</p>
+              <p>판매방식: {item.method}</p>
+              <p>판매날짜: {item.date}</p>
+            </div>
+          </div>
+
+        ))}
       </div>
 
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="sale-item-title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>판매횟수 {item.count}</p>
-              <p>판매날짜 {item.date}</p>
-              <p>판매금액 {item.price}</p>
-              <p>판매방식 {item.method}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
 
-      <div className="pagination">{'<'} 1 2 3 4 5 {'>'}</div>
+      <div className="pagination">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button key={page} onClick={() => setCurrentPage(page)} className={`page-btn${page === currentPage ? " active" : ""}`}>
+            {page}
+          </button>
+        ))}
+      </div>
+
     </div>
   );
 };
