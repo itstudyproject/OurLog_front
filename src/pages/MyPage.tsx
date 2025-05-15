@@ -59,11 +59,11 @@ const MyPage: React.FC = () => {
   // 메뉴 선택 상태 관리
   const getCurrentTab = () => {
     const path = location.pathname;
-    if (path === '/mypage') return 'recent';
-    if (path.includes('/purchase-bid')) return 'purchase-bid';
-    if (path.includes('/sale')) return 'sale';
-    if (path.includes('/bookmark')) return 'bookmark';
-    return 'recent';
+    if (path === "/mypage") return "recent";
+    if (path.includes("/purchase-bid")) return "purchase-bid";
+    if (path.includes("/sale")) return "sale";
+    if (path.includes("/bookmark")) return "bookmark";
+    return "recent";
   };
 
   return (
@@ -103,7 +103,7 @@ const MyPage: React.FC = () => {
             >
               회원정보수정
             </button>
-            <button 
+            <button
               className="detail-button"
               onClick={() => navigate("/mypage/account/delete")}
               style={{ backgroundColor: "#e74c3c" }}
@@ -117,64 +117,32 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title" style={{ marginTop: "30px" }}>
         <h2>메뉴</h2>
       </div>
-<<<<<<< HEAD
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "20px",
-        }}
-      >
-        <button
-          className={`bid-now-button ${
-            location.pathname === "/mypage" ? "active" : ""
-          }`}
-=======
-      
       <div className="sub-tab-nav">
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`} 
->>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
+        <button
+          className={`sub-tab ${getCurrentTab() === "recent" ? "active" : ""}`}
           onClick={() => navigate("/mypage")}
         >
           최근 본 게시물
         </button>
-<<<<<<< HEAD
         <button
-          className={`bid-now-button ${
-            location.pathname.includes("/purchase-bid") ? "active" : ""
+          className={`sub-tab ${
+            getCurrentTab() === "purchase-bid" ? "active" : ""
           }`}
-=======
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
->>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage/purchase-bid")}
         >
           구매/입찰목록
         </button>
-<<<<<<< HEAD
         <button
-          className={`bid-now-button ${
-            location.pathname.includes("/sale") ? "active" : ""
-          }`}
-=======
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
->>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
+          className={`sub-tab ${getCurrentTab() === "sale" ? "active" : ""}`}
           onClick={() => navigate("/mypage/sale")}
         >
           판매목록/현황
         </button>
-<<<<<<< HEAD
         <button
-          className={`bid-now-button ${
-            location.pathname.includes("/bookmark") ? "active" : ""
+          className={`sub-tab ${
+            getCurrentTab() === "bookmark" ? "active" : ""
           }`}
-=======
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
->>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
           onClick={() => navigate("/mypage/bookmark")}
         >
           북마크

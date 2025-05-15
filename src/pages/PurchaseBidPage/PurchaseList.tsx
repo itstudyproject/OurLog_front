@@ -59,24 +59,6 @@ const PurchaseList: React.FC = () => {
       </div>
 
       <div className="bid-list">
-<<<<<<< HEAD
-        {currentItems.map((item) => (
-          <div
-            key={item.tradeId}
-            className="bid-item"
-            onClick={() => navigate(`/art/${item.tradeId}`)}
-          >
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.postTitle} />
-            </div>
-            <div className="bid-details">
-              <h3>{item.postTitle}</h3>
-              <p className="bid-amount">
-                구매금액: {item.price.toLocaleString()}원
-              </p>
-              <p>구매방식: {item.method}</p>
-              <p>구매날짜: {item.date}</p>
-=======
         {currentItems.length > 0 ? (
           currentItems.map((item) => (
             <div
@@ -89,7 +71,9 @@ const PurchaseList: React.FC = () => {
               </div>
               <div className="bid-details">
                 <h3>{item.postTitle}</h3>
-                <p className="bid-amount">구매금액: {item.price.toLocaleString()}원</p>
+                <p className="bid-amount">
+                  구매금액: {item.price.toLocaleString()}원
+                </p>
                 <p>구매방식: {item.method}</p>
                 <p>구매날짜: {item.date}</p>
               </div>
@@ -104,11 +88,13 @@ const PurchaseList: React.FC = () => {
                   자세히 보기
                 </button>
               </div>
->>>>>>> df63bbf64df1866a6b77c055120343162bd818cf
             </div>
           ))
         ) : (
-          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+          <div
+            className="bid-item"
+            style={{ justifyContent: "center", padding: "30px" }}
+          >
             <p>구매 내역이 없습니다.</p>
           </div>
         )}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/ArtworkSlider.css";
+import { useNavigate } from "react-router-dom";
 
 interface Artwork {
   imageUrl: string;
@@ -7,6 +8,7 @@ interface Artwork {
   artist: string;
   price: string;
   link: string;
+  artistId: number; // 추가됨
 }
 
 const generateRandomImageUrl = (index: number) => {
@@ -20,6 +22,7 @@ const artworks: Artwork[] = [
     artist: "권봄이",
     price: "₩2,500,000",
     link: "#",
+    artistId: 1,
   },
   {
     imageUrl: generateRandomImageUrl(1),
@@ -27,6 +30,7 @@ const artworks: Artwork[] = [
     artist: "이서연",
     price: "₩3,000,000",
     link: "#",
+    artistId: 2,
   },
   {
     imageUrl: generateRandomImageUrl(2),
@@ -34,6 +38,7 @@ const artworks: Artwork[] = [
     artist: "정윤아",
     price: "₩1,800,000",
     link: "#",
+    artistId: 3,
   },
   {
     imageUrl: generateRandomImageUrl(3),
@@ -41,6 +46,7 @@ const artworks: Artwork[] = [
     artist: "김하늘",
     price: "₩2,200,000",
     link: "#",
+    artistId: 4,
   },
   {
     imageUrl: generateRandomImageUrl(4),
@@ -48,6 +54,7 @@ const artworks: Artwork[] = [
     artist: "박지우",
     price: "₩2,700,000",
     link: "#",
+    artistId: 5,
   },
   {
     imageUrl: generateRandomImageUrl(5),
@@ -55,6 +62,7 @@ const artworks: Artwork[] = [
     artist: "최서윤",
     price: "₩3,100,000",
     link: "#",
+    artistId: 6,
   },
 ];
 
@@ -65,6 +73,7 @@ const artists: Artwork[] = [
     artist: "최지영",
     price: "",
     link: "#",
+    artistId: 10,
   },
   {
     imageUrl: generateRandomImageUrl(11),
@@ -72,6 +81,7 @@ const artists: Artwork[] = [
     artist: "이동우",
     price: "",
     link: "#",
+    artistId: 11,
   },
   {
     imageUrl: generateRandomImageUrl(12),
@@ -79,6 +89,7 @@ const artists: Artwork[] = [
     artist: "김민서",
     price: "",
     link: "#",
+    artistId: 12,
   },
   {
     imageUrl: generateRandomImageUrl(13),
@@ -86,6 +97,7 @@ const artists: Artwork[] = [
     artist: "한유진",
     price: "",
     link: "#",
+    artistId: 13,
   },
   {
     imageUrl: generateRandomImageUrl(14),
@@ -93,6 +105,7 @@ const artists: Artwork[] = [
     artist: "박소현",
     price: "",
     link: "#",
+    artistId: 14,
   },
   {
     imageUrl: generateRandomImageUrl(15),
@@ -100,10 +113,12 @@ const artists: Artwork[] = [
     artist: "정도윤",
     price: "",
     link: "#",
+    artistId: 15,
   },
 ];
 
 const ArtworkSlider: React.FC = () => {
+  const navigate = useNavigate();
   const [artworkIndexes, setArtworkIndexes] = useState([0, 1, 2]);
   const [artistIndexes, setArtistIndexes] = useState([0, 1, 2]);
 
@@ -120,6 +135,10 @@ const ArtworkSlider: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleClick = (artistId: number) => {
+    navigate("/worker", { state: { userId: artistId } }); // <- 라우팅은 고정, userId는 state로 전달
+  };
+
   const renderSection = (
     title: string,
     subtitle: string,
@@ -133,12 +152,11 @@ const ArtworkSlider: React.FC = () => {
         {indexes.map((index) => {
           const item = data[index];
           return (
-            <a
+            <div
               key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
               className="artworkslider-card"
+              onClick={() => handleClick(item.artistId)}
+              style={{ cursor: "pointer" }}
             >
               <img
                 src={item.imageUrl}
@@ -152,7 +170,7 @@ const ArtworkSlider: React.FC = () => {
                   <div className="artworkslider-price">{item.price}</div>
                 )}
               </div>
-            </a>
+            </div>
           );
         })}
       </div>
