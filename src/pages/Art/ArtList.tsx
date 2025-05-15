@@ -139,7 +139,7 @@ const ArtList = () => {
   };
 
   const handleRegisterClick = () => {
-    navigate('/register');
+    navigate('/art/register');
   };
 
   if (loading) {
