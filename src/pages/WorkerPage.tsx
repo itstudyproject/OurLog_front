@@ -34,9 +34,14 @@ const WorkerPage: React.FC = () => {
   useEffect(() => {
     const fetchPostsAndLikes = async () => {
       try {
+        const token = localStorage.getItem("token");
+
         const res = await fetch("http://localhost:8080/ourlog/post", {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error("게시글 불러오기 실패");
