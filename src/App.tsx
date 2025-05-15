@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import WorkerPage from "./pages/WorkerPage";
+import ChatPage from "./pages/ChatPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
 import PostDetail from "./pages/Post/PostDetail";
@@ -47,6 +48,7 @@ function App() {
 
         <Route path="mypage" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
+        <Route path="/chat" element={<ChatPage />} />
 
         <Route path="post">
           <Route index element={<PostList />} />

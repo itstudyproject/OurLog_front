@@ -113,24 +113,24 @@ const ArtRegister = () => {
   };
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newTag.trim()) {
+    if (e.key === "Enter" && newTag.trim()) {
       e.preventDefault();
       if (form.tags.includes(newTag.trim())) {
-        alert('이미 존재하는 태그입니다.');
+        alert("이미 존재하는 태그입니다.");
         return;
       }
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, newTag.trim()],
       }));
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -146,7 +146,7 @@ const ArtRegister = () => {
       // 이미지 파일들을 FormData에 추가
       const formData = new FormData();
       form.images.forEach((image, index) => {
-        formData.append('images', image.file);
+        formData.append("images", image.file);
       });
 
       // 아트워크 정보
@@ -154,36 +154,42 @@ const ArtRegister = () => {
         title: form.title,
         content: form.description,
         boardNo: 5, // 아트 게시판 ID
-        startPrice: parseInt(form.startPrice.replace(/,/g, '')),
-        instantPrice: parseInt(form.instantPrice.replace(/,/g, '')),
+        startPrice: parseInt(form.startPrice.replace(/,/g, "")),
+        instantPrice: parseInt(form.instantPrice.replace(/,/g, "")),
         startTime: form.startTime.toISOString(),
         endTime: form.endTime.toISOString(),
-        tags: form.tags.join(','),
-        thumbnailId: form.thumbnailId
+        tags: form.tags.join(","),
+        thumbnailId: form.thumbnailId,
       };
 
-      formData.append('artworkDTO', new Blob([JSON.stringify(artworkData)], {
-        type: 'application/json'
-      }));
+      formData.append(
+        "artworkDTO",
+        new Blob([JSON.stringify(artworkData)], {
+          type: "application/json",
+        })
+      );
 
-      const response = await fetch('http://localhost:8080/ourlog/picture/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData
-      });
+      const response = await fetch(
+        "http://localhost:8080/ourlog/picture/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('작품 등록에 실패했습니다.');
+        throw new Error("작품 등록에 실패했습니다.");
       }
 
       const data = await response.json();
       alert("작품이 성공적으로 등록되었습니다!");
       navigate(`/art/${data.artId}`);
     } catch (error) {
-      console.error('작품 등록 중 오류 발생:', error);
-      alert('작품 등록에 실패했습니다. 다시 시도해주세요.');
+      console.error("작품 등록 중 오류 발생:", error);
+      alert("작품 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -318,8 +324,8 @@ const ArtRegister = () => {
                     {form.tags.map((tag, index) => (
                       <span key={index} className="tag">
                         #{tag}
-                        <button 
-                          onClick={() => handleRemoveTag(tag)} 
+                        <button
+                          onClick={() => handleRemoveTag(tag)}
                           className="remove-tag"
                           title="태그 삭제"
                         >
@@ -343,14 +349,14 @@ const ArtRegister = () => {
                     onClick={() => {
                       if (newTag.trim()) {
                         if (form.tags.includes(newTag.trim())) {
-                          alert('이미 존재하는 태그입니다.');
+                          alert("이미 존재하는 태그입니다.");
                           return;
                         }
-                        setForm(prev => ({
+                        setForm((prev) => ({
                           ...prev,
-                          tags: [...prev.tags, newTag.trim()]
+                          tags: [...prev.tags, newTag.trim()],
                         }));
-                        setNewTag('');
+                        setNewTag("");
                       }
                     }}
                     className="tag-add-button"
