@@ -117,10 +117,29 @@
   align-items: center;
   justify-content: center;
   color: #888;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  position: relative;
+}
+
+.image-upload-placeholder.dragover {
+  border-color: #ffd700;
+  background-color: rgba(255, 215, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.image-upload-placeholder.dragover::after {
+  content: '이미지를 놓아주세요';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffd700;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .image-upload-placeholder:hover {
