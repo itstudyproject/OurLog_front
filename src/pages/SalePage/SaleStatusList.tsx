@@ -1,8 +1,7 @@
-// src/pages/SalePage/SaleStatusList.tsx
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../../styles/BidHistory.css';  // BidHistory 스타일 재활용
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
 
 interface SaleStatus {
   id: number;
@@ -16,56 +15,50 @@ interface SaleStatus {
   status: string;
 }
 
-// 더미 데이터
-const dummyData: SaleStatus[] = [
-  { id: 1, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.03', auctionStart: '2025.05.03', saleEnd: '2025.05.10', method: '공개입찰', status: '입찰중' },
-  { id: 2, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.03', auctionStart: '2025.05.03', saleEnd: '2025.05.10', method: '공개입찰', status: '입찰중' },
-  { id: 3, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.03', auctionStart: '2025.05.03', saleEnd: '2025.05.10', method: '공개입찰', status: '입찰중' },
-  { id: 4, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.04', auctionStart: '2025.05.04', saleEnd: '2025.05.11', method: '공개입찰', status: '입찰중' },
-  { id: 5, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.05', auctionStart: '2025.05.05', saleEnd: '2025.05.12', method: '공개입찰', status: '입찰중' },
-  { id: 6, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.06', auctionStart: '2025.05.06', saleEnd: '2025.05.13', method: '공개입찰', status: '입찰중' },
-  { id: 7, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.06', auctionStart: '2025.05.06', saleEnd: '2025.05.13', method: '공개입찰', status: '입찰중' },
-  { id: 8, image: '/images/sample7.jpg', title: 'peach', artist: 'uouo', regDate: '2025.05.06', auctionStart: '2025.05.06', saleEnd: '2025.05.13', method: '공개입찰', status: '입찰중' },
-
-];
-
 const SaleStatusList: React.FC = () => {
   const navigate = useNavigate();
-
-  // 페이지네이션 상태
+  const [statuses, setStatuses] = useState<SaleStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  // 현재 페이지에 해당하는 아이템들
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentItems = dummyData.slice(indexOfFirst, indexOfLast);
+  useEffect(() => {
+    fetch("http://localhost:8080/ourlog/trades/mypage/sale-status", {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item.tradeId,
+          title: item.postTitle,
+          image: item.thumbnailPath,
+          artist: item.postDTO?.user?.nickname ?? "나",
+          regDate: item.createdAt?.substring(0, 10) ?? "",
+          auctionStart: item.createdAt?.substring(0, 10) ?? "", // 실제 시작시간 필요시 수정
+          saleEnd: item.expiredAt?.substring(0, 10) ?? "", // 필요시 Trade에 추가
+          method: item.nowBuy ? "즉시구매" : "경매",
+          status: item.tradeStatus ? "진행중" : "마감",
+        }));
+        setStatuses(mapped);
+      });
+  }, []);
 
-  // 전체 페이지 수 계산
-  const totalPages = Math.ceil(dummyData.length / itemsPerPage);
-
-  // 페이지 버튼 클릭 핸들러
-  const handlePageClick = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const currentItems = statuses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(statuses.length / itemsPerPage);
 
   return (
     <div className="bid-history-container">
-      {/* 섹션 타이틀 */}
       <div className="bid-history-title">
         <h2>판매 현황</h2>
-        <p className="bid-date">2025.05.03 - 2025.05.10</p>
       </div>
-
-      {/* 리스트 */}
       <div className="bid-list">
-        {currentItems.map(item => (
+        {currentItems.map((item) => (
           <div
             key={item.id}
             className="bid-item"
-            onClick={() => navigate(`/Art/${item.id}`)}
-            style={{ cursor: 'pointer' }}
+            onClick={() => navigate(`/art/${item.id}`)}
           >
             <div className="bid-artwork">
               <img src={item.image} alt={item.title} />
@@ -79,21 +72,16 @@ const SaleStatusList: React.FC = () => {
               <p>방식: {item.method}</p>
               <p className="bid-amount">상태: {item.status}</p>
             </div>
-            <div className="bid-actions">
-              <button className="detail-button">상세 ▶</button>
-            </div>
           </div>
         ))}
       </div>
 
-      {/* 페이지네이션 */}
-      <div className="pagination" style={{ textAlign: 'center', marginTop: '1rem' }}>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+      <div className="pagination">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}
-            className={`page-btn${page === currentPage ? ' active' : ''}`}
-            onClick={() => handlePageClick(page)}
-            style={{ margin: '0 4px' }}
+            onClick={() => setCurrentPage(page)}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
           >
             {page}
           </button>

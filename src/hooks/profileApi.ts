@@ -1,0 +1,37 @@
+// src/hooks/profileApi.ts
+import { getAuthHeaders } from "../utils/auth";
+
+export interface UserProfileDTO {
+  id: number;
+  user: number;
+  nickname: string;
+  imagePath?: string;
+  followerCount: number;
+  followingCount: number;
+  email?: string;
+  name?: string;
+  introduction?: string;
+  location?: string;
+  website?: string;
+}
+
+export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
+  const res = await fetch(`http://localhost:8080/ourlog/profile/get/${userId}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("프로필 조회 실패");
+  return res.json();
+};
+
+export const updateProfile = async (
+  userId: number,
+  profile: Partial<UserProfileDTO>
+): Promise<UserProfileDTO> => {
+  const res = await fetch(`http://localhost:8080/ourlog/profile/edit/${userId}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(profile),
+  });
+  if (!res.ok) throw new Error("프로필 수정 실패");
+  return res.json();
+};

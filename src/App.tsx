@@ -24,6 +24,12 @@ import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
+import PurchaseBidPage from "./pages/PurchaseBidPage/PurchaseBidPage";
+import SalePage from "./pages/SalePage/SalePage";
+import BookmarkPage from "./pages/BookmarkPage";
+import AccountEdit from "./pages/AccountEdit";
+import ProfileEdit from "./pages/ProfileEdit";
+
 function App() {
   return (
     <Routes>
@@ -46,7 +52,7 @@ function App() {
 
         <Route path="ranking" element={<RankingPage />} />
 
-        <Route path="mypage" element={<MyPage />} />
+        <Route path="mypage/*" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
         <Route path="/chat" element={<ChatPage />} />
 

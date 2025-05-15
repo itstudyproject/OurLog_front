@@ -1,37 +1,22 @@
-/* src/styles/SalePage.css */
-
-.sale-page {
-  /* 필요하면 상단 여백이나 패딩 추가 */
-  padding-top: 1rem;
-}
-
-/* 탭 컨테이너 */
-.sub-tab-nav {
+.tab-buttons {
   display: flex;
-  gap: 2rem;            /* 탭 간격 */
-  margin-bottom: 1.5rem;/* 콘텐츠와의 여백 */
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-/* 탭 */
-.sub-tab {
-  position: relative;
-  color: #fff;
-  font-size: 1.1rem;
+.tab-buttons button {
+  padding: 8px 16px;
+  background-color: #eee;
+  border: none;
   cursor: pointer;
-  padding-bottom: 0.25rem;
-  transition: color 0.2s;
-}
-.sub-tab:hover {
-  color: #ffb74d; /* 호버 시 강조 색 */
+  border-radius: 4px;
 }
 
-/* 활성 탭 밑줄 */
-.sub-tab.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 2px;
-  background: #ffb74d; /* 주황색 */
+.tab-buttons button.active {
+  background-color: #ccc;
+  font-weight: bold;
+}
+
+.tab-content {
+  padding-top: 10px;
 }

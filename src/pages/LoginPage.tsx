@@ -16,14 +16,29 @@ const LoginPage: React.FC = () => {
       try {
         const userData = JSON.parse(savedUser);
         if (userData.token) {
-          handleLoginSuccess(userData, false);
+          // 자동 로그인 처리
+          setToken(userData.token);
+          
+          localStorage.setItem(
+            "user",
+            JSON.stringify({
+              email: userData.email,
+              profileImage: "/images/default-profile.png",
+            })
+          );
+          
+          // 로그인 이벤트 발생
+          setTimeout(() => {
+            window.dispatchEvent(new Event("login"));
+            navigate("/");
+          }, 100);
         }
       } catch (error) {
         console.error("자동 로그인 처리 중 오류 발생:", error);
         localStorage.removeItem("autoLoginUser");
       }
     }
-  }, []);
+  }, [navigate]);
 
   const handleLoginSuccess = (userData: any, shouldSave: boolean) => {
     if (shouldSave) {
@@ -39,6 +54,7 @@ const LoginPage: React.FC = () => {
         profileImage: "/images/default-profile.png",
       })
     );
+    
     window.dispatchEvent(new Event("login"));
     navigate("/");
   };

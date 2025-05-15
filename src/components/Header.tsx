@@ -4,7 +4,11 @@ import { hasToken, removeToken } from "../utils/auth";
 // @ts-ignore
 import "../styles/header.css";
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  scrollWidth?: number;
+}
+
+const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<{
@@ -14,31 +18,33 @@ const Header: React.FC = () => {
   const [keyword, setKeyword] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // 로그인 상태 확인 함수
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-
-    if (hasToken() && storedUser) {
+    
+    if (token && storedUser) {
       try {
         setUserInfo(JSON.parse(storedUser));
         setIsLoggedIn(true);
       } catch (err) {
         console.error("user 정보 파싱 오류:", err);
+        setIsLoggedIn(false);
+        setUserInfo(null);
       }
     } else {
       setIsLoggedIn(false);
       setUserInfo(null);
     }
+  };
 
+  useEffect(() => {
+    // 컴포넌트 마운트 시 로그인 상태 확인
+    checkLoginStatus();
+
+    // 로그인/로그아웃 이벤트 리스너 등록
     const handleAuthChange = () => {
-      const storedUser = localStorage.getItem("user");
-
-      if (hasToken() && storedUser) {
-        setIsLoggedIn(true);
-        setUserInfo(JSON.parse(storedUser));
-      } else {
-        setIsLoggedIn(false);
-        setUserInfo(null);
-      }
+      checkLoginStatus();
     };
 
     window.addEventListener("login", handleAuthChange);

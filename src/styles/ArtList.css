@@ -196,8 +196,153 @@ body {
   font-size: 18px;
 }
 
-.main-search {
+.art-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.art-list-title {
+  font-size: 24px;
+  font-weight: 600;
   color: #fff;
-  font-size: 20px;
-  margin-bottom: 5px;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.art-list-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.art-list-tab-btn {
+  padding: 8px 32px;
+  border-radius: 6px;
+  background: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.art-list-tab-btn.active,
+.art-list-tab-btn:hover {
+  background: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+/* 검색 영역 */
+.art-search-section {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  z-index: 1;
+}
+
+.art-search-section form {
+  display: flex;
+  align-items: center;
+}
+
+.art-search-section input {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: #ccc;
+  min-width: 200px;
+}
+
+.art-search-section input::placeholder {
+  color: #777;
+}
+
+.art-search-section button {
+  margin-left: 8px;
+  background-color: #2a2a2a;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.art-search-section button:hover {
+  color: #fff;
+}
+
+.art-search-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.art-register-button {
+  margin-left: 12px;
+  padding: 6px 12px;
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.art-register-button:hover {
+  background-color: #005bb5;
+}
+
+@media (max-width: 1024px) {
+  .art-list-header {
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 60px;
+  }
+
+  .art-list-title {
+    top: 0;
+  }
+
+  .art-list-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .art-search-section {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 768px) {
+  .art-list-header {
+    padding-top: 50px;
+  }
+
+  .art-list-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .art-search-section {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .art-search-section form {
+    width: 100%;
+  }
+
+  .art-search-section input {
+    width: 100%;
+  }
 }
