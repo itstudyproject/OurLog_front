@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/LoginPage.css';
+import { setToken } from '../utils/auth';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +43,8 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/ourlog/user/register', {
+      // 1. 회원가입 요청
+      const registerResponse = await fetch('http://localhost:8080/ourlog/user/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -57,16 +59,83 @@ const RegisterPage: React.FC = () => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!registerResponse.ok) {
+        const errorData = await registerResponse.json();
         throw new Error(errorData.message || '회원가입에 실패했습니다.');
       }
 
-      // 성공 시 로그인 페이지로 이동
-      navigate('/login');
+      // 2. 회원가입 응답에서 ID 추출
+      const userId = await registerResponse.json();
+      console.log("회원가입 성공 - 생성된 userId:", userId);
+
+      // 3. 로그인 요청으로 토큰 발급
+      const loginResponse = await fetch(
+        `http://localhost:8080/ourlog/auth/login?email=${encodeURIComponent(formData.email)}&password=${encodeURIComponent(formData.password)}`,
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      const tokenText = await loginResponse.text();
+      
+      if (tokenText.startsWith('{"code"')) {
+        throw new Error("자동 로그인에 실패했습니다.");
+      }
+
+      const token = tokenText.trim();
+      
+      // 4. 토큰으로 사용자 정보 요청
+      const userResponse = await fetch(`http://localhost:8080/ourlog/user/get?email=${encodeURIComponent(formData.email)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('사용자 정보를 가져오는데 실패했습니다.');
+      }
+
+      const userInfo = await userResponse.json();
+      
+      // 5. 사용자 정보 및 토큰을 사용하여 로그인 처리
+      const userData = {
+        email: formData.email,
+        userId: userInfo.id || userId,
+        token: token,
+        profileImage: userInfo.profileImage || '/images/mypage.png',
+      };
+      
+      handleSignupSuccess(userData);
     } catch (err) {
       setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
     }
+  };
+
+  // 회원가입 성공 처리 함수
+  const handleSignupSuccess = (userData: any) => {
+    // 토큰 저장
+    setToken(userData.token);
+
+    // 사용자 정보 저장
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email: userData.email,
+        userId: userData.id || userData.userId,
+        profileImage: userData.profileImage || "/images/mypage.png",
+      })
+    );
+
+    // 로그인 알림 표시를 위한 플래그 설정
+    sessionStorage.setItem("loginEvent", "true");
+    
+    // 로그인 이벤트 발생 및 홈으로 이동
+    window.dispatchEvent(new Event("login"));
+    navigate("/");
   };
 
   return (

@@ -322,3 +322,103 @@
     font-size: 14px;
   }
 }
+
+/* 로그인 알림 스타일 */
+.login-notification {
+  position: fixed;
+  top: 140px;
+  right: 20px;
+  z-index: 1000;
+  width: 320px;
+  background-color: rgba(35, 35, 35, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slide-in 0.5s ease-out;
+  border-left: 4px solid #f8c147;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  display: flex;
+  padding: 15px;
+  position: relative;
+  align-items: center;
+}
+
+.notification-profile {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #f8c147;
+  background-color: #444;
+}
+
+.notification-text {
+  flex-grow: 1;
+  color: #fff;
+}
+
+.notification-welcome {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #f8c147;
+}
+
+.notification-info {
+  font-size: 14px;
+  margin: 4px 0;
+  color: #ccc;
+}
+
+.notification-label {
+  font-weight: bold;
+  color: #fff;
+}
+
+.notification-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.notification-close:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 반응형 스타일: 알림 */
+@media (max-width: 768px) {
+  .login-notification {
+    width: 90%;
+    top: 100px;
+    right: 5%;
+    left: 5%;
+  }
+}

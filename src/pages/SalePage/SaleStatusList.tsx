@@ -1,8 +1,8 @@
-// src/pages/SalePage/SaleStatusList.tsx
-import React from 'react';
-import '../../styles/SaleStatusList.css';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
+import "../../styles/BidHistory.css";
 
-<<<<<<< HEAD
 interface SaleStatus {
   id: number;
   image: string;
@@ -47,107 +47,67 @@ const SaleStatusList: React.FC = () => {
     currentPage * itemsPerPage
   );
   const totalPages = Math.ceil(statuses.length / itemsPerPage);
-=======
-const dummyData = [
-  {
-    image: '/images/sample7.jpg',
-    title: 'peach',
-    artist: 'uouo',
-    regDate: '2025.05.03',
-    auctionStart: '2025.05.03',
-    saleEnd: '2025.05.10',
-    method: '공개입찰',
-    status: '입찰중',
-  },
-  {
-    image: '/images/sample7.jpg',
-    title: 'peach',
-    artist: 'uouo',
-    regDate: '2025.05.03',
-    auctionStart: '2025.05.03',
-    saleEnd: '2025.05.10',
-    method: '공개입찰',
-    status: '입찰중',
-  },
-  {
-    image: '/images/sample7.jpg',
-    title: 'peach',
-    artist: 'uouo',
-    regDate: '2025.05.03',
-    auctionStart: '2025.05.03',
-    saleEnd: '2025.05.10',
-    method: '공개입찰',
-    status: '입찰중',
-  },
-];
->>>>>>> parent of 189ff36 (Merge pull request #83 from itstudyproject/develop)
 
-const SaleStatusList = () => {
   return (
-    <div className="purchase-list">
-      <div className="filter-row">
-        <select>
-          <option>날짜순</option>
-          <option>금액순</option>
-        </select>
-        <button className="date-filter">검색기간 설정</button>
+    <div className="bid-history-container">
+      <div className="bid-history-title">
+        <h2>판매 현황</h2>
       </div>
-<<<<<<< HEAD
       <div className="bid-list">
-        {currentItems.map((item) => (
-          <div
-            key={item.id}
-            className="bid-item"
-            onClick={() => navigate(`/art/${item.id}`)}
-          >
-            <div className="bid-artwork">
-              <img src={item.image} alt={item.title} />
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => (
+            <div
+              key={item.id}
+              className="bid-item"
+              onClick={() => navigate(`/art/${item.id}`)}
+            >
+              <div className="bid-artwork">
+                <img src={item.image} alt={item.title} />
+              </div>
+              <div className="bid-details">
+                <h3>{item.title}</h3>
+                <p>작가: {item.artist}</p>
+                <p>등록일: {item.regDate}</p>
+                <p>경매시작: {item.auctionStart}</p>
+                <p>판매마감: {item.saleEnd}</p>
+                <p>방식: {item.method}</p>
+                <p className="bid-amount">상태: {item.status}</p>
+              </div>
+              <div className="bid-actions">
+                <button
+                  className="detail-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/art/${item.id}`);
+                  }}
+                >
+                  자세히 보기
+                </button>
+              </div>
             </div>
-            <div className="bid-details">
-              <h3>{item.title}</h3>
-              <p>작가: {item.artist}</p>
-              <p>등록일: {item.regDate}</p>
-              <p>경매시작: {item.auctionStart}</p>
-              <p>판매마감: {item.saleEnd}</p>
-              <p>방식: {item.method}</p>
-              <p className="bid-amount">상태: {item.status}</p>
-            </div>
+          ))
+        ) : (
+          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+            <p>판매 현황이 없습니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`page-btn${page === currentPage ? " active" : ""}`}
-          >
-            {page}
-          </button>
-        ))}
-      </div>
-=======
-
-      <ul className="item-list">
-        {dummyData.map((item, idx) => (
-          <li key={idx} className="purchase-item">
-            <img src={item.image} alt={item.title} className="item-image" />
-            <div className="item-info">
-              <p className="sale-status-title">{item.title}</p>
-              <p className="artist">{item.artist}</p>
-              <p>등록일 {item.regDate}</p>
-              <p>경매시작일 {item.auctionStart}</p>
-              <p>판매 마감일 {item.saleEnd}</p>
-              <p>판매방식 {item.method}</p>
-              <p>진행상태 {item.status}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <div className="pagination">{'<'} 1 2 3 4 5 {'>'}</div>
->>>>>>> parent of 189ff36 (Merge pull request #83 from itstudyproject/develop)
+      {totalPages > 1 && (
+        <div className="bid-history-footer">
+          <div className="pagination">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={page === currentPage ? "active" : ""}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
