@@ -177,34 +177,49 @@
   resize: vertical;
 }
 
-.price-info {
+.price-section {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.price-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 16px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .price-box {
-  background: #2a2a2a;
-  padding: 16px;
-  border-radius: 4px;
+  padding: 15px;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.price-box.current-price {
+  background-color: #2a2a2a;
+  border: 1px solid #f8c147;
 }
 
 .price-label {
-  font-size: 13px;
-  color: #888;
+  font-size: 0.9rem;
+  color: #999;
   margin-bottom: 8px;
 }
 
 .price-value {
-  font-size: 19px;
+  font-size: 1.2rem;
   font-weight: bold;
   color: #fff;
 }
 
-.current-price {
-  background: #3a3a3a;
+.price-box.current-price .price-value {
+  color: #f8c147;
 }
 
 .bid-section {
