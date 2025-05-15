@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import SaleList from './SaleList';
-import SaleStatusList from './SaleStatusList';
-import '../../styles/SalePage.css';
+
+// src/pages/SalePage/SalePage.tsx
+import React, { useState } from "react";
+import SaleList from "./SaleList";
+import SaleStatusList from "./SaleStatusList";
+import "../../styles/SalePage.css"; 
+import '../../styles/BidHistory.css';
+
 
 const SalePage = () => {
   const [activeTab, setActiveTab] = useState<'list' | 'status'>('list');

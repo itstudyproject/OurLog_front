@@ -17,28 +17,31 @@ body {
 /* 아트 상세 콘텐츠 레이아웃 */
 .art-detail-content {
   display: flex;
-  flex-direction: row;
-  gap: 30px;
-  margin-top: 30px;
+  gap: 24px;
+  margin-top: 20px;
 }
 
 @media (max-width: 768px) {
   .art-detail-content {
     flex-direction: column;
   }
+
+  .left-content,
+  .art-info-container {
+    width: 100%;
+  }
 }
 
 /* 왼쪽 이미지 영역 */
 .art-image-container {
-  flex: 1;
   position: relative;
 }
 
 .art-main-image {
   width: 100%;
-  object-fit: contain;
+  height: auto;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .share-buttons {
@@ -65,9 +68,9 @@ body {
 .art-info-container {
   flex: 1;
   background-color: #222;
-  border-radius: 8px;
-  padding: 20px;
   border: 1px solid #333;
+  border-radius: 8px;
+  padding: 24px;
 }
 
 .artist-info {
@@ -228,21 +231,44 @@ body {
 }
 
 .art-title {
-  border-bottom: 1px solid #333;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .art-title h2 {
   color: #fff;
-  margin: 0 0 5px 0;
   font-size: 24px;
+  margin: 0 0 8px 0;
 }
 
 .art-date {
   color: #999;
-  margin: 0;
   font-size: 14px;
+  margin: 0;
+}
+
+.description-divider {
+  height: 1px;
+  background-color: #333;
+  margin: 16px 0;
+}
+
+.artwork-description {
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.artwork-description h3 {
+  color: #fff;
+  font-size: 18px;
+  margin: 0 0 16px 0;
+}
+
+.description-content {
+  color: #ccc;
+  line-height: 1.6;
+  font-size: 15px;
 }
 
 /* 입찰 정보 */
@@ -367,34 +393,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-/* 작품 설명 섹션 */
-.artwork-description {
-  background-color: #222;
-  border: 2px solid #333;
-  border-radius: 18px;
-  padding: 36px 36px 36px 36px;
-  min-height: 260px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.artwork-description h3 {
-  color: #fff;
-  font-size: 18px;
-  margin: 0 0 18px 0;
-  padding-bottom: 12px;
-  border-bottom: 1.5px solid #333;
-}
-
-.description-content {
-  color: #ccc;
-  line-height: 1.7;
-  font-size: 16px;
+  gap: 24px;
 }
 
 /* 액션 버튼 영역 */
@@ -448,13 +447,14 @@ body {
   background-color: #2a2a2a;
   color: #fff;
   border: 1px solid #444;
-  border-radius: 5px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 14px;
+  margin-bottom: 16px;
 }
 
 .chat-button:hover {
@@ -480,30 +480,6 @@ body {
 
 .bid-history-button:hover {
   background-color: #444;
-}
-
-/* 반응형 조정 */
-@media (max-width: 768px) {
-  .left-content {
-    gap: 8px;
-  }
-
-  .main-actions {
-    flex-direction: column;
-  }
-
-  .action-buttons {
-    gap: 8px;
-  }
-
-  .artwork-description {
-    padding: 18px 10px 18px 10px;
-    min-height: 140px;
-  }
-
-  .artist-buttons {
-    gap: 8px;
-  }
 }
 
 /* 뒤로가기 버튼 영역 */
@@ -584,4 +560,79 @@ body {
 
 .share-button:hover {
   background-color: #444;
+}
+
+.auction-info {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.price-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.price-box {
+  padding: 15px;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.price-box.current-price {
+  background-color: #2a2a2a;
+  border: 1px solid #f8c147;
+}
+
+.price-label {
+  font-size: 0.9rem;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.price-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.price-box.current-price .price-value {
+  color: #f8c147;
+}
+
+.countdown-box {
+  text-align: center;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.countdown-label {
+  font-size: 1rem;
+  color: #f8c147;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.countdown-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 경매 종료 시 스타일 */
+.countdown-value:contains("경매 종료") {
+  color: #ff4d4d;
 }
