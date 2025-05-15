@@ -67,7 +67,7 @@ useEffect(() => {
           </div>
 
         ))}
-      </ul>
+      </div>
 
 
       <div className="pagination">

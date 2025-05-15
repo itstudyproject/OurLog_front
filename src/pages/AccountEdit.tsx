@@ -9,7 +9,7 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
-const AccountEditPage: React.FC = () => {
+const AccountEdit: React.FC = () => {
   const navigate = useNavigate();
   const stored = localStorage.getItem("user");
   const userId = stored ? JSON.parse(stored).id : null;
@@ -131,4 +131,4 @@ const handlePhoneUpdate = async () => {
   );
 };
 
-export default AccountEditPage;
+export default AccountEdit;
