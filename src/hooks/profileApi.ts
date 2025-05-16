@@ -26,12 +26,23 @@ export const updateProfile = async (
   userId: number,
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
-  const res = await fetch(`http://localhost:8080/ourlog/profile/edit/${userId}`, {
-    method: "PUT",
-    headers: getAuthHeaders(),
-    body: JSON.stringify(profile),
-  });
-  if (!res.ok) throw new Error("프로필 수정 실패");
+  const res = await fetch(
+    `http://localhost:8080/ourlog/profile/edit/${userId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",  
+        // ...getAuthHeaders(),                  
+      },
+      body: JSON.stringify(profile),         
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error("프로필 수정 실패: " + text);
+  }
+
   return res.json();
 };
 

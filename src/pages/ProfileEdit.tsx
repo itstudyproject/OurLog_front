@@ -19,16 +19,14 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState({
-    username: profile?.nickname || "art_lover",
+    name: profile?.name || "art_lover",
     email: profile?.email || "user@example.com",
-    fullName: profile?.name || "김예술",
+    nickname: profile?.nickname || "김예술",
     bio:
       profile?.introduction ||
       "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
-    location: profile?.location || "서울특별시",
-    website: profile?.website || "https://myartblog.com",
-    profilePicture: profile?.imagePath || "/images/Logo.png",
-  });
+      profilePicture: profile?.thumbnailImagePath || "/images/Logo.png",
+    });
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (
@@ -66,13 +64,11 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
     try {
       // 프로필 업데이트를 onSave prop 함수를 사용하여 처리
       await onSave({
-        nickname: profileData.username,
+        name: profileData.name,
         email: profileData.email,
-        name: profileData.fullName,
+        nickname: profileData.nickname,
         introduction: profileData.bio,
-        location: profileData.location,
-        website: profileData.website,
-        imagePath: profileData.profilePicture,
+        thumbnailImagePath: profileData.profilePicture,
       });
 
       // 성공 알림 후 돌아가기
@@ -134,35 +130,21 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
                 type="text"
                 id="username"
                 name="username"
-                value={profileData.username}
+                value={profileData.name}
                 onChange={handleInputChange}
                 className="form-input"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                이메일
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={profileData.email}
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="fullName" className="form-label">
-                실명
+              <label htmlFor="nickName" className="form-label">
+                닉네임
               </label>
               <input
                 type="text"
-                id="fullName"
-                name="fullName"
-                value={profileData.fullName}
+                id="nickName"
+                name="nickName"
+                value={profileData.nickname}
                 onChange={handleInputChange}
                 className="form-input"
               />
@@ -179,38 +161,6 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
                 onChange={handleInputChange}
                 className="form-input"
                 rows={4}
-              />
-            </div>
-          </div>
-
-          <div className="form-section">
-            <h2 className="section-title">추가 정보</h2>
-
-            <div className="form-group">
-              <label htmlFor="location" className="form-label">
-                위치
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={profileData.location}
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="website" className="form-label">
-                웹사이트
-              </label>
-              <input
-                type="url"
-                id="website"
-                name="website"
-                value={profileData.website}
-                onChange={handleInputChange}
-                className="form-input"
               />
             </div>
           </div>

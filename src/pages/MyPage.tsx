@@ -55,7 +55,7 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title">
         <h2>마이페이지</h2>
       </div>
-      
+
       <div className="bid-item" style={{ padding: "20px" }}>
         <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
           <img
@@ -70,21 +70,21 @@ const MyPage: React.FC = () => {
             <p>팔로잉: {profile?.followingCnt ?? 0}</p>
           </div>
           <div className="bid-actions" style={{ marginTop: "15px" }}>
-            <button 
-              className="detail-button" 
+            <button
+              className="detail-button"
               onClick={() => navigate("/mypage/edit")}
               style={{ marginRight: "10px" }}
             >
               프로필수정
             </button>
-            <button 
-              className="detail-button" 
+            <button
+              className="detail-button"
               onClick={() => navigate("/mypage/account/edit")}
               style={{ marginRight: "10px" }}
             >
               회원정보수정
             </button>
-            <button 
+            <button
               className="detail-button"
               onClick={() => navigate("/mypage/account/delete")}
               style={{ backgroundColor: "#e74c3c" }}
@@ -98,27 +98,27 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title" style={{ marginTop: "30px" }}>
         <h2>메뉴</h2>
       </div>
-      
+
       <div className="sub-tab-nav">
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`} 
+        <button
+          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`}
           onClick={() => navigate("/mypage")}
         >
           최근 본 게시물
         </button>
-        <button 
+        <button
           className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/purchase-bid")}
         >
           구매/입찰목록
         </button>
-        <button 
+        <button
           className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/sale")}
         >
           판매목록/현황
         </button>
-        <button 
+        <button
           className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/bookmark")}
         >
@@ -157,10 +157,37 @@ const MyPage: React.FC = () => {
           }
         />
 
-        <Route path="account/edit" element={<AccountEdit />} />
-        <Route path="account/delete" element={<DeleteAccountPage />} />
-        <Route path="purchase-bid" element={<PurchaseBidPage />} />
-        <Route path="sale/*" element={<SalePage />} />
+<Route
+  path="edit"
+  element={
+    <ProfileEdit
+      profile={profile}
+      onBack={() => navigate(-1)}
+      onSave={async (updated) => {
+        if (!userId) return;
+        // 🔥 여기가 실제로 백엔드에 PUT 요청을 보내는 부분
+        const saved = await updateProfile(userId, updated);
+        setProfile(saved);
+        navigate(-1);
+      }}
+    />
+  }
+/>        <Route path="account/delete" element={<DeleteAccountPage />} />
+        <Route
+          path="purchase-bid"
+          element={
+            userId
+              ? <PurchaseBidPage userId={userId} />
+              : <p>로그인이 필요합니다.</p>
+          }
+        />
+        <Route path="sale"
+          element={
+            userId
+              ? <SalePage userId={userId} />
+              : <p>로그인이 필요합니다.</p>
+          }
+        />
         <Route path="bookmark" element={<BookmarkPage />} />
       </Routes>
     </div>

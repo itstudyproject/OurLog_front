@@ -1,10 +1,26 @@
+// src/pages/PurchaseBidPage.tsx
+
 import React, { useEffect, useState } from 'react';
 import { fetchPurchases, TradeDTO } from '../../hooks/tradeApi';
 
-const PurchaseBidPage: React.FC = () => {
+interface PurchaseResponse {
+  currentBids: TradeDTO[];
+  wonTrades: TradeDTO[];
+}
+
+interface Props {
+  userId: number;
+}
+
+const PurchaseBidPage: React.FC<Props> = () => {
   const stored = localStorage.getItem('user');
   const userId = stored ? (JSON.parse(stored).userId as number) : null;
-  const [purchases, setPurchases] = useState<TradeDTO[]>([]);
+
+  // 👇 배열 하나가 아니라, 객체 형태로 상태 선언
+  const [data, setData] = useState<PurchaseResponse>({
+    currentBids: [],
+    wonTrades: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,8 +32,9 @@ const PurchaseBidPage: React.FC = () => {
     }
 
     fetchPurchases(userId)
-      .then((data) => {
-        setPurchases(data);
+      .then((resp) => {
+        console.log('⚡️ raw purchases response:', resp);
+        setData(resp);        // 👈 resp.currentBids, resp.wonTrades 모두 들어옵니다
         setLoading(false);
       })
       .catch((err) => {
@@ -32,19 +49,31 @@ const PurchaseBidPage: React.FC = () => {
 
   return (
     <div>
-      <h3>구매 / 입찰 목록</h3>
-      {purchases.length === 0
-        ? <p>내역이 없습니다.</p>
-        : (
-          <ul>
-            {purchases.map((trade) => (
-              <li key={trade.id}>
-                {trade.title} — ₩{trade.price.toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        )
-      }
+      <h3>구매</h3>
+      {data.currentBids.length > 0 ? (
+        <ul>
+          {data.currentBids.map((trade) => (
+            <li key={trade.id}>
+              {trade.title} — ₩{trade.price.toLocaleString()}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>구매한 작품이 없습니다.</p>
+      )}
+
+      <h3>입찰목록</h3>
+      {data.wonTrades.length > 0 ? (
+        <ul>
+          {data.wonTrades.map((trade) => (
+            <li key={trade.id}>
+              {trade.title} — ₩{trade.price.toLocaleString()}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>입찰한 작품이 없습니다.</p>
+      )}
     </div>
   );
 };
