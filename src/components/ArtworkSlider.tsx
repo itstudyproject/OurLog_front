@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "../styles/ArtworkSlider.css";
-import { useNavigate } from "react-router-dom";
 
 interface Artwork {
   imageUrl: string;
@@ -8,136 +7,110 @@ interface Artwork {
   artist: string;
   price: string;
   link: string;
-  artistId: number; // 추가됨
+  isArtist?: boolean;
 }
 
-const generateRandomImageUrl = (index: number) => {
-  return `https://picsum.photos/seed/${index}/600/600`;
-};
-
-const artworks: Artwork[] = [
-  {
-    imageUrl: generateRandomImageUrl(0),
-    title: "Circulation 1",
-    artist: "권봄이",
-    price: "₩2,500,000",
-    link: "#",
-    artistId: 1,
-  },
-  {
-    imageUrl: generateRandomImageUrl(1),
-    title: "Modern Flow",
-    artist: "이서연",
-    price: "₩3,000,000",
-    link: "#",
-    artistId: 2,
-  },
-  {
-    imageUrl: generateRandomImageUrl(2),
-    title: "Blue Storm",
-    artist: "정윤아",
-    price: "₩1,800,000",
-    link: "#",
-    artistId: 3,
-  },
-  {
-    imageUrl: generateRandomImageUrl(3),
-    title: "Bright Day",
-    artist: "김하늘",
-    price: "₩2,200,000",
-    link: "#",
-    artistId: 4,
-  },
-  {
-    imageUrl: generateRandomImageUrl(4),
-    title: "Silent Woods",
-    artist: "박지우",
-    price: "₩2,700,000",
-    link: "#",
-    artistId: 5,
-  },
-  {
-    imageUrl: generateRandomImageUrl(5),
-    title: "Golden Hour",
-    artist: "최서윤",
-    price: "₩3,100,000",
-    link: "#",
-    artistId: 6,
-  },
-];
-
-const artists: Artwork[] = [
-  {
-    imageUrl: generateRandomImageUrl(10),
-    title: "Art 1",
-    artist: "최지영",
-    price: "",
-    link: "#",
-    artistId: 10,
-  },
-  {
-    imageUrl: generateRandomImageUrl(11),
-    title: "Art 2",
-    artist: "이동우",
-    price: "",
-    link: "#",
-    artistId: 11,
-  },
-  {
-    imageUrl: generateRandomImageUrl(12),
-    title: "Art 3",
-    artist: "김민서",
-    price: "",
-    link: "#",
-    artistId: 12,
-  },
-  {
-    imageUrl: generateRandomImageUrl(13),
-    title: "Art 4",
-    artist: "한유진",
-    price: "",
-    link: "#",
-    artistId: 13,
-  },
-  {
-    imageUrl: generateRandomImageUrl(14),
-    title: "Art 5",
-    artist: "박소현",
-    price: "",
-    link: "#",
-    artistId: 14,
-  },
-  {
-    imageUrl: generateRandomImageUrl(15),
-    title: "Art 6",
-    artist: "정도윤",
-    price: "",
-    link: "#",
-    artistId: 15,
-  },
-];
+const VIEWS_API_URL = "http://localhost:8080/ourlog/ranking?type=views";
+const FOLLOWERS_API_URL = "http://localhost:8080/ourlog/ranking?type=followers";
 
 const ArtworkSlider: React.FC = () => {
-  const navigate = useNavigate();
-  const [artworkIndexes, setArtworkIndexes] = useState([0, 1, 2]);
-  const [artistIndexes, setArtistIndexes] = useState([0, 1, 2]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [artworkIndexes, setArtworkIndexes] = useState<number[]>([]);
+  const [artists, setArtists] = useState<Artwork[]>([]);
+  const [artistIndexes, setArtistIndexes] = useState<number[]>([]);
 
   useEffect(() => {
+    const fetchArtworks = async () => {
+      try {
+        const res = await fetch(VIEWS_API_URL);
+        const data = await res.json();
+
+        const mapped = data.map((item: any) => ({
+          imageUrl: `/images/${item.fileName}`,
+          title: item.title,
+          artist: item.userProfileDTO?.user?.nickname || "unknown",
+          price:
+            typeof item.price === "number" && item.price > 0
+              ? `₩${item.price.toLocaleString()}`
+              : "",
+          link: `/Art/${item.postId}`,
+          isArtist: false,
+        }));
+
+        setArtworks(mapped);
+
+        const initialIndexes: number[] = [];
+        while (initialIndexes.length < 3 && mapped.length > 0) {
+          const rand = Math.floor(Math.random() * mapped.length);
+          if (!initialIndexes.includes(rand)) {
+            initialIndexes.push(rand);
+          }
+        }
+        setArtworkIndexes(initialIndexes);
+      } catch (e) {
+        console.error("인기 작품 불러오기 실패", e);
+      }
+    };
+
+    const fetchArtists = async () => {
+      try {
+        const res = await fetch(FOLLOWERS_API_URL);
+        const data = await res.json();
+
+        const mapped = data.map((item: any) => ({
+          imageUrl: `/images/${item.fileName}`,
+          title: item.title || "대표작 없음",
+          artist: item.userProfileDTO?.user?.nickname || "unknown",
+          price: "",
+          link: `/worker/${item.userProfileDTO.user.id}`,
+          isArtist: true,
+        }));
+
+        setArtists(mapped);
+
+        // 초기 3개 랜덤 인덱스 생성
+        const initialIndexes: number[] = [];
+        while (initialIndexes.length < 3 && mapped.length > 0) {
+          const rand = Math.floor(Math.random() * mapped.length);
+          if (!initialIndexes.includes(rand)) {
+            initialIndexes.push(rand);
+          }
+        }
+        setArtistIndexes(initialIndexes);
+      } catch (e) {
+        console.error("주요 아티스트 불러오기 실패", e);
+      }
+    };
+
+    fetchArtworks();
+    fetchArtists();
+  }, []);
+
+  useEffect(() => {
+    if (artworks.length === 0 || artists.length === 0) return;
+
     const interval = setInterval(() => {
-      setArtworkIndexes((prev) =>
-        prev.map((i) => (i + 3 < artworks.length ? i + 3 : i % 3))
-      );
-      setArtistIndexes((prev) =>
-        prev.map((i) => (i + 3 < artists.length ? i + 3 : i % 3))
-      );
+      const newArtworkIndexes: number[] = [];
+      while (newArtworkIndexes.length < 3 && artworks.length > 0) {
+        const rand = Math.floor(Math.random() * artworks.length);
+        if (!newArtworkIndexes.includes(rand)) {
+          newArtworkIndexes.push(rand);
+        }
+      }
+      setArtworkIndexes(newArtworkIndexes);
+
+      const newArtistIndexes: number[] = [];
+      while (newArtistIndexes.length < 3 && artists.length > 0) {
+        const rand = Math.floor(Math.random() * artists.length);
+        if (!newArtistIndexes.includes(rand)) {
+          newArtistIndexes.push(rand);
+        }
+      }
+      setArtistIndexes(newArtistIndexes);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const handleClick = (artistId: number) => {
-    navigate("/worker", { state: { userId: artistId } }); // <- 라우팅은 고정, userId는 state로 전달
-  };
+  }, [artworks, artists]);
 
   const renderSection = (
     title: string,
@@ -151,12 +124,14 @@ const ArtworkSlider: React.FC = () => {
       <div className="slider-wrapper">
         {indexes.map((index) => {
           const item = data[index];
+          if (!item) return null;
           return (
-            <div
+            <a
               key={index}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
               className="artworkslider-card"
-              onClick={() => handleClick(item.artistId)}
-              style={{ cursor: "pointer" }}
             >
               <img
                 src={item.imageUrl}
@@ -170,7 +145,7 @@ const ArtworkSlider: React.FC = () => {
                   <div className="artworkslider-price">{item.price}</div>
                 )}
               </div>
-            </div>
+            </a>
           );
         })}
       </div>

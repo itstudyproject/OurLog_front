@@ -4,7 +4,6 @@ import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import WorkerPage from "./pages/WorkerPage";
-import ChatPage from "./pages/ChatPage";
 import MyPage from "./pages/MyPage";
 import PostList from "./pages/Post/PostList";
 import PostDetail from "./pages/Post/PostDetail";
@@ -52,10 +51,8 @@ function App() {
         <Route path="ranking" element={<RankingPage />} />
 
         <Route path="mypage/*" element={<MyPage />} />
-        <Route path="worker" element={<WorkerPage />} />
-        {/*<Route path="worker/:userID" element={<WorkerPage />} />*/}
-
-        <Route path="/chat" element={<ChatPage />} />
+        <Route path="worker/:userId" element={<WorkerPage />} />
+        {/*<Route path="worker" element={<WorkerPage />} />*/}
 
         <Route path="post">
           <Route index element={<PostList />} />
