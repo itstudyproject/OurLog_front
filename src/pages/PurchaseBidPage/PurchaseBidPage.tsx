@@ -1,32 +1,50 @@
-// src/pages/PurchaseBidPage/PurchaseBidPage.tsx
+import React, { useEffect, useState } from 'react';
+import { fetchPurchases, TradeDTO } from '../../hooks/tradeApi';
 
-import React, { useState } from "react";
-import PurchaseList from "./PurchaseList";
-import BidStatusList from "./BidStatusList";
-import "../../styles/PurchaseBidPage.css";
-import "../../styles/BidHistory.css";
+const PurchaseBidPage: React.FC = () => {
+  const stored = localStorage.getItem('user');
+  const userId = stored ? (JSON.parse(stored).userId as number) : null;
+  const [purchases, setPurchases] = useState<TradeDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const PurchaseBidPage = () => {
-  const [activeTab, setActiveTab] = useState<"purchase" | "bid">("purchase"); // 활성화된 탭 상태 관리
+  useEffect(() => {
+    if (!userId) {
+      setError('유저 정보가 없습니다.');
+      setLoading(false);
+      return;
+    }
+
+    fetchPurchases(userId)
+      .then((data) => {
+        setPurchases(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [userId]);
+
+  if (loading) return <p>로딩 중…</p>;
+  if (error)   return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
-    <div className="purchase-bid-page">
-      <div className="sub-tab-nav">
-        <button
-          className={`sub-tab ${activeTab === "purchase" ? "active" : ""}`}
-          onClick={() => setActiveTab("purchase")}
-        >
-          구매목록
-        </button>
-        <button
-          className={`sub-tab ${activeTab === "bid" ? "active" : ""}`}
-          onClick={() => setActiveTab("bid")}
-        >
-          입찰현황
-        </button>
-      </div>
-
-      {activeTab === "purchase" ? <PurchaseList /> : <BidStatusList />}
+    <div>
+      <h3>구매 / 입찰 목록</h3>
+      {purchases.length === 0
+        ? <p>내역이 없습니다.</p>
+        : (
+          <ul>
+            {purchases.map((trade) => (
+              <li key={trade.id}>
+                {trade.title} — ₩{trade.price.toLocaleString()}
+              </li>
+            ))}
+          </ul>
+        )
+      }
     </div>
   );
 };
