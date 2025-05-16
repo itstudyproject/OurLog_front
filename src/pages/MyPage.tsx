@@ -56,7 +56,7 @@ const MyPage: React.FC = () => {
       <div className="bid-item" style={{ padding: "20px" }}>
         <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
           <img
-            src={profile?.imagePath || "/images/mypage/default.png"}
+            src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
           />
         </div>

@@ -96,13 +96,12 @@ const PostRegister = () => {
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
           if (error) throw new Error(error);
-
-          // 서버에 업로드
+      
           const uploaded = await uploadImage(file);
           return {
-            file: null, // 업로드 후에는 필요 없음
-            preview: `/uploads/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
-            id: uploaded.uuid, // 또는 picId 등
+            file: null,
+            preview: `http://localhost:8080/ourlog/picture/display/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
+            id: uploaded.uuid,
             picId: uploaded.picId,
             uuid: uploaded.uuid,
             picName: uploaded.picName,
