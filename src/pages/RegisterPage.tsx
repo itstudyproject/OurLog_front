@@ -42,7 +42,7 @@ const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: '',
     mobile: '',
-    from_social: false,
+    fromSocial: false,
     termsAgreed: false,
     privacyAgreed: false
   });
@@ -510,8 +510,9 @@ const RegisterPage: React.FC = () => {
         name: formData.name,
         nickname: formData.nickname,
         password: formData.password,
+        passwordConfirm: formData.confirmPassword,
         mobile: formData.mobile,
-        from_social: formData.from_social
+        fromSocial: formData.fromSocial
       };
       
       const userId = await registerUser(userData);
@@ -563,7 +564,48 @@ const RegisterPage: React.FC = () => {
       }, 1000);
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
+      console.error("회원가입 실패:", err);
+      
+      // 오류 메시지 처리
+      let errorMessage = '회원가입에 실패했습니다.';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        // 객체 형태의 오류인 경우 (백엔드에서 오류 맵 반환)
+        const errorObj = err as Record<string, string>;
+        const firstErrorField = Object.keys(errorObj)[0];
+        
+        if (firstErrorField && errorObj[firstErrorField]) {
+          errorMessage = errorObj[firstErrorField];
+          
+          // 해당 필드에 포커스
+          switch (firstErrorField) {
+            case 'email':
+              emailRef.current?.focus();
+              break;
+            case 'name':
+              nameRef.current?.focus();
+              break;
+            case 'nickname':
+              nicknameRef.current?.focus();
+              break;
+            case 'password':
+              passwordRef.current?.focus();
+              break;
+            case 'passwordConfirm':
+              confirmPasswordRef.current?.focus();
+              break;
+            case 'mobile':
+              mobileRef.current?.focus();
+              break;
+            default:
+              break;
+          }
+        }
+      }
+      
+      setError(errorMessage);
     }
   };
 
@@ -749,7 +791,7 @@ const RegisterPage: React.FC = () => {
               type="button" 
               className="social-login-button"
               onClick={() => {
-                setFormData(prev => ({ ...prev, from_social: true }));
+                setFormData(prev => ({ ...prev, fromSocial: true }));
                 // 소셜 로그인 처리 로직 추가
               }}
             >
@@ -761,7 +803,7 @@ const RegisterPage: React.FC = () => {
               type="button" 
               className="social-login-button"
               onClick={() => {
-                setFormData(prev => ({ ...prev, from_social: true }));
+                setFormData(prev => ({ ...prev, fromSocial: true }));
                 // 소셜 로그인 처리 로직 추가
               }}
             >
@@ -773,7 +815,7 @@ const RegisterPage: React.FC = () => {
               type="button" 
               className="social-login-button"
               onClick={() => {
-                setFormData(prev => ({ ...prev, from_social: true }));
+                setFormData(prev => ({ ...prev, fromSocial: true }));
                 // 소셜 로그인 처리 로직 추가
               }}
             >

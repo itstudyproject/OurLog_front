@@ -51,7 +51,9 @@ function App() {
         <Route path="ranking" element={<RankingPage />} />
 
         <Route path="mypage/*" element={<MyPage />} />
-        <Route path="worker/:userId" element={<WorkerPage />} />
+        {/*여기부분 수정  worker-> /worker    */}
+        <Route path="/worker/:userId" element={<WorkerPage />} />
+
         {/*<Route path="worker" element={<WorkerPage />} />*/}
 
         <Route path="post">
