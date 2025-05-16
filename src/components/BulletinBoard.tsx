@@ -26,11 +26,6 @@ const boardIdMap: Record<CategoryKey, number> = {
   request: 4,
 };
 
-const isLoggedIn = () => {
-  const token = localStorage.getItem("accessToken");
-  return !!token;
-};
-
 const BulletinBoard: React.FC = () => {
   const [categories, setCategories] = useState<Record<CategoryKey, PostItem[]>>(
     {
@@ -94,13 +89,7 @@ const BulletinBoard: React.FC = () => {
             <div key={typedKey}>
               <h3 className="category-header">{categoryLabels[typedKey]}</h3>
               <ul className="category-list">
-                {items.length === 0 && (
-                  <li>
-                    {isLoggedIn()
-                      ? "게시글이 없습니다."
-                      : "로그인이 필요합니다."}
-                  </li>
-                )}
+                {items.length === 0 && <li>게시글이 없습니다.</li>}
                 {items.map((item) => (
                   <li key={item.id} className="category-item">
                     <div className="category-thumbnail" />
