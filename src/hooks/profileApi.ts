@@ -3,17 +3,15 @@ import { getAuthHeaders } from "../utils/auth";
 
 export interface UserProfileDTO {
   profileId?: number;
-  user: number | { userId: number };
+  userId: number | { userId: number };
   nickname?: string;
+  introduction?: string;
   originImagePath?: string;
   thumbnailImagePath?: string;
-  introduction?: string;
   email?: string;
   name?: string;
-  location?: string;
-  website?: string;
-  followerCount?: number;
-  followingCount?: number;
+  followCnt?: number;
+  followingCnt?: number;
 }
 
 export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
@@ -43,8 +41,8 @@ export const createProfile = async (
 ): Promise<UserProfileDTO> => {
   // user 필드가 숫자라면 객체로 변환
   const profileData = { ...profile };
-  if (typeof profileData.user === 'number') {
-    profileData.user = { userId: profileData.user };
+  if (typeof profileData.userId === 'number') {
+    profileData.userId = { userId: profileData.userId };
   }
 
   const res = await fetch(`http://localhost:8080/ourlog/profile/create`, {
