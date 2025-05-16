@@ -139,7 +139,7 @@ const ArtList = () => {
   };
 
   const handleRegisterClick = () => {
-    navigate('/register');
+    navigate('/art/register');
   };
 
   if (loading) {
@@ -151,70 +151,83 @@ const ArtList = () => {
   }
 
   return (
-    <div className="art-list-container">
-      <div className="art-list-header">
-        <div className="art-list-tabs">
-          <button
-            className={`art-list-tab-btn${sortType === 'popular' ? ' active' : ''}`}
-            onClick={() => { setSortType('popular'); setCurrentPage(1); }}
-          >
-            인기순
-          </button>
-          <button
-            className={`art-list-tab-btn${sortType === 'latest' ? ' active' : ''}`}
-            onClick={() => { setSortType('latest'); setCurrentPage(1); }}
-          >
-            최신순
-          </button>
+    <div className="art-list-page-container">
+      <div className="art-list-page-header">
+        <div className="art-list-left-section">
+          <div className="art-list-sort-tabs">
+            <button
+              className={`art-list-sort-btn${sortType === 'popular' ? ' art-list-sort-active' : ''}`}
+              onClick={() => { setSortType('popular'); setCurrentPage(1); }}
+            >
+              인기순
+            </button>
+            <button
+              className={`art-list-sort-btn${sortType === 'latest' ? ' art-list-sort-active' : ''}`}
+              onClick={() => { setSortType('latest'); setCurrentPage(1); }}
+            >
+              최신순
+            </button>
+          </div>
         </div>
-        <h2 className="art-list-title">아트</h2>
-        <div className="art-search-section">
-          <form onSubmit={handleSearchSubmit}>
+
+        <h2 className="art-list-page-title">아트</h2>
+
+        <div className="art-list-right-section">
+          <form onSubmit={handleSearchSubmit} className="art-list-search-form">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="키워드로 검색해주세요"
+              className="art-list-search-input"
             />
-            <button type="submit" className="art-search-button">
+            <button type="submit" className="art-list-search-btn">
               <img
                 src="/images/Search.png"
                 alt="검색"
-                className="search-icon"
+                className="art-list-search-icon"
               />
             </button>
           </form>
-          <button onClick={handleRegisterClick} className="art-register-button">
+          <button onClick={handleRegisterClick} className="art-list-register-btn">
             아트 등록
           </button>
         </div>
       </div>
 
-      <div className="recent-artworks">
+      <div className="art-list-grid">
         {filteredArtworks.map((artwork) => (
           <div
             key={artwork.post_id}
-            className="artwork-card"
+            className="art-list-item-card"
             onClick={() => handleArtworkClick(artwork.post_id)}
           >
-            <div className="artwork-image">
-              <img src={artwork.images?.[0]} alt={artwork.title} />
-              <div className="artwork-likes">♥ {artwork.likes}</div>
+            <div className="art-list-item-image">
+              {artwork.images?.[0] ? (
+                <img
+                  src={artwork.images[0]}
+                  alt={artwork.title}
+                  className="art-list-item-thumbnail"
+                />
+              ) : (
+                <div className="art-list-item-no-image">이미지 없음</div>
+              )}
+              <div className="art-list-item-likes">♥ {artwork.likes}</div>
             </div>
-            <div className="artwork-info">
-              <h3>{artwork.title}</h3>
-              <p className="artwork-author">{artwork.author.name}</p>
-              <p className="artwork-price">{artwork.auction.currentBid.toLocaleString()}원</p>
+            <div className="art-list-item-info">
+              <h3 className="art-list-item-title">{artwork.title}</h3>
+              <p className="art-list-item-author">{artwork.author.name}</p>
+              <p className="art-list-item-price">{artwork.auction.currentBid.toLocaleString()}원</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="pagination">
+      <div className="art-list-pagination">
         <button
           onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
           disabled={startPage === 1}
-          className="arrow-button"
+          className="art-list-page-btn art-list-arrow-btn"
         >
           &lt;
         </button>
@@ -222,7 +235,7 @@ const ArtList = () => {
           <button
             key={number}
             onClick={() => handlePageClick(number)}
-            className={currentPage === number ? "active" : ""}
+            className={`art-list-page-btn${currentPage === number ? ' art-list-page-active' : ''}`}
           >
             {number}
           </button>
@@ -230,7 +243,7 @@ const ArtList = () => {
         <button
           onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
           disabled={endPage === totalPages}
-          className="arrow-button"
+          className="art-list-page-btn art-list-arrow-btn"
         >
           &gt;
         </button>

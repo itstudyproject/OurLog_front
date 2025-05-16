@@ -1,36 +1,94 @@
-// src/pages/SalePage/SalePage.tsx
-import React, { useState } from "react";
-import SaleList from "./SaleList";
-import SaleStatusList from "./SaleStatusList";
-import "../../styles/SalePage.css";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
 import "../../styles/BidHistory.css";
-import "../../styles/PurchaseBidPage.css";
 
-const SalePage = () => {
-  const [activeTab, setActiveTab] = useState<"list" | "status">("list");
+interface SaleStatus {
+  id: number;
+  image: string;
+  title: string;
+  artist: string;
+  regDate: string;
+  auctionStart: string;
+  saleEnd: string;
+  method: string;
+  status: string;
+}
+
+const SaleStatusList: React.FC = () => {
+  const navigate = useNavigate();
+  const [statuses, setStatuses] = useState<SaleStatus[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  useEffect(() => {
+    fetch("http://localhost:8080/ourlog/trades/mypage/sale-status", {
+      headers: getAuthHeaders(),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item.tradeId,
+          title: item.postTitle,
+          image: item.thumbnailPath,
+          artist: item.postDTO?.user?.nickname ?? "나",
+          regDate: item.createdAt?.substring(0, 10) ?? "",
+          auctionStart: item.createdAt?.substring(0, 10) ?? "", // 실제 시작시간 필요시 수정
+          saleEnd: item.expiredAt?.substring(0, 10) ?? "", // 필요시 Trade에 추가
+          method: item.nowBuy ? "즉시구매" : "경매",
+          status: item.tradeStatus ? "진행중" : "마감",
+        }));
+        setStatuses(mapped);
+      });
+  }, []);
+
+  const currentItems = statuses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(statuses.length / itemsPerPage);
 
   return (
-    <div className="sale-page">
-      <div className="sub-tab-nav">
-        <button
-          className={`sub-tab ${activeTab === "list" ? "active" : ""}`}
-          onClick={() => setActiveTab("list")}
-        >
-          내 판매목록
-        </button>
-        <button
-          className={`sub-tab ${activeTab === "status" ? "active" : ""}`}
-          onClick={() => setActiveTab("status")}
-        >
-          판매현황
-        </button>
+    <div className="bid-history-container">
+      <div className="bid-history-title">
+        <h2>판매 현황</h2>
+      </div>
+      <div className="bid-list">
+        {currentItems.map((item) => (
+          <div
+            key={item.id}
+            className="bid-item"
+            onClick={() => navigate(`/art/${item.id}`)}
+          >
+            <div className="bid-artwork">
+              <img src={item.image} alt={item.title} />
+            </div>
+            <div className="bid-details">
+              <h3>{item.title}</h3>
+              <p>작가: {item.artist}</p>
+              <p>등록일: {item.regDate}</p>
+              <p>경매시작: {item.auctionStart}</p>
+              <p>판매마감: {item.saleEnd}</p>
+              <p>방식: {item.method}</p>
+              <p className="bid-amount">상태: {item.status}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="tab-content">
-        {activeTab === "list" ? <SaleList /> : <SaleStatusList />}
+      <div className="pagination">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`page-btn${page === currentPage ? " active" : ""}`}
+          >
+            {page}
+          </button>
+        ))}
       </div>
     </div>
   );
 };
 
-export default SalePage;
+export default SaleStatusList;

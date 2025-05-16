@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ko } from "date-fns/locale";
 import DatePicker from "react-datepicker";
@@ -142,6 +142,7 @@ const ArtRegister = () => {
       return;
     }
 
+<<<<<<< HEAD
     try {
       // 이미지 파일들을 FormData에 추가
       const formData = new FormData();
@@ -191,7 +192,65 @@ const ArtRegister = () => {
       console.error("작품 등록 중 오류 발생:", error);
       alert("작품 등록에 실패했습니다. 다시 시도해주세요.");
     }
+=======
+    // TODO: API 연동 후에는 실제 생성된 작품의 ID를 받아서 이동
+    const dummyArtId = "1";
+    alert("작품이 성공적으로 등록되었습니다!");
+    navigate(`/art/${dummyArtId}`);
+>>>>>>> c1b9027b01b37161828b099ca0cb158d64f64de6
   };
+
+  // 드래그 앤 드롭 핸들러 추가
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.add('dragover');
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.remove('dragover');
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const target = e.target as HTMLElement;
+    const dropzone = target.closest('.image-upload-placeholder');
+    if (dropzone) {
+      dropzone.classList.remove('dragover');
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const newImage: ImageFile = {
+            file,
+            preview: reader.result as string,
+            id: Math.random().toString(36).substring(7),
+          };
+          setForm((prev) => ({
+            ...prev,
+            images: [...prev.images, newImage],
+            thumbnailId: prev.thumbnailId || newImage.id,
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }, []);
 
   return (
     <div className="art-register-container">
@@ -237,7 +296,12 @@ const ArtRegister = () => {
                 </div>
               </div>
             ) : (
-              <div className="image-upload-placeholder">
+              <div 
+                className="image-upload-placeholder"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -248,7 +312,7 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-main">
                   <span>메인 이미지를 업로드해주세요</span>
-                  <span className="mt-2 text-sm">(클릭하여 파일 선택)</span>
+                  <span className="mt-2 text-sm">(클릭 또는 드래그하여 파일 선택)</span>
                 </label>
               </div>
             )}

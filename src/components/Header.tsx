@@ -15,6 +15,7 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
     email: string;
     userId?: number;
     profileImage?: string;
+    profileId?: number;
   } | null>(null);
   const [keyword, setKeyword] = useState("");
   const [showNotification, setShowNotification] = useState(false);
