@@ -24,11 +24,12 @@ const ArtworkSlider: React.FC = () => {
       try {
         const res = await fetch(VIEWS_API_URL);
         const data = await res.json();
-
         const mapped = data.map((item: any) => ({
-          imageUrl: `/images/${item.fileName}`,
+          imageUrl: {
+            /*`http://localhost:8080/ourlog/images/${item.fileName`*/
+          },
           title: item.title,
-          artist: item.userProfileDTO?.user?.nickname || "unknown",
+          artist: item.userProfileDTO?.nickname || "unknown",
           price:
             typeof item.price === "number" && item.price > 0
               ? `₩${item.price.toLocaleString()}`
@@ -38,6 +39,8 @@ const ArtworkSlider: React.FC = () => {
         }));
 
         setArtworks(mapped);
+        console.log("artworks: " + artworks);
+        console.log("artworks: " + mapped.length);
 
         const initialIndexes: number[] = [];
         while (initialIndexes.length < 3 && mapped.length > 0) {
@@ -58,11 +61,13 @@ const ArtworkSlider: React.FC = () => {
         const data = await res.json();
 
         const mapped = data.map((item: any) => ({
-          imageUrl: `/images/${item.fileName}`,
+          imageUrl: {
+            /*`http://localhost:8080/ourlog/images/${item.fileName`*/
+          },
           title: item.title || "대표작 없음",
-          artist: item.userProfileDTO?.user?.nickname || "unknown",
+          artist: item.userProfileDTO?.nickname || "unknown",
           price: "",
-          link: `/worker/${item.userProfileDTO.user.id}`,
+          link: `/worker/${item.userProfileDTO.userId}`,
           isArtist: true,
         }));
 
