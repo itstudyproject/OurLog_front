@@ -50,7 +50,10 @@ const MyPage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
   useEffect(() => {
+    console.log("stored:" + stored)
+    console.log("userId:" + userId)
     if (!userId) return;
+    console.log(Boolean(userId))
     fetchProfile(userId)
       .then(setProfile)
       .catch((err) => console.error(err));
@@ -85,8 +88,8 @@ const MyPage: React.FC = () => {
         <div className="bid-details">
           <h3>{profile?.nickname || "로딩 중..."}</h3>
           <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
-            <p>팔로워: {profile?.followerCount ?? 0}</p>
-            <p>팔로잉: {profile?.followingCount ?? 0}</p>
+            <p>팔로워: {profile?.followCnt ?? 0}</p>
+            <p>팔로잉: {profile?.followingCnt ?? 0}</p>
           </div>
           <div className="bid-actions" style={{ marginTop: "15px" }}>
             <button

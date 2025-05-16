@@ -43,13 +43,13 @@ const LoginPage: React.FC = () => {
           setToken(userData.token);
           
           // userId 키 이름 일관성 유지
-          const userId = userData.userId || userData.id;
+          // const userId = userData.userId || userData.id;
           
           localStorage.setItem(
             "user",
             JSON.stringify({
               email: userData.email,
-              userId: userId,
+              // userId: userId,
               profileImage: userData.profileImage || "/images/mypage.png",
             })
           );
@@ -81,13 +81,11 @@ const LoginPage: React.FC = () => {
       try {
         // 프로필이 없으면 기본 프로필 생성
         const defaultProfile: UserProfileDTO = {
-          user: userId,
+          userId: userId,
           nickname: userInfo.nickname || email.split('@')[0],
           introduction: `안녕하세요, ${userInfo.nickname || email.split('@')[0]}입니다.`,
           email: email,
           name: userInfo.name || "",
-          location: "",
-          website: "",
           originImagePath: "/images/mypage.png",
           thumbnailImagePath: "/images/mypage.png",
         };
@@ -103,6 +101,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleLoginSuccess = async (userData: any, shouldSave: boolean) => {
+    console.log("handleLogin called")
     if (shouldSave) {
       localStorage.setItem("autoLoginUser", JSON.stringify(userData));
     }
@@ -150,6 +149,7 @@ const LoginPage: React.FC = () => {
       // 2. 토큰 추출
       const tokenText = await loginResponse.text();
       
+      
       if (tokenText.startsWith('{"code"')) {
         setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
         return;
@@ -182,7 +182,7 @@ const LoginPage: React.FC = () => {
       // 5. 사용자 정보 저장 및 로그인 처리
       const userData = {
         email: email,
-        userId: userInfo.id,
+        userId: userInfo.userId,
         token: token,
         profileImage: userInfo.profileImage || "/images/mypage.png",
         profileId: profileId
@@ -219,7 +219,7 @@ const LoginPage: React.FC = () => {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              
             />
           </div>
 
@@ -234,7 +234,7 @@ const LoginPage: React.FC = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              
             />
           </div>
 

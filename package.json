@@ -39,6 +39,7 @@
     "@types/axios": "^0.9.36",
     "@types/chance": "^1.1.6",
     "@types/luxon": "^3.6.2",
+    "@types/node": "^22.15.18",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@types/styled-components": "^5.1.34",

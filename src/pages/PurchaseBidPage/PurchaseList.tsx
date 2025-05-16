@@ -23,7 +23,7 @@ const PurchaseList: React.FC = () => {
   const itemsPerPage = 4;
 
   useEffect(() => {
-    fetch("http://localhost:8080/ourlog/trades/mypage/purchases", {
+    fetch("http://localhost:8080/ourlog/profile/purchases", {
       headers: getAuthHeaders(),
     })
       .then((res) => {

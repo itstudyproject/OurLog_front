@@ -20,25 +20,25 @@ const SaleList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
-  useEffect(() => {
-    fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
-      headers: getAuthHeaders(),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const mapped = data.map((item: any) => ({
-          id: item.tradeId,
-          image: item.thumbnailPath,
-          title: item.postTitle,
-          price: item.nowBuy ?? item.highestBid ?? 0,
-          method: item.nowBuy ? "즉시구매" : "경매",
-          date: item.createdAt?.substring(0, 10) ?? "",
-          count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
-          artist: item.postDTO?.user?.nickname ?? "나",
-        }));
-        setSales(mapped);
-      });
-  }, []);
+useEffect(() => {
+  fetch("http://localhost:8080/ourlog/profile/sales", {
+    headers: getAuthHeaders(),
+  })
+    .then(res => res.json())
+    .then(data => {
+      const mapped = data.map((item: any) => ({
+        id: item.tradeId,
+        image: item.thumbnailPath,
+        title: item.postTitle,
+        price: item.nowBuy ?? item.highestBid ?? 0,
+        method: item.nowBuy ? "즉시구매" : "경매",
+        date: item.createdAt?.substring(0, 10) ?? "",
+        count: 1, // 혹시 판매 횟수가 있으면 백에서 처리
+        artist: item.postDTO?.user?.nickname ?? "나",
+      }));
+      setSales(mapped);
+    });
+}, []);
 
   const currentItems = sales.slice(
     (currentPage - 1) * itemsPerPage,
