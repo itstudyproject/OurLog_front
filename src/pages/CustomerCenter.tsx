@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import type { Question, QuestionFormData } from "../types/Question";
 import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
+import { useNavigate } from "react-router-dom";
 
 // 원본 FAQ 데이터
 const originalFaqs: Question[] = [
@@ -80,6 +81,7 @@ const CustomerCenter: React.FC = () => {
     title: "",
     content: "",
   });
+  const navigate = useNavigate();
 
   const [selectedInquiry, setSelectedInquiry] = useState<Question | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -260,7 +262,7 @@ const CustomerCenter: React.FC = () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("로그인이 필요합니다.");
+      navigate("/login");
       return;
     }
 
@@ -849,7 +851,7 @@ const CustomerCenter: React.FC = () => {
         <div className="cc-overlay">
           <div className="cc-modal">
             <div className="cc-modal-header">
-              <h3>삭제 확인</h3>
+              <h2>삭제 확인</h2>
               <button
                 className="cc-close-button"
                 onClick={() => setShowDeleteModal(false)}
@@ -865,7 +867,7 @@ const CustomerCenter: React.FC = () => {
               >
                 취소
               </button>
-              <button className="modal-button" onClick={handleDeleteConfirm}>
+              <button className="cc-modal-button" onClick={handleDeleteConfirm}>
                 확인
               </button>
             </div>
