@@ -31,6 +31,7 @@
   font-weight: 500;
   transition: all 0.2s ease;
   color: #cccccc;
+  text-align: center;
 }
 
 .cc-nav-item:hover {
@@ -243,7 +244,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #3b82f6;
   color: white;
   cursor: pointer;
   font-size: 14px;
@@ -251,23 +252,23 @@
 }
 
 .cc-action-button.cancel {
-  background-color: #666;
+  background-color: #ffdab9;
   color: #fff;
 }
 .cc-action-button.cancel:hover {
-  background-color: #555;
+  background-color: #ff8c00;
 }
 
 .cc-action-button:hover {
-  background-color: #357abd;
+  background-color: #64748b;
 }
 
 .cc-action-button.delete {
-  background-color: #e74c3c;
+  background-color: #ed8d2d;
 }
 
 .cc-action-button.delete:hover {
-  background-color: #c0392b;
+  background-color: #d47412;
 }
 
 .cc-overlay {
@@ -382,7 +383,7 @@
   padding: 12px 24px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #3b82f6;
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -404,7 +405,7 @@
   padding: 8px 24px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #357abd;
   color: white;
   cursor: pointer;
   font-size: 14px;
@@ -412,15 +413,15 @@
 }
 
 .cc-modal-button:hover {
-  background-color: #357abd;
+  background-color: #64748b;
 }
 
 .cc-modal-button.cancel {
-  background-color: #666;
+  background-color: #ffdab9;
 }
 
 .cc-modal-button.cancel:hover {
-  background-color: #555;
+  background-color: #ff8c00;
 }
 
 .cc-no-results {
