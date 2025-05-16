@@ -22,7 +22,7 @@ const SaleStatusList: React.FC = () => {
   const itemsPerPage = 4;
 
   useEffect(() => {
-    fetch("http://localhost:8080/ourlog/trades/mypage/sale-status", {
+    fetch("http://localhost:8080/ourlog/profile/sale-status", {
       headers: getAuthHeaders(),
     })
       .then((res) => res.json())
