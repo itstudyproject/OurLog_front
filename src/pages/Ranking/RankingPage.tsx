@@ -30,6 +30,13 @@ const rankingTypes = [
 
 const API_URL = "http://localhost:8080/ourlog/ranking";
 
+function formatNumber(num: number): string {
+  if (num >= 1_000_000)
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return num.toString();
+}
+
 const RankingPage: React.FC = () => {
   const navigate = useNavigate();
   const [rankingType, setRankingType] = useState<RankingKey>("views");
@@ -158,11 +165,6 @@ const RankingPage: React.FC = () => {
                     navigate(`/profile/${podium[idx].author}`);
                   }}
                 >
-                  <img
-                    src={podium[idx].avatar}
-                    alt={podium[idx].author}
-                    className="ranking-author-avatar large"
-                  />
                   <span className="ranking-list-author">
                     {podium[idx].author}
                   </span>
@@ -194,16 +196,13 @@ const RankingPage: React.FC = () => {
               className="ranking-author-info small"
               onClick={() => navigate(`/profile/${art.author}`)}
             >
-              <img
-                src={art.avatar}
-                alt={art.author}
-                className="ranking-author-avatar"
-              />
               <span className="ranking-list-author">{art.author}</span>
-              <span className="ranking-list-meta">
-                {rankingType === "views" && `👁️ ${art.views}`}
-                {rankingType === "followers" && `👥 ${art.followers}`}
-                {rankingType === "downloads" && `⬇️ ${art.downloads}`}
+              <span className="ranking-list-meta right-align">
+                {rankingType === "views" && `👁️ ${formatNumber(art.views)}`}
+                {rankingType === "followers" &&
+                  `👥 ${formatNumber(art.followers)}`}
+                {rankingType === "downloads" &&
+                  `⬇️ ${formatNumber(art.downloads)}`}
               </span>
             </div>
           </div>

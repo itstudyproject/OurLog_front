@@ -132,26 +132,17 @@
   z-index: 2;
 }
 .ranking-author-info.small {
-  left: 18px;
   bottom: 18px;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0 20px;
 }
 .ranking-author-info.large {
-  left: 28px;
   bottom: 22px;
-}
-.ranking-author-avatar {
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
-  border-width: 2px;
-  border-radius: 50%;
-}
-.ranking-author-avatar.large {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  margin-right: 14px;
+  width: 100%;
+  font-size: 20px;
+  justify-content: space-between;
+  padding: 0 30px;
 }
 .ranking-list-meta {
   color: #fff;
@@ -175,7 +166,4 @@
   background: #222;
   overflow: hidden;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
-}
-.ranking-list-author {
-  font-size: 17px;
 }

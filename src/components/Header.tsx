@@ -25,13 +25,13 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
   const checkLoginStatus = () => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-    
+
     if (token && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUserInfo(parsedUser);
         setIsLoggedIn(true);
-        
+
         // 로그인 이벤트 발생 시에만 알림 표시
         if (sessionStorage.getItem("loginEvent") === "true") {
           setShowNotification(true);
@@ -94,17 +94,23 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
       {showNotification && userInfo && (
         <div className="login-notification">
           <div className="notification-content">
-            <img src={userInfo.profileImage || "/images/mypage.png"} alt="프로필" className="notification-profile" />
+            <img
+              src={userInfo.profileImage || "/images/mypage.png"}
+              alt="프로필"
+              className="notification-profile"
+            />
             <div className="notification-text">
               <p className="notification-welcome">환영합니다!</p>
               <p className="notification-info">
-                <span className="notification-label">이메일:</span> {userInfo.email}
+                <span className="notification-label">이메일:</span>{" "}
+                {userInfo.email}
               </p>
               <p className="notification-info">
-                <span className="notification-label">사용자 ID:</span> {userInfo.userId || '정보 없음'}
+                <span className="notification-label">사용자 ID:</span>{" "}
+                {userInfo.userId || "정보 없음"}
               </p>
             </div>
-            <button 
+            <button
               className="notification-close"
               onClick={() => setShowNotification(false)}
             >
@@ -167,10 +173,7 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
                       className="mypage-icon"
                     />
                   </Link>
-                  <div
-                    className="logout"
-                    onClick={handleLogout}
-                  >
+                  <div className="logout" onClick={handleLogout}>
                     LOGOUT
                   </div>
                 </>
@@ -204,32 +207,60 @@ const Header: React.FC<HeaderProps> = ({ scrollWidth }) => {
         </div>
         <nav className="sidebar-nav">
           {/* 아트 섹션 */}
-          <Link to="/art" className="sidebar-section-title">
+          <Link
+            to="/art"
+            className="sidebar-section-title"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             아트
           </Link>
           <div className="sidebar-section-sub">
-            <Link to="/art/register">아트 등록</Link>
-            <Link to="/art">아트 게시판</Link>
+            <Link to="/art/register" onClick={() => setIsSidebarOpen(false)}>
+              아트 등록
+            </Link>
+            <Link to="/art" onClick={() => setIsSidebarOpen(false)}>
+              아트 게시판
+            </Link>
           </div>
 
           {/* 커뮤니티 섹션 */}
-          <Link to="/post" className="sidebar-section-title">
+          <Link
+            to="/post"
+            className="sidebar-section-title"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             커뮤니티
           </Link>
           <div className="sidebar-section-sub">
-            <Link to="/post/news">새소식</Link>
-            <Link to="/post/free">자유게시판</Link>
-            <Link to="/post/promotion">홍보 게시판</Link>
-            <Link to="/post/request">요청 게시판</Link>
+            <Link to="/post/news" onClick={() => setIsSidebarOpen(false)}>
+              새소식
+            </Link>
+            <Link to="/post/free" onClick={() => setIsSidebarOpen(false)}>
+              자유게시판
+            </Link>
+            <Link to="/post/promotion" onClick={() => setIsSidebarOpen(false)}>
+              홍보 게시판
+            </Link>
+            <Link to="/post/request" onClick={() => setIsSidebarOpen(false)}>
+              요청 게시판
+            </Link>
           </div>
 
           {/* 랭킹 섹션 */}
-          <Link to="/ranking" className="sidebar-section-title">
+          <Link
+            to="/ranking"
+            className="sidebar-section-title"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             랭킹
           </Link>
 
           {/* 마이페이지 섹션 */}
-          <Link to="/mypage" className="sidebar-section-title">
+          <Link
+            to="/mypage"
+            className="sidebar-section-title"
+            onClick={() => setIsSidebarOpen(false)}
+          >
             마이페이지
           </Link>
         </nav>
