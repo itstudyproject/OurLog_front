@@ -21,7 +21,7 @@ const SaleList: React.FC = () => {
   const itemsPerPage = 4;
 
 useEffect(() => {
-  fetch("http://localhost:8080/ourlog/trades/mypage/sales", {
+  fetch("http://localhost:8080/ourlog/profile/sales", {
     headers: getAuthHeaders(),
   })
     .then(res => res.json())

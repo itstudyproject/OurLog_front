@@ -1,33 +1,33 @@
 .cc-container {
   display: flex;
   align-items: flex-start;
-  gap: 32px; /* 2rem -> 32px */
+  gap: 32px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .cc-sidebar {
   position: sticky;
-  top: 80px; /* 60px + 20px adjustment */
+  top: 80px;
   background: #111;
-  padding: 16px; /* 1rem -> 16px */
+  padding: 16px;
   border-radius: 8px;
   width: 240px;
 }
 
 .cc-sidebar-title {
-  font-size: 20px; /* 1.25rem -> 20px */
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 16px; /* 1rem -> 16px */
+  margin-bottom: 16px;
   text-align: center;
   color: #ffffff;
 }
 
 .cc-nav-item {
-  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
+  padding: 16px 24px;
   cursor: pointer;
   border-radius: 6px;
-  margin-bottom: 8px; /* 0.5rem -> 8px */
+  margin-bottom: 8px;
   font-weight: 500;
   transition: all 0.2s ease;
   color: #cccccc;
@@ -50,61 +50,61 @@
   flex: 1;
   background: #111111;
   border-radius: 8px;
-  padding: 32px; /* 2rem -> 32px */
+  padding: 32px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .cc-styled-h1 {
   text-align: center;
-  margin-bottom: 24px; /* 1.5rem -> 24px */
+  margin-bottom: 24px;
   color: #ffffff;
 }
 
 .cc-section-title {
-  font-size: 24px; /* 1.5rem -> 24px */
+  font-size: 24px;
   color: #ffffff;
-  margin-bottom: 24px; /* 1.5rem -> 24px */
-  padding-bottom: 8px; /* 0.5rem -> 8px */
-  border-bottom: 2px solid #333;
-  padding-top: 32px; /* 2rem -> 32px */
+  margin-bottom: 24px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f8c147;
+  padding-top: 32px;
 }
 
 .cc-search-wrapper {
   position: relative;
-  margin-bottom: 32px; /* 2rem -> 32px */
+  margin-bottom: 32px;
 }
 
 .cc-search-input {
   width: 100%;
-  padding: 16px 48px 16px 16px; /* 1rem 3rem 1rem 1rem -> 16px 48px 16px 16px */
+  padding: 16px 48px 16px 16px;
   border: 1px solid #333;
   border-radius: 6px;
   background-color: #222222;
   color: #ffffff;
-  font-size: 16px; /* 1rem -> 16px */
+  font-size: 16px;
 }
 
 .cc-search-icon {
   position: absolute;
-  right: 16px; /* 1rem -> 16px */
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: #666;
 }
 
 .cc-faq-list {
-  margin-top: 32px; /* 2rem -> 32px */
+  margin-top: 32px;
 }
 
 .cc-faq-item {
   border: 1px solid #333;
   border-radius: 6px;
-  margin-bottom: 16px; /* 1rem -> 16px */
+  margin-bottom: 16px;
   overflow: hidden;
 }
 
 .cc-question-box {
-  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
+  padding: 16px 24px;
   cursor: pointer;
   font-weight: 500;
   background-color: #222222;
@@ -119,7 +119,7 @@
 
 .cc-question-box::after {
   content: "▼";
-  font-size: 12px; /* 0.8rem -> 12px */
+  font-size: 12px;
   transition: transform 0.2s ease;
 }
 
@@ -128,7 +128,7 @@
 }
 
 .cc-answer {
-  padding: 0 24px; /* 1.5rem -> 24px */
+  padding: 0 24px;
   background-color: #111111;
   max-height: 0;
   opacity: 0;
@@ -137,14 +137,14 @@
 }
 
 .cc-answer.open {
-  padding: 16px 24px; /* 1rem 1.5rem -> 16px 24px */
+  padding: 16px 24px;
   max-height: 500px;
   opacity: 1;
 }
 
 .cc-info-text {
-  margin-top: 16px; /* 1rem -> 16px */
-  font-size: 15px; /* 0.95rem -> 15px */
+  margin-top: 16px;
+  font-size: 15px;
   color: #ccc;
   line-height: 1.6;
   white-space: pre-line;
@@ -154,9 +154,9 @@
   border: 1px solid #ff6b6b;
   color: #ff9999;
   border-radius: 8px;
-  padding: 16px; /* 1rem -> 16px */
-  margin-top: 16px; /* 1rem -> 16px */
-  font-size: 14px; /* 0.875rem -> 14px */
+  padding: 16px;
+  margin-top: 16px;
+  font-size: 14px;
   line-height: 1.6;
   background-color: rgba(255, 107, 107, 0.1);
 }
@@ -176,6 +176,21 @@
   color: #ffffff;
   font-weight: 600;
 }
+.cc-th:nth-child(1) {
+  width: 10%;
+}
+.cc-th:nth-child(2) {
+  width: 40%;
+}
+.cc-th:nth-child(3) {
+  width: 10%;
+}
+.cc-th:nth-child(4) {
+  width: 20%;
+}
+.cc-th:nth-child(5) {
+  width: 20%;
+}
 
 .cc-td {
   padding: 16px;
@@ -187,9 +202,9 @@
 }
 
 .cc-status-badge {
-  padding: 4px 12px; /* 0.25rem 0.75rem -> 4px 12px */
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 14px; /* 0.875rem -> 14px */
+  font-size: 14px;
   display: inline-block;
   vertical-align: middle;
 }
@@ -210,13 +225,9 @@
   margin-top: 0;
 }
 
-.cc-td:nth-child(3) {
-  display: block;
-}
-
 .cc-button-group {
   display: flex;
-  gap: 8px; /* 0.5rem -> 8px */
+  gap: 8px;
   justify-content: center;
   align-items: center;
   height: 100%;
@@ -276,7 +287,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: #111111;
-  padding: 32px; /* 2rem -> 32px */
+  padding: 32px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
   width: 500px;
@@ -290,15 +301,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px; /* 1.5rem -> 24px */
-  border-bottom: 1px solid #333;
-  padding-bottom: 16px; /* 1rem -> 16px */
+  margin-bottom: 24px;
+  border-bottom: 1px solid #f8c147;
+  padding-bottom: 16px;
   text-align: left;
 }
 
 .cc-modal-header h2 {
   margin: 0;
-  font-size: 24px; /* 1.5rem -> 24px */
+  font-size: 24px;
   color: #ffffff;
 }
 
@@ -307,7 +318,7 @@
   border: none;
   color: #ffffff;
   cursor: pointer;
-  padding: 8px; /* 0.5rem -> 8px */
+  padding: 8px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -322,25 +333,35 @@
 }
 
 .cc-form-group {
-  margin-bottom: 24px; /* 1.5rem -> 24px */
+  margin-bottom: 24px;
   text-align: left;
 }
 
 .cc-form-group label {
   display: block;
-  margin-bottom: 8px; /* 0.5rem -> 8px */
+  margin-bottom: 8px;
   color: #cccccc;
 }
 
 .cc-form-group input,
 .cc-form-group textarea {
   width: 100%;
-  padding: 12px; /* 0.75rem -> 12px */
+  padding: 12px;
   border: 1px solid #333;
   border-radius: 4px;
   background-color: #222222;
   color: #ffffff;
-  font-size: 16px; /* 1rem -> 16px */
+  font-size: 16px;
+}
+
+.cc-form-group input:hover,
+.cc-form-group input:focus,
+.cc-form-group textarea:hover,
+.cc-form-group textarea:focus,
+.cc-admin-answer-textarea:hover,
+.cc-admin-answer-textarea:focus {
+  border-color: #f8c147;
+  outline: none;
 }
 
 .cc-form-group textarea {
@@ -380,13 +401,13 @@
 }
 
 .cc-modal-button {
-  padding: 8px 24px; /* 0.5rem 1.5rem -> 8px 24px */
+  padding: 8px 24px;
   border: none;
   border-radius: 4px;
   background-color: #4a90e2;
   color: white;
   cursor: pointer;
-  font-size: 14px; /* 0.875rem -> 14px */
+  font-size: 14px;
   transition: background-color 0.2s;
 }
 
@@ -405,8 +426,8 @@
 .cc-no-results {
   text-align: center;
   color: #666;
-  margin: 32px 0; /* 2rem -> 32px */
-  font-size: 18px; /* 1.1rem -> 18px */
+  margin: 32px 0;
+  font-size: 18px;
 }
 
 .cc-modal form {
