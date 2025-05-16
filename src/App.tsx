@@ -51,7 +51,8 @@ function App() {
         <Route path="ranking" element={<RankingPage />} />
 
         <Route path="mypage/*" element={<MyPage />} />
-        <Route path="worker" element={<WorkerPage />} />
+        <Route path="worker/:userId" element={<WorkerPage />} />
+        {/*<Route path="worker" element={<WorkerPage />} />*/}
 
         <Route path="post">
           <Route index element={<PostList />} />
@@ -78,7 +79,13 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/profile-edit"
-        element={<ProfileEditPage profile={null} onBack={() => window.history.back()} onSave={async () => {}} />}
+        element={
+          <ProfileEditPage
+            profile={null}
+            onBack={() => window.history.back()}
+            onSave={async () => {}}
+          />
+        }
       />
 
       <Route path="/delete-account" element={<DeleteAccountPage />} />
