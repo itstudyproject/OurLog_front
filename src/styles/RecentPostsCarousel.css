@@ -1,6 +1,8 @@
 .carousel-container {
-    position: relative;
-    padding: 0 48px; /* 버튼 공간 확보 */
+    position: relative; 
+    padding: 0 48px; 
+    overflow: visible;
+    /* padding: 0;  */
   }
   
   .carousel-content {
@@ -10,6 +12,10 @@
     padding: 16px 24px;
     scroll-behavior: smooth;
     position: relative;
+    display: flex;
+    overflow-x: auto;
+    padding: 16px 48px;    /* <-- 좌우 충분한 패딩으로 끝 아이템까지 표시 */
+    margin: 0 -48px;      
   }
   
   .carousel-content::-webkit-scrollbar {
