@@ -53,6 +53,8 @@ function App() {
 
         <Route path="mypage/*" element={<MyPage />} />
         <Route path="worker" element={<WorkerPage />} />
+        {/*<Route path="worker/:userID" element={<WorkerPage />} />*/}
+
         <Route path="/chat" element={<ChatPage />} />
 
         <Route path="post">
@@ -80,7 +82,13 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/profile-edit"
-        element={<ProfileEditPage profile={null} onBack={() => window.history.back()} onSave={async () => {}} />}
+        element={
+          <ProfileEditPage
+            profile={null}
+            onBack={() => window.history.back()}
+            onSave={async () => {}}
+          />
+        }
       />
 
       <Route path="/delete-account" element={<DeleteAccountPage />} />
