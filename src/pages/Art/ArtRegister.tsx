@@ -142,62 +142,10 @@ const ArtRegister = () => {
       return;
     }
 
-<<<<<<< HEAD
-    try {
-      // 이미지 파일들을 FormData에 추가
-      const formData = new FormData();
-      form.images.forEach((image, index) => {
-        formData.append("images", image.file);
-      });
-
-      // 아트워크 정보
-      const artworkData = {
-        title: form.title,
-        content: form.description,
-        boardNo: 5, // 아트 게시판 ID
-        startPrice: parseInt(form.startPrice.replace(/,/g, "")),
-        instantPrice: parseInt(form.instantPrice.replace(/,/g, "")),
-        startTime: form.startTime.toISOString(),
-        endTime: form.endTime.toISOString(),
-        tags: form.tags.join(","),
-        thumbnailId: form.thumbnailId,
-      };
-
-      formData.append(
-        "artworkDTO",
-        new Blob([JSON.stringify(artworkData)], {
-          type: "application/json",
-        })
-      );
-
-      const response = await fetch(
-        "http://localhost:8080/ourlog/picture/upload",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("작품 등록에 실패했습니다.");
-      }
-
-      const data = await response.json();
-      alert("작품이 성공적으로 등록되었습니다!");
-      navigate(`/art/${data.artId}`);
-    } catch (error) {
-      console.error("작품 등록 중 오류 발생:", error);
-      alert("작품 등록에 실패했습니다. 다시 시도해주세요.");
-    }
-=======
     // TODO: API 연동 후에는 실제 생성된 작품의 ID를 받아서 이동
     const dummyArtId = "1";
     alert("작품이 성공적으로 등록되었습니다!");
     navigate(`/art/${dummyArtId}`);
->>>>>>> c1b9027b01b37161828b099ca0cb158d64f64de6
   };
 
   // 드래그 앤 드롭 핸들러 추가
@@ -205,9 +153,9 @@ const ArtRegister = () => {
     e.preventDefault();
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.add('dragover');
+      dropzone.classList.add("dragover");
     }
   }, []);
 
@@ -215,25 +163,25 @@ const ArtRegister = () => {
     e.preventDefault();
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.remove('dragover');
+      dropzone.classList.remove("dragover");
     }
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.remove('dragover');
+      dropzone.classList.remove("dragover");
     }
 
     const files = Array.from(e.dataTransfer.files);
     files.forEach((file) => {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
           const newImage: ImageFile = {
@@ -296,7 +244,7 @@ const ArtRegister = () => {
                 </div>
               </div>
             ) : (
-              <div 
+              <div
                 className="image-upload-placeholder"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -312,7 +260,9 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-main">
                   <span>메인 이미지를 업로드해주세요</span>
-                  <span className="mt-2 text-sm">(클릭 또는 드래그하여 파일 선택)</span>
+                  <span className="mt-2 text-sm">
+                    (클릭 또는 드래그하여 파일 선택)
+                  </span>
                 </label>
               </div>
             )}
