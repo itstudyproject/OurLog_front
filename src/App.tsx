@@ -27,6 +27,7 @@ import SalePage from "./pages/SalePage/SalePage";
 import BookmarkPage from "./pages/BookmarkPage";
 import AccountEditPage from "./pages/AccountEdit";
 import ProfileEditPage from "./pages/ProfileEdit";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -56,6 +57,8 @@ function App() {
 
         {/*<Route path="worker" element={<WorkerPage />} />*/}
 
+
+        <Route path="/chat" element={<ChatPage />} />
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path="news" element={<PostList />} />
@@ -85,7 +88,7 @@ function App() {
           <ProfileEditPage
             profile={null}
             onBack={() => window.history.back()}
-            onSave={async () => {}}
+            onSave={async () => { }}
           />
         }
       />

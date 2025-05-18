@@ -41,7 +41,6 @@ const WorkerPage: React.FC = () => {
   const [followCount, setFollowCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
-
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
   const cardsPerPage = 6;
@@ -57,45 +56,10 @@ const WorkerPage: React.FC = () => {
 
     const token = localStorage.getItem("token");
 
-    // 프로필 정보 가져오기
-    // const fetchUserProfile = async () => {
-    // try {
-    //   const res = await fetch(`${baseUrl}/profile/get/${userId}`, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   });
-
-    //   if (!res.ok) throw new Error("프로필 불러오기 실패");
-
-    //   const profileData = await res.json();
-
-    //   console.log("프로필 API 응답:", profileData);
-
-    //   setProfile({
-    //     userId: profileData.user.userId,
-    //     nickname: profileData.user.nickname,
-    //     thumbnailImagePath: profileData.thumbnailImagePath
-    //       ? baseUrl + profileData.thumbnailImagePath
-    //       : "/default-profile.png",
-    //     followCount: profileData.follow?.followersCount || 0,
-    //     followingCount: profileData.follow?.followingCount || 0,
-    //   });
-
-    //   setFollowCount(profileData.follow?.followersCount || 0);
-    //   setFollowingCount(profileData.follow?.followingCount || 0);
-    // } catch (err) {
-    //   console.error("프로필 데이터 불러오기 실패", err);
-    // }
-    // };
-
     fetchProfile(userId)
       .then(setProfile)
       .catch((err) => console.error(err));
 
-    // 게시글과 좋아요 상태 가져오기
     const fetchPostsAndLikes = async () => {
       try {
         const res = await fetch(`${baseUrl}/post?userId=${userId}`, {
@@ -149,13 +113,9 @@ const WorkerPage: React.FC = () => {
       }
     };
 
-    // 팔로우 상태 확인 (백엔드 호출 없이 초기는 false로)
-    // 실제 연동은 handleFollowToggle 함수에서 처리
-
     fetchPostsAndLikes();
   }, [userId, loggedInUserId]);
 
-  // 팔로우 / 언팔로우 토글 처리 (백엔드 연동)
   const handleFollowToggle = async () => {
     if (!loggedInUserId || !userId || loggedInUserId === userId) return;
 
@@ -174,16 +134,18 @@ const WorkerPage: React.FC = () => {
         },
       });
 
-      if (!res.ok)
-        throw new Error(`${isFollowing ? "언팔로우" : "팔로우"} 실패`);
+      if (!res.ok) throw new Error(`${isFollowing ? "언팔로우" : "팔로우"} 실패`);
 
-      setIsFollowing(!isFollowing);
-      setFollowCount((prev) => (isFollowing ? prev - 1 : prev + 1));
+      const responseData = await res.json(); // 서버로부터 반환된 데이터를 받아옴
+      console.log(responseData); // 응답 데이터를 콘솔에 출력하여 확인
+
+      const newFollowCount = responseData.followCount || followCount; // 서버에서 변경된 팔로우 수를 사용, 없으면 기존 값을 유지
+      setIsFollowing(!isFollowing); // 팔로우 상태 변경
+      setFollowCount(newFollowCount); // 팔로우 수 업데이트
     } catch (err) {
       console.error("팔로우 토글 실패:", err);
     }
   };
-
   const handleOpenChat = () => {
     window.open("/chat", "_blank", "noopener,noreferrer");
   };
@@ -245,7 +207,7 @@ const WorkerPage: React.FC = () => {
           <div className="worker-buttons">
             {loggedInUserId !== userId && (
               <button onClick={handleFollowToggle} className="btn">
-                {isFollowing ? "팔로잉" : "팔로우"}
+                {isFollowing ? "팔로잉" : "팔로우"} {/* 팔로우 상태에 따라 버튼 텍스트 변경 */}
               </button>
             )}
             <button className="btn" onClick={handleOpenChat}>
