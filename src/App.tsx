@@ -58,7 +58,6 @@ function App() {
 
         {/*<Route path="worker" element={<WorkerPage />} />*/}
 
-        <Route path="/chat" element={<ChatPage />} />
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path="news" element={<PostList />} />
@@ -73,6 +72,7 @@ function App() {
 
       {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/chat" element={<ChatPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
 
