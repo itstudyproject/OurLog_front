@@ -10,6 +10,7 @@ const ArtList = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(1);
   const artworksPerPage = 10;
@@ -63,20 +64,22 @@ const ArtList = () => {
           boardNo: item.boardNo || item.boardId,
           title: item.title,
           content: item.content || '',
-          description: item.content || '',
           author: {
             id: item.userId || 0,
             name: item.userName || item.author || item.writer || '',
             profileImage: item.userProfileImage || '/images/default-avatar.png',
             isFollowing: false
           },
-          auction: {
-            startingBid: item.startPrice || 0,
-            currentBid: item.currentBid || item.startPrice || 0,
-            buyNowPrice: item.instantPrice || 0,
-            endTime: item.endTime || new Date().toISOString(),
-            bidCount: item.bidCount || 0
-          },
+          trade: item.trade ? {
+            tradeId: item.trade.tradeId,
+            startPrice: item.trade.startPrice,
+            highestBid: item.trade.highestBid,
+            nowBuy: item.trade.nowBuy,
+            tradeStatus: item.trade.tradeStatus,
+            bidderId: item.trade.bidderId,
+            bidderNickname: item.trade.bidderNickname,
+            lastBidTime: item.trade.lastBidTime
+          } : null,
           createdAt: item.regDate || item.createdAt || '',
           updatedAt: item.modDate || item.updatedAt || '',
           images: item.fileName ? [item.fileName] : [],
@@ -135,12 +138,30 @@ const ArtList = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchTerm(searchInput);
     setCurrentPage(1);
   };
 
   const handleRegisterClick = () => {
     navigate('/art/register');
   };
+
+  // 경매 남은 시간 계산 함수 (최대 7일 제한)
+  function getTimeLeft(endTime: string | Date | undefined): string {
+    if (!endTime) return "마감 정보 없음";
+    const end = new Date(endTime).getTime();
+    const now = Date.now();
+    const diff = end - now;
+    if (diff <= 0) return "경매 종료";
+    const maxDiff = 7 * 24 * 60 * 60 * 1000;
+    if (diff > maxDiff) return "최대 7일";
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    if (days > 0) return `${days}일 ${hours}시간 ${minutes}분 남음`;
+    if (hours > 0) return `${hours}시간 ${minutes}분 남음`;
+    return `${minutes}분 남음`;
+  }
 
   if (loading) {
     return (
@@ -176,8 +197,8 @@ const ArtList = () => {
           <form onSubmit={handleSearchSubmit} className="art-list-search-form">
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="키워드로 검색해주세요"
               className="art-list-search-input"
             />
@@ -217,7 +238,16 @@ const ArtList = () => {
             <div className="art-list-item-info">
               <h3 className="art-list-item-title">{artwork.title}</h3>
               <p className="art-list-item-author">{artwork.author.name}</p>
-              <p className="art-list-item-price">{artwork.auction.currentBid.toLocaleString()}원</p>
+              <p className="art-list-item-price">
+                {artwork.trade
+                  ? `현재가: ${(artwork.trade.highestBid ?? artwork.trade.startPrice)?.toLocaleString()}원`
+                  : "경매 정보 없음"}
+              </p>
+              {artwork.trade && artwork.trade.endTime && (
+                <span className="auction-time-left">
+                  {getTimeLeft(artwork.trade.endTime)}
+                </span>
+              )}
             </div>
           </div>
         ))}

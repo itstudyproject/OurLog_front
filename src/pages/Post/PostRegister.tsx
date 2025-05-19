@@ -7,6 +7,10 @@ interface ImageFile {
   file: File | null;
   preview: string;
   id: string; // 서버에 저장된 파일명
+  picId: string;
+  uuid: string;
+  picName: string;
+  path: string;
 }
 
 interface FormData {
@@ -235,32 +239,98 @@ const PostRegister = () => {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
+      // 사용자 정보 조회
+      const userResponse = await fetch("http://localhost:8080/ourlog/user/me", {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (userResponse.status === 403) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        localStorage.removeItem('token');
+        navigate("/login");
+        return;
+      }
+
+      if (!userResponse.ok) {
+        throw new Error("사용자 정보를 가져오는데 실패했습니다.");
+      }
+
+      const userData = await userResponse.json();
+      console.log("사용자 정보:", userData); // 디버깅용
+
       const postDTO = {
         title: formData.title,
         content: formData.content,
         boardNo: getBoardNo(formData.category),
         fileName: formData.thumbnailId,
-        images: formData.images.map((img) => img.id),
+        pictureDTOList: formData.images.map((img) => ({
+          picId: img.picId,
+          uuid: img.uuid,
+          picName: img.picName,
+          path: img.path,
+          picDescribe: null,
+          downloads: 0,
+          tag: null,
+          originImagePath: `${img.path}/${img.uuid}_${img.picName}`,
+          thumbnailImagePath: `${img.path}/s_${img.uuid}_${img.picName}`,
+          resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`
+        })),
         userDTO: {
-          "userId": 5,
-          "nickname": "테스트유저"
+          userId: userData.userId,
+          nickname: userData.nickname,
+          email: userData.email
         },
-        tags,
+        tag: tags.join(','),
+        views: 0,
+        followers: 0,
+        downloads: 0,
+        replyCnt: 0
       };
+
+      console.log("전송할 데이터:", postDTO); // 디버깅용
 
       const response = await fetch("http://localhost:8080/ourlog/post/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-         },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include',
         body: JSON.stringify(postDTO),
       });
 
-      if (!response.ok) throw new Error("게시물 등록에 실패했습니다.");
+      if (response.status === 403) {
+        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+        localStorage.removeItem('token');
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "게시물 등록에 실패했습니다.");
+      }
+
+      const result = await response.json();
+      console.log("등록 결과:", result); // 디버깅용
+
       alert("게시물이 성공적으로 등록되었습니다.");
       navigate("/post");
     } catch (error) {
-      alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
+      console.error("에러 발생:", error);
+      alert(error instanceof Error ? error.message : "게시물 등록에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }

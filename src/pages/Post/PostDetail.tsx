@@ -45,40 +45,54 @@ const PostDetail = () => {
 
   const fetchPost = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
 
+      if (response.status === 403) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error(response.status === 404 
-          ? '게시글을 찾을 수 없습니다.' 
-          : '게시글을 불러오는데 실패했습니다.');
+        throw new Error("게시글을 불러오는데 실패했습니다.");
       }
 
       const data = await response.json();
-      
-      if (!data || !data.postDTO) {
-        throw new Error('잘못된 데이터 형식입니다.');
-      }
-      
-      setPost(data.postDTO);
+      setPost(data);
     } catch (error) {
-      console.error("포스트를 불러오는 중 오류가 발생했습니다:", error);
-      setError(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      console.error("게시글 조회 실패:", error);
+      alert("게시글을 불러오는데 실패했습니다.");
     }
   };
 
   const increaseViewCount = async () => {
     try {
-      await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
       });
+
+      if (response.status === 403) {
+        console.warn("조회수 증가 실패: 인증 필요");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("조회수 증가 실패");
+      }
     } catch (error) {
       console.error("조회수 증가 실패:", error);
     }
