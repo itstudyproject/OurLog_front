@@ -26,6 +26,7 @@ const PostList = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedBoardId, setSelectedBoardId] = useState<number>(
     boardIdMap[location.pathname as keyof typeof boardIdMap] || 1
@@ -80,15 +81,28 @@ const PostList = () => {
         throw new Error("잘못된 응답 형식");
       }
       const { pageResultDTO } = data;
-      const mappedPosts = (pageResultDTO.dtoList || []).map((item: any) => ({
-        id: item.postId || item.id,
-        title: item.title,
-        author: item.userName || item.author || item.writer || '',
-        createdAt: item.regDate || item.createdAt || '',
-        thumbnail: item.fileName || item.thumbnail || '',
-        boardId: item.boardNo || item.boardId,
-      }));
-      setPosts(mappedPosts);
+      
+      // 중복 제거를 위한 Map 사용
+      const postMap = new Map();
+      
+      (pageResultDTO.dtoList || []).forEach((item: any) => {
+        const postId = item.postId || item.id;
+        // 이미 존재하는 postId가 있다면 건너뛰기
+        if (!postMap.has(postId)) {
+          postMap.set(postId, {
+            id: postId,
+            title: item.title,
+            author: item.userName || item.author || item.writer || '',
+            createdAt: item.regDate || item.createdAt || '',
+            thumbnail: item.fileName || item.thumbnail || '',
+            boardId: item.boardNo || item.boardId,
+          });
+        }
+      });
+      
+      // Map의 값들을 배열로 변환
+      const uniquePosts = Array.from(postMap.values());
+      setPosts(uniquePosts);
       setTotalPages(pageResultDTO.totalPage || 1);
     })
     .catch((err) => {
@@ -126,11 +140,8 @@ const PostList = () => {
   };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchTerm(searchInput);
     setCurrentPage(1);
-  };
-  const handlePageClick = (page: number) => {
-    const validPage = Math.max(1, page);
-    setCurrentPage(validPage);
   };
 
   const handleTabClick = (boardId: number) => {
@@ -154,7 +165,16 @@ const PostList = () => {
     }
   };
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+  // 페이지네이션 그룹 계산
+  const pageGroup = Math.floor((currentPage - 1) / 10);
+  const startPage = pageGroup * 10 + 1;
+  const endPage = Math.min(startPage + 9, totalPages);
+  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (loading) {
     return (
@@ -209,8 +229,8 @@ const PostList = () => {
           <form onSubmit={handleSearch}>
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="키워드로 검색해주세요"
             />
             <button type="submit" className="search-button">
@@ -243,8 +263,11 @@ const PostList = () => {
               <td colSpan={5} style={{ textAlign: "center" }}>게시글이 없습니다.</td>
             </tr>
           ) : (
-            posts.map((post) => (
-              <tr key={post.id} onClick={() => handlePostClick(post.id)}>
+            posts.map((post, index) => (
+              <tr 
+                key={`${post.id}-${post.boardId}-${index}`} 
+                onClick={() => handlePostClick(post.id)}
+              >
                 <td>{post.id}</td>
                 <td>{post.title}</td>
                 <td>
@@ -266,29 +289,29 @@ const PostList = () => {
         </tbody>
       </table>
 
-      <div className="pagination">
+      <div className="post-list-pagination">
         <button
-          onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
-          disabled={currentPage === 1}
+          onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
+          disabled={startPage === 1}
+          className="post-list-page-btn post-list-arrow-btn"
         >
-          {"<"}
+          &lt;
         </button>
         {pageNumbers.map((number) => (
           <button
             key={number}
             onClick={() => handlePageClick(number)}
-            className={currentPage === number ? "active" : ""}
+            className={`post-list-page-btn${currentPage === number ? ' post-list-page-active' : ''}`}
           >
             {number}
           </button>
         ))}
         <button
-          onClick={() =>
-            currentPage < totalPages && handlePageClick(currentPage + 1)
-          }
-          disabled={currentPage === totalPages}
+          onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
+          disabled={endPage === totalPages}
+          className="post-list-page-btn post-list-arrow-btn"
         >
-          {">"}
+          &gt;
         </button>
       </div>
     </div>

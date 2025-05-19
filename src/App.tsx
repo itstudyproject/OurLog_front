@@ -12,7 +12,6 @@ import PostRegister from "./pages/Post/PostRegister";
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import DeleteAccountPage from "./pages/DeleteAccountPage";
 import RankingPage from "./pages/Ranking/RankingPage";
 import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
@@ -27,7 +26,12 @@ import SalePage from "./pages/SalePage/SalePage";
 import BookmarkPage from "./pages/BookmarkPage";
 import AccountEditPage from "./pages/AccountEdit";
 import ProfileEditPage from "./pages/ProfileEdit";
+<<<<<<< HEAD
 import ChatPage from "./pages/ChatPage";
+=======
+import AccountEdit from "./pages/AccountEdit";
+import AccountDelete from "./pages/AccountDelete";
+>>>>>>> ccbf3d0171f06c5f9cfa87ad874a2e810da2a0c6
 
 function App() {
   return (
@@ -75,13 +79,14 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
-
+ 
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
       </Route>
 
       <Route path="/register" element={<RegisterPage />} />
+<<<<<<< HEAD
       <Route
         path="/profile-edit"
         element={
@@ -94,6 +99,8 @@ function App() {
       />
 
       <Route path="/delete-account" element={<DeleteAccountPage />} />
+=======
+>>>>>>> ccbf3d0171f06c5f9cfa87ad874a2e810da2a0c6
     </Routes>
   );
 }

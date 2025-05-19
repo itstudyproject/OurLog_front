@@ -85,3 +85,12 @@
 .artworkslider-price {
   font-size: 16px; /* 가격 글자 크기 조정 */
 }
+
+.artworkslider-empty {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #777;
+  margin-bottom: 70px;
+}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../styles/BulletinBoard.css";
-import { getAuthHeaders } from "../utils/auth";
 import { Link } from "react-router-dom";
 
 type CategoryKey = "news" | "free" | "promotion" | "request";
@@ -41,12 +40,9 @@ const BulletinBoard: React.FC = () => {
       try {
         const boardNo = boardIdMap[category];
         const url = `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&page=1&size=2&type=t&keyword=`;
-        console.log(`Fetching ${category} posts from:`, url);
         const res = await fetch(url);
         if (!res.ok) throw new Error("데이터 로딩 실패: " + res.status);
         const data = await res.json();
-        console.log(`${category} 데이터:`, data);
-
         const posts: PostItem[] = (data.pageResultDTO?.dtoList || []).map(
           (item: any) => ({
             id: item.postId || item.id,
@@ -89,7 +85,9 @@ const BulletinBoard: React.FC = () => {
             <div key={typedKey}>
               <h3 className="category-header">{categoryLabels[typedKey]}</h3>
               <ul className="category-list">
-                {items.length === 0 && <li>게시글이 없습니다.</li>}
+                {items.length === 0 && (
+                  <li className="no-post">게시글이 없습니다.</li>
+                )}
                 {items.map((item) => (
                   <li key={item.id} className="category-item">
                     <div className="category-thumbnail" />

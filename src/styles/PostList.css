@@ -211,3 +211,54 @@ tbody td:nth-child(2) {
 .loading p {
   color: #ccc;
 }
+
+.post-list-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 40px 0 20px;
+}
+
+.post-list-page-btn {
+  margin: 0 5px;
+  padding: 8px 12px;
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.post-list-page-btn:hover:not(:disabled) {
+  background-color: #333;
+  color: #fff;
+}
+
+.post-list-page-btn.post-list-page-active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+.post-list-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.post-list-arrow-btn {
+  font-weight: bold;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .post-list-pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .post-list-page-btn {
+    margin: 0;
+  }
+}

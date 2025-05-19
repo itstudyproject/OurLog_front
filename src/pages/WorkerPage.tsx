@@ -22,8 +22,8 @@ interface UserProfile {
   userId: number;
   nickname: string;
   thumbnailImagePath: string;
-  followCount: number;
-  followingCount: number;
+  followCnt: number;
+  followingCnt: number;
 }
 
 const baseUrl = "http://localhost:8080/ourlog";
@@ -38,8 +38,8 @@ const WorkerPage: React.FC = () => {
   const [cardData, setCardData] = useState<Post[]>([]);
   const [likes, setLikes] = useState<LikeStatus[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [followCount, setFollowCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
+  const [followCnt, setFollowCnt] = useState(0);
+  const [followingCnt, setFollowingCnt] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
 
@@ -57,7 +57,12 @@ const WorkerPage: React.FC = () => {
     const token = localStorage.getItem("token");
 
     fetchProfile(userId)
-      .then(setProfile)
+      .then((data) => {
+        console.log("✅ 프로필 데이터:", data); // 콘솔 확인
+        setProfile(data); // 상태에 저장
+        setFollowCnt(data.followCnt); // followCnt 반영
+        setFollowingCnt(data.followingCnt); // followingCnt 반영
+      })
       .catch((err) => console.error(err));
 
     const fetchPostsAndLikes = async () => {
@@ -134,14 +139,15 @@ const WorkerPage: React.FC = () => {
         },
       });
 
-      if (!res.ok) throw new Error(`${isFollowing ? "언팔로우" : "팔로우"} 실패`);
+      if (!res.ok)
+        throw new Error(`${isFollowing ? "언팔로우" : "팔로우"} 실패`);
 
       const responseData = await res.json(); // 서버로부터 반환된 데이터를 받아옴
       console.log(responseData); // 응답 데이터를 콘솔에 출력하여 확인
 
-      const newFollowCount = responseData.followCount || followCount; // 서버에서 변경된 팔로우 수를 사용, 없으면 기존 값을 유지
+      const newFollowCount = responseData.followCount || followCnt; // 서버에서 변경된 팔로우 수를 사용, 없으면 기존 값을 유지
       setIsFollowing(!isFollowing); // 팔로우 상태 변경
-      setFollowCount(newFollowCount); // 팔로우 수 업데이트
+      setFollowCnt(newFollowCount); // 팔로우 수 업데이트
     } catch (err) {
       console.error("팔로우 토글 실패:", err);
     }
@@ -196,18 +202,19 @@ const WorkerPage: React.FC = () => {
             <div className="worker-stats">
               <div className="stat">
                 <span className="label">팔로우</span>
-                <span>{followCount}</span>
+                <span>{followCnt}</span>
               </div>
               <div className="stat">
                 <span className="label">팔로잉</span>
-                <span>{followingCount}</span>
+                <span>{followingCnt}</span>
               </div>
             </div>
           </div>
           <div className="worker-buttons">
             {loggedInUserId !== userId && (
               <button onClick={handleFollowToggle} className="btn">
-                {isFollowing ? "팔로잉" : "팔로우"} {/* 팔로우 상태에 따라 버튼 텍스트 변경 */}
+                {isFollowing ? "팔로잉" : "팔로우"}{" "}
+                {/* 팔로우 상태에 따라 버튼 텍스트 변경 */}
               </button>
             )}
             <button className="btn" onClick={handleOpenChat}>
