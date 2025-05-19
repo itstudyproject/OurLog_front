@@ -62,7 +62,7 @@ const AccountDelete = () => {
       </div>
 
       <div className="form-group">
-        <label>현재 비밀번호</label>
+        <label htmlFor="password-input">현재 비밀번호</label>
         <input
           type="password"
           className="password-input"
