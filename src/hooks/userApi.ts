@@ -6,8 +6,9 @@ export interface UserRegisterDTO {
   name: string;
   nickname: string;
   password: string;
+  passwordConfirm: string;
   mobile: string;
-  from_social: boolean;
+  fromSocial: boolean;
 }
 
 export interface UserDTO {
@@ -117,6 +118,12 @@ export const registerUser = async (userData: UserRegisterDTO): Promise<number> =
 
     if (!registerResponse.ok) {
       const errorData = await registerResponse.json();
+      
+      // 백엔드에서 반환하는 오류 맵을 그대로 반환
+      if (typeof errorData === 'object') {
+        throw errorData;
+      }
+      
       throw new Error(errorData.message || '회원가입에 실패했습니다.');
     }
 

@@ -113,24 +113,24 @@ const ArtRegister = () => {
   };
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && newTag.trim()) {
+    if (e.key === "Enter" && newTag.trim()) {
       e.preventDefault();
       if (form.tags.includes(newTag.trim())) {
-        alert('이미 존재하는 태그입니다.');
+        alert("이미 존재하는 태그입니다.");
         return;
       }
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: [...prev.tags, newTag.trim()],
       }));
-      setNewTag('');
+      setNewTag("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
@@ -142,10 +142,80 @@ const ArtRegister = () => {
       return;
     }
 
-    // TODO: API 연동 후에는 실제 생성된 작품의 ID를 받아서 이동
-    const dummyArtId = "1";
-    alert("작품이 성공적으로 등록되었습니다!");
-    navigate(`/art/${dummyArtId}`);
+    // 경매 시작가/즉시구매가 유효성 검사
+    const startPriceNum = Number(form.startPrice.replace(/,/g, ""));
+    const instantPriceNum = Number(form.instantPrice.replace(/,/g, ""));
+    if (startPriceNum % 1000 !== 0 || instantPriceNum % 1000 !== 0) {
+      alert("시작가와 즉시구매가는 1,000원 단위로 입력해야 합니다.");
+      return;
+    }
+    if (startPriceNum > 100000000 || instantPriceNum > 100000000) {
+      alert("시작가와 즉시구매가는 1억원(100,000,000) 이하로 입력해야 합니다.");
+      return;
+    }
+    if (instantPriceNum < startPriceNum) {
+      alert("즉시구매가는 시작가보다 크거나 같아야 합니다.");
+      return;
+    }
+
+    // 경매 종료시간 7일 이내 제한
+    const maxEndTime = new Date(form.startTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+    if (form.endTime > maxEndTime) {
+      alert("경매 종료시간은 시작일로부터 최대 7일 이내여야 합니다.");
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    try {
+      // 1. 이미지 업로드 (여러 개면 반복)
+      // 실제 업로드 API에 맞게 수정 필요
+      // const uploadedImages = await uploadImages(form.images);
+
+      // 2. 게시글(Post) 등록
+      const postRes = await fetch("http://localhost:8080/ourlog/post/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          title: form.title,
+          content: form.description,
+          boardNo: 5,
+          fileName: form.thumbnailId, // 썸네일 uuid 등
+          // pictureDTOList: uploadedImages, // 실제 업로드된 이미지 정보
+          userDTO: {
+            userId: user.userId,
+            nickname: user.nickname || user.email || "익명"
+          }
+        }),
+      });
+      if (!postRes.ok) throw new Error("작품 등록 실패");
+      const {postId} = await postRes.json(); // postId 반환
+
+      // 3. 경매(Trade) 등록
+      const tradeRes = await fetch("http://localhost:8080/ourlog/trades/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          postId,
+          sellerId: user.userId,
+          startPrice: startPriceNum,
+          nowBuy: instantPriceNum,
+          endTime: form.endTime,
+        }),
+      });
+      if (!tradeRes.ok) throw new Error("경매 등록 실패");
+
+      alert("작품이 성공적으로 등록되었습니다!");
+      navigate(`/art/${postId}`);
+    } catch (err) {
+      alert("작품 등록 중 오류가 발생했습니다.");
+    }
   };
 
   // 드래그 앤 드롭 핸들러 추가
@@ -153,9 +223,9 @@ const ArtRegister = () => {
     e.preventDefault();
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.add('dragover');
+      dropzone.classList.add("dragover");
     }
   }, []);
 
@@ -163,25 +233,25 @@ const ArtRegister = () => {
     e.preventDefault();
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.remove('dragover');
+      dropzone.classList.remove("dragover");
     }
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const target = e.target as HTMLElement;
-    const dropzone = target.closest('.image-upload-placeholder');
+    const dropzone = target.closest(".image-upload-placeholder");
     if (dropzone) {
-      dropzone.classList.remove('dragover');
+      dropzone.classList.remove("dragover");
     }
 
     const files = Array.from(e.dataTransfer.files);
     files.forEach((file) => {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onloadend = () => {
           const newImage: ImageFile = {
@@ -244,7 +314,7 @@ const ArtRegister = () => {
                 </div>
               </div>
             ) : (
-              <div 
+              <div
                 className="image-upload-placeholder"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -260,7 +330,9 @@ const ArtRegister = () => {
                 />
                 <label htmlFor="artwork-image-main">
                   <span>메인 이미지를 업로드해주세요</span>
-                  <span className="mt-2 text-sm">(클릭 또는 드래그하여 파일 선택)</span>
+                  <span className="mt-2 text-sm">
+                    (클릭 또는 드래그하여 파일 선택)
+                  </span>
                 </label>
               </div>
             )}
@@ -336,8 +408,8 @@ const ArtRegister = () => {
                     {form.tags.map((tag, index) => (
                       <span key={index} className="tag">
                         #{tag}
-                        <button 
-                          onClick={() => handleRemoveTag(tag)} 
+                        <button
+                          onClick={() => handleRemoveTag(tag)}
                           className="remove-tag"
                           title="태그 삭제"
                         >
@@ -361,14 +433,14 @@ const ArtRegister = () => {
                     onClick={() => {
                       if (newTag.trim()) {
                         if (form.tags.includes(newTag.trim())) {
-                          alert('이미 존재하는 태그입니다.');
+                          alert("이미 존재하는 태그입니다.");
                           return;
                         }
-                        setForm(prev => ({
+                        setForm((prev) => ({
                           ...prev,
-                          tags: [...prev.tags, newTag.trim()]
+                          tags: [...prev.tags, newTag.trim()],
                         }));
-                        setNewTag('');
+                        setNewTag("");
                       }
                     }}
                     className="tag-add-button"
@@ -489,9 +561,16 @@ const ArtRegister = () => {
                 <label className="form-label">경매 종료 시간</label>
                 <DatePicker
                   selected={form.endTime}
-                  onChange={(date: Date | null) =>
-                    date && setForm((prev) => ({ ...prev, endTime: date }))
-                  }
+                  onChange={(date: Date | null) => {
+                    if (!date) return;
+                    const maxEndTime = new Date(form.startTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    if (date > maxEndTime) {
+                      alert("경매 종료시간은 시작일로부터 최대 7일 이내여야 합니다.");
+                      setForm((prev) => ({ ...prev, endTime: maxEndTime }));
+                      return;
+                    }
+                    setForm((prev) => ({ ...prev, endTime: date }));
+                  }}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}

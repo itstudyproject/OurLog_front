@@ -11,15 +11,34 @@ import "../styles/WorkerPage.css";
 import "../styles/BidHistory.css";
 import "../styles/PurchaseBidPage.css";
 
-import { fetchProfile, updateProfile, UserProfileDTO } from "../hooks/profileApi";
+import {
+  fetchProfile,
+  updateProfile,
+  UserProfileDTO,
+} from "../hooks/profileApi";
 import AccountEdit from "./AccountEdit";
 import ProfileEdit from "./ProfileEdit";
 import AccountDelete from "./AccountDelete";
 
 const recentPosts = [
-  { id: 1, image: "/images/mypage/Realization.jpg", title: "Realization", price: "₩1,000,000" },
-  { id: 2, image: "/images/mypage/Andrew Loomis.jpg", title: "Andrew Loomis", price: "₩800,000" },
-  { id: 3, image: "/images/mypage/White Roses.jpg", title: "White Roses", price: "₩730,000" },
+  {
+    id: 1,
+    image: "/images/mypage/Realization.jpg",
+    title: "Realization",
+    price: "₩1,000,000",
+  },
+  {
+    id: 2,
+    image: "/images/mypage/Andrew Loomis.jpg",
+    title: "Andrew Loomis",
+    price: "₩800,000",
+  },
+  {
+    id: 3,
+    image: "/images/mypage/White Roses.jpg",
+    title: "White Roses",
+    price: "₩730,000",
+  },
 ];
 
 const MyPage: React.FC = () => {
@@ -45,11 +64,11 @@ const MyPage: React.FC = () => {
   // 메뉴 선택 상태 관리
   const getCurrentTab = () => {
     const path = location.pathname;
-    if (path === '/mypage') return 'recent';
-    if (path.includes('/purchase-bid')) return 'purchase-bid';
-    if (path.includes('/sale')) return 'sale';
-    if (path.includes('/bookmark')) return 'bookmark';
-    return 'recent';
+    if (path === "/mypage") return "recent";
+    if (path.includes("/purchase-bid")) return "purchase-bid";
+    if (path.includes("/sale")) return "sale";
+    if (path.includes("/bookmark")) return "bookmark";
+    return "recent";
   };
 
   // 편집 관련 페이지에서는 메뉴 숨김
@@ -67,7 +86,10 @@ const MyPage: React.FC = () => {
       </div>
 
       <div className="bid-item" style={{ padding: "20px" }}>
-        <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
+        <div
+          className="bid-artwork"
+          style={{ width: "100px", height: "100px" }}
+        >
           <img
             src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
@@ -114,6 +136,7 @@ const MyPage: React.FC = () => {
 
       <div className="sub-tab-nav">
         <button
+
           className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`}
           onClick={() => navigate("/mypage")}
         >

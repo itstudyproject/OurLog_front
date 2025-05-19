@@ -15,9 +15,12 @@ export interface UserProfileDTO {
 }
 
 export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
-  const res = await fetch(`http://localhost:8080/ourlog/profile/get/${userId}`, {
-    headers: getAuthHeaders(),
-  });
+  const res = await fetch(
+    `http://localhost:8080/ourlog/profile/get/${userId}`,
+    {
+      headers: getAuthHeaders(),
+    }
+  );
   if (!res.ok) throw new Error("프로필 조회 실패");
   return res.json();
 };
@@ -27,6 +30,7 @@ export const updateProfile = async (
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
   const res = await fetch(
+
     `http://localhost:8080/ourlog/profile/profileEdit/${userId}`,
     {
       method: "PATCH",
@@ -42,6 +46,7 @@ export const updateProfile = async (
     const text = await res.text();
     throw new Error("프로필 수정 실패: " + text);
   }
+
 
   return res.json();
 };
