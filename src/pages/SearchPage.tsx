@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/PostList.css";
 import "../styles/ArtList.css";
@@ -26,67 +27,6 @@ interface Post {
   boardId?: number;
 }
 
-const dummyArtworks: ArtWork[] = [
-  {
-    id: 1,
-    title: "작품 제목 1",
-    author: "작가1",
-    artistProfileImg: "/images/avatar.png",
-    contents: "파스타를 주제로 한 일러스트입니다.",
-    price: 30000,
-    likes: 128,
-    createdAt: "2023.05.15",
-    imageSrc: "/images/파스타.jpg",
-  },
-  {
-    id: 2,
-    title: "풍경화",
-    author: "작가2",
-    artistProfileImg: "/images/avatar.png",
-    contents: "자연 풍경을 담은 평화로운 그림입니다.",
-    price: 40000,
-    likes: 80,
-    createdAt: "2023.04.12",
-    imageSrc: "/images/풍경.jpg",
-  },
-];
-
-const dummyPosts: Post[] = [
-  {
-    id: 1,
-    title: "지금부터 마카오 환타지아 클라이맥스 썸머...",
-    author: "판타지스트",
-    artistProfileImg: "/images/avatar.png",
-    contents: "여름 시즌 이벤트 소식입니다.",
-    createdAt: "2023.03.26.14:22",
-    thumbnail: "/images/post1.jpg",
-    category: "자유게시판",
-    boardId: 2,
-  },
-  {
-    id: 2,
-    title: "파스타 맛집 추천",
-    author: "맛집러버",
-    artistProfileImg: "/images/avatar.png",
-    contents: "정말 맛있는 파스타 가게 추천합니다!",
-    createdAt: "2023.04.01.10:00",
-    thumbnail: "/images/post2.jpg",
-    category: "자유게시판",
-    boardId: 2,
-  },
-  {
-    id: 3,
-    title: "홍보게시판 파스타 이벤트",
-    author: "홍보왕",
-    artistProfileImg: "/images/avatar.png",
-    contents: "홍보용 파스타 이벤트 진행합니다.",
-    createdAt: "2023.04.02.09:30",
-    thumbnail: "/images/post3.jpg",
-    category: "홍보게시판",
-    boardId: 3,
-  },
-];
-
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -96,25 +36,41 @@ const SearchPage = () => {
   const query = searchParam || stateParam || "";
   const lowerQuery = query.trim().toLowerCase();
 
-  const filteredArtworks =
-    lowerQuery === ""
-      ? []
-      : dummyArtworks.filter(
-          (art) =>
-            art.title.toLowerCase().includes(lowerQuery) ||
-            art.author.toLowerCase().includes(lowerQuery) ||
-            (art.contents?.toLowerCase().includes(lowerQuery) ?? false)
-        );
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [artworks, setArtworks] = useState<ArtWork[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredPosts =
-    lowerQuery === ""
-      ? []
-      : dummyPosts.filter(
-          (post) =>
-            post.title.toLowerCase().includes(lowerQuery) ||
-            post.author.toLowerCase().includes(lowerQuery) ||
-            (post.contents?.toLowerCase().includes(lowerQuery) ?? false)
-        );
+  useEffect(() => {
+    if (lowerQuery === "") {
+      setPosts([]);
+      setArtworks([]);
+      return;
+    }
+
+    setLoading(true);
+
+    fetch(
+      `http://localhost:8080/ourlog/post/list?keyword=${encodeURIComponent(
+        lowerQuery
+      )}&page=1`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        // 서버에서 posts와 artworks를 모두 내려준다고 가정
+        setPosts(data.posts || []);
+        setArtworks(data.artworks || []); // artworks가 없다면 빈 배열로 처리
+      })
+      .catch((error) => {
+        console.error("Failed to fetch data:", error);
+        setPosts([]);
+        setArtworks([]);
+      })
+      .finally(() => setLoading(false));
+  }, [lowerQuery]);
+
+  // 서버에서 이미 필터링된 상태라면 그대로 사용
+  const filteredPosts = posts;
+  const filteredArtworks = artworks;
 
   const uniqueAuthors = Array.from(
     new Set(filteredArtworks.map((art) => art.author))
@@ -125,6 +81,8 @@ const SearchPage = () => {
       <div className="section-title-search">
         <h2>"{query}"에 대한 검색 결과</h2>
       </div>
+
+      {loading && <p>로딩중...</p>}
 
       {query.trim() === "" ? (
         <p className="main-search">검색어를 입력해주세요.</p>
@@ -166,7 +124,7 @@ const SearchPage = () => {
             <h2>아트 ({filteredArtworks.length})</h2>
           </div>
 
-          {filteredArtworks.length > 0 && (
+          {filteredArtworks.length > 0 ? (
             <div className="popular-artworks">
               {filteredArtworks.map((art) => (
                 <div key={art.id} className="artwork-card">
@@ -184,6 +142,8 @@ const SearchPage = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <p>아트 작품이 없습니다.</p>
           )}
 
           <div style={{ marginBottom: "100px" }}>
@@ -191,7 +151,7 @@ const SearchPage = () => {
               <h2>커뮤니티 ({filteredPosts.length})</h2>
             </div>
 
-            {filteredPosts.length > 0 && (
+            {filteredPosts.length > 0 ? (
               <table>
                 <thead>
                   <tr>
@@ -206,6 +166,7 @@ const SearchPage = () => {
                     <tr
                       key={post.id}
                       onClick={() => navigate(`/post/${post.id}`)}
+                      style={{ cursor: "pointer" }}
                     >
                       <td>{index + 1}</td>
                       <td>{post.title}</td>
@@ -215,6 +176,8 @@ const SearchPage = () => {
                   ))}
                 </tbody>
               </table>
+            ) : (
+              <p>게시물이 없습니다.</p>
             )}
           </div>
         </>

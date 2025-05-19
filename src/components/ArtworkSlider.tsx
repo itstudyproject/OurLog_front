@@ -25,9 +25,6 @@ const ArtworkSlider: React.FC = () => {
         const res = await fetch(VIEWS_API_URL);
         const data = await res.json();
         const mapped = data.map((item: any) => ({
-          imageUrl: {
-            /*`http://localhost:8080/ourlog/images/${item.fileName`*/
-          },
           title: item.title,
           artist: item.userProfileDTO?.nickname || "unknown",
           price:
@@ -39,8 +36,6 @@ const ArtworkSlider: React.FC = () => {
         }));
 
         setArtworks(mapped);
-        console.log("artworks: " + artworks);
-        console.log("artworks: " + mapped.length);
 
         const initialIndexes: number[] = [];
         while (initialIndexes.length < 3 && mapped.length > 0) {
@@ -61,9 +56,6 @@ const ArtworkSlider: React.FC = () => {
         const data = await res.json();
 
         const mapped = data.map((item: any) => ({
-          imageUrl: {
-            /*`http://localhost:8080/ourlog/images/${item.fileName`*/
-          },
           title: item.title || "대표작 없음",
           artist: item.userProfileDTO?.nickname || "unknown",
           price: "",
@@ -127,32 +119,40 @@ const ArtworkSlider: React.FC = () => {
       <h2 className="slider-title">{title}</h2>
       <p className="slider-subtitle">{subtitle}</p>
       <div className="slider-wrapper">
-        {indexes.map((index) => {
-          const item = data[index];
-          if (!item) return null;
-          return (
-            <a
-              key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="artworkslider-card"
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="artworkslider-img"
-              />
-              <div className="artworkslider-overlay">
-                <div className="artworkslider-title">{item.title}</div>
-                <div className="artworkslider-artist">{item.artist}</div>
-                {item.price && (
-                  <div className="artworkslider-price">{item.price}</div>
-                )}
-              </div>
-            </a>
-          );
-        })}
+        {data.length === 0 ? (
+          <div className="artworkslider-empty">
+            {title === "인기 작품 추천"
+              ? "인기 작품이 없습니다."
+              : "주요 아티스트가 없습니다."}
+          </div>
+        ) : (
+          indexes.map((index) => {
+            const item = data[index];
+            if (!item) return null;
+            return (
+              <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="artworkslider-card"
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="artworkslider-img"
+                />
+                <div className="artworkslider-overlay">
+                  <div className="artworkslider-title">{item.title}</div>
+                  <div className="artworkslider-artist">{item.artist}</div>
+                  {item.price && (
+                    <div className="artworkslider-price">{item.price}</div>
+                  )}
+                </div>
+              </a>
+            );
+          })
+        )}
       </div>
     </>
   );

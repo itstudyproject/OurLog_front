@@ -68,7 +68,7 @@ const RankingPage: React.FC = () => {
         return {
           id: item.postId,
           title: item.title,
-          author: hasUser ? item.userProfileDTO.user.nickname : "unknown",
+          author: hasUser ? item.userProfileDTO.nickname : "unknown",
           avatar:
             hasUser && item.userProfileDTO.profileImage
               ? `/avatar/${item.userProfileDTO.thumbnailImagePath}` // ✅ 경로 수정

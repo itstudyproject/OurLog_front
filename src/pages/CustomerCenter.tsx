@@ -3,6 +3,7 @@ import type { Question, QuestionFormData } from "../types/Question";
 import { Search, X } from "lucide-react";
 import "../styles/CustomerCenter.css";
 import { useNavigate } from "react-router-dom";
+import { getAuthHeaders, getToken, hasToken, removeToken } from "../utils/auth";
 
 // 원본 FAQ 데이터
 const originalFaqs: Question[] = [
@@ -99,7 +100,7 @@ const CustomerCenter: React.FC = () => {
 
   // 사용자 권한 확인 함수 추가
   const checkAdminStatus = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       setIsAdmin(false);
       return;
@@ -110,10 +111,7 @@ const CustomerCenter: React.FC = () => {
         "http://localhost:8080/ourlog/user/check-admin",
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
           credentials: "include",
         }
       );
@@ -135,9 +133,9 @@ const CustomerCenter: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isAdmin === null) return; // 아직 확인 전이면 아무것도 안 함
+    if (isAdmin === null) return;
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
 
     if (isAdmin) {
@@ -152,7 +150,7 @@ const CustomerCenter: React.FC = () => {
 
   // 관리자용 전체 질문 목록 가져오기
   const fetchAllQuestions = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       console.error("토큰이 없습니다.");
       return;
@@ -163,10 +161,7 @@ const CustomerCenter: React.FC = () => {
         "http://localhost:8080/ourlog/question/questionList",
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
           credentials: "include",
         }
       );
@@ -186,7 +181,7 @@ const CustomerCenter: React.FC = () => {
   };
 
   const fetchMyQuestions = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       console.error("토큰이 없습니다.");
       return;
@@ -197,10 +192,7 @@ const CustomerCenter: React.FC = () => {
         "http://localhost:8080/ourlog/question/my-questions",
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
           credentials: "include",
         }
       );
@@ -210,8 +202,7 @@ const CustomerCenter: React.FC = () => {
         setInquiries(data);
       } else if (response.status === 401) {
         console.error("인증이 만료되었습니다.");
-        localStorage.removeItem("token"); // 토큰 제거
-        // 로그인 페이지로 리다이렉트 또는 다른 처리
+        removeToken(); // ✅ 유틸 함수 사용
       } else {
         console.error("문의 목록 조회 실패:", response.status);
       }
@@ -259,24 +250,17 @@ const CustomerCenter: React.FC = () => {
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
-
+    const token = getToken();
     if (!token) {
       navigate("/login");
       return;
     }
 
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-    console.log("token", token);
-
     if (editingInquiry) {
       // 수정
       await fetch("http://localhost:8080/ourlog/question/editingInquiry", {
         method: "PUT",
-        headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           questionId: editingInquiry.questionId,
           title: inquiryForm.title,
@@ -287,7 +271,7 @@ const CustomerCenter: React.FC = () => {
       // 등록
       await fetch("http://localhost:8080/ourlog/question/inquiry", {
         method: "POST",
-        headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           title: inquiryForm.title,
           content: inquiryForm.content,
@@ -310,25 +294,18 @@ const CustomerCenter: React.FC = () => {
   const handleDeleteConfirm = async () => {
     if (!selectedQuestionId) return;
 
-    const token = localStorage.getItem("token");
-
+    const token = getToken();
     if (!token) {
       alert("로그인이 필요합니다.");
       return;
     }
-
-    console.log("삭제 시도", selectedQuestionId);
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
 
     try {
       const res = await fetch(
         `http://localhost:8080/ourlog/question/deleteQuestion/${selectedQuestionId}`,
         {
           method: "DELETE",
-          headers,
+          headers: getAuthHeaders(),
         }
       );
 
@@ -364,7 +341,7 @@ const CustomerCenter: React.FC = () => {
       setShowAlertModal(true);
       return;
     }
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       setAlertMessage("토큰이 없습니다.");
       setShowAlertModal(true);
@@ -375,10 +352,7 @@ const CustomerCenter: React.FC = () => {
         `http://localhost:8080/ourlog/question-answer/${questionId}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
           credentials: "include",
           body: JSON.stringify({
             contents: answerContentValue,
@@ -418,7 +392,7 @@ const CustomerCenter: React.FC = () => {
       setShowAlertModal(true);
       return;
     }
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       setAlertMessage("토큰이 없습니다.");
       setShowAlertModal(true);
@@ -429,10 +403,7 @@ const CustomerCenter: React.FC = () => {
         `http://localhost:8080/ourlog/question-answer/${editingAnswerId}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ contents: editingAnswerContent }),
         }
       );
@@ -452,30 +423,43 @@ const CustomerCenter: React.FC = () => {
     }
   };
 
-  const handleDeleteAnswer = async (question) => {
-    if (!window.confirm("정말 답변을 삭제하시겠습니까?")) return;
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  const handleDeleteAnswer = (question) => {
+    setDeleteTargetAnswer(question);
+    setShowDeleteAnswerModal(true);
+  };
 
+  const [showDeleteAnswerModal, setShowDeleteAnswerModal] = useState(false);
+  const [deleteTargetAnswer, setDeleteTargetAnswer] = useState<any>(null);
+
+  const handleDeleteAnswerConfirm = async () => {
+    if (!deleteTargetAnswer) return;
+    if (!hasToken()) {
+      setAlertMessage("로그인이 필요합니다.");
+      setShowAlertModal(true);
+      return;
+    }
     try {
       const response = await fetch(
-        `http://localhost:8080/ourlog/question-answer/${question.answerDTO.answerId}`,
+        `http://localhost:8080/ourlog/question-answer/${deleteTargetAnswer.answerDTO.answerId}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: getAuthHeaders(),
         }
       );
       if (response.ok) {
-        alert("답변이 삭제되었습니다.");
+        setShowDeleteAnswerModal(false);
+        setAlertMessage("답변이 삭제되었습니다.");
+        setShowAlertModal(true);
         fetchAllQuestions();
       } else {
-        alert("삭제 실패");
+        setShowDeleteAnswerModal(false);
+        setAlertMessage("삭제 실패");
+        setShowAlertModal(true);
       }
     } catch (e) {
-      alert("삭제 중 오류 발생");
+      setShowDeleteAnswerModal(false);
+      setAlertMessage("삭제 중 오류 발생");
+      setShowAlertModal(true);
     }
   };
 
@@ -610,7 +594,10 @@ const CustomerCenter: React.FC = () => {
                               </button>
                               <button
                                 className="cc-action-button delete"
-                                onClick={() => handleDeleteAnswer(question)}
+                                onClick={() => {
+                                  setDeleteTargetAnswer(question);
+                                  setShowDeleteAnswerModal(true);
+                                }}
                               >
                                 삭제
                               </button>
@@ -699,103 +686,121 @@ const CustomerCenter: React.FC = () => {
                 </div>
               </section>
 
-              <section id="inquiry">
-                <h2 className="cc-section-title">1:1 문의하기</h2>
-                <p className="cc-info-text">
-                  서비스 이용 중 불편하신 점이나 문의사항을 남겨주시면 신속하게
-                  답변 드리도록 하겠습니다.
-                </p>
-                <p className="cc-info-text">
-                  영업일 기준(주말·공휴일 제외) 3일 이내에 답변드리겠습니다. 단,
-                  문의가 집중되는 경우 답변이 지연될 수 있는 점 너그러이 양해
-                  부탁드립니다.
-                </p>
-                <div className="cc-warning-box">
-                  산업안전보건법에 따라 폭언, 욕설, 성희롱, 반말, 비하, 반복적인
-                  요구 등에는 회신 없이 상담을 즉시 종료하며, 이후 다른 문의에도
-                  회신하지 않습니다. 고객응대 근로자를 보호하기 위해 이같은
-                  이용자의 서비스 이용을 제한하고, 업무방해, 모욕죄 등으로
-                  민형사상 조치를 취할 수 있음을 알려드립니다.
-                </div>
-                <button
-                  className="cc-button"
-                  onClick={() => setShowInquiryModal(true)}
-                >
-                  문의하기
-                </button>
-              </section>
+              {!searchTerm.trim() && (
+                <>
+                  <section id="inquiry">
+                    <h2 className="cc-section-title">1:1 문의하기</h2>
+                    <p className="cc-info-text">
+                      서비스 이용 중 불편하신 점이나 문의사항을 남겨주시면
+                      신속하게 답변 드리도록 하겠습니다.
+                    </p>
+                    <p className="cc-info-text">
+                      영업일 기준(주말·공휴일 제외) 3일 이내에 답변드리겠습니다.
+                      단, 문의가 집중되는 경우 답변이 지연될 수 있는 점 너그러이
+                      양해 부탁드립니다.
+                    </p>
+                    <div className="cc-warning-box">
+                      산업안전보건법에 따라 폭언, 욕설, 성희롱, 반말, 비하,
+                      반복적인 요구 등에는 회신 없이 상담을 즉시 종료하며, 이후
+                      다른 문의에도 회신하지 않습니다. 고객응대 근로자를
+                      보호하기 위해 이같은 이용자의 서비스 이용을 제한하고,
+                      업무방해, 모욕죄 등으로 민형사상 조치를 취할 수 있음을
+                      알려드립니다.
+                    </div>
+                    <button
+                      className="cc-button"
+                      onClick={() => setShowInquiryModal(true)}
+                    >
+                      문의하기
+                    </button>
+                  </section>
 
-              <section id="questionlist">
-                <h2 className="cc-section-title">1:1 문의내역</h2>
-                <table className="cc-table">
-                  <thead>
-                    <tr>
-                      <th className="cc-th">번호</th>
-                      <th className="cc-th">제목</th>
-                      <th className="cc-th">작성일</th>
-                      <th className="cc-th">상태</th>
-                      <th className="cc-th">관리</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inquiries.map((inquiry) => (
-                      <tr key={inquiry.questionId}>
-                        <td className="cc-td">{inquiry.questionId}</td>
-                        <td
-                          className="cc-td"
-                          onClick={() => {
-                            console.log("문의글 클릭:", inquiry);
-                            setSelectedInquiry(inquiry);
-                            setShowDetailModal(true);
-                          }}
-                          style={{
-                            cursor: "pointer",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {inquiry.title}
-                        </td>
-                        <td className="cc-td">
-                          {inquiry.regDate ? inquiry.regDate.split("T")[0] : ""}
-                        </td>
-                        <td className="cc-td">
-                          <span
-                            className={`cc-status-badge ${
-                              inquiry.answerDTO ? "completed" : "waiting"
-                            }`}
-                          >
-                            {inquiry.answerDTO ? "답변 완료" : "답변 대기"}
-                          </span>
-                        </td>
-                        <td className="cc-td">
-                          <div className="cc-button-group">
-                            <button
-                              className="cc-action-button"
-                              onClick={() =>
-                                inquiry.answerDTO
-                                  ? handleRestrictedAction("edit")
-                                  : handleEditInquiry(inquiry)
-                              }
-                            >
-                              수정
-                            </button>
-                            <button
-                              className="cc-action-button delete"
-                              onClick={() =>
-                                inquiry.answerDTO
-                                  ? handleRestrictedAction("delete")
-                                  : handleDeleteInquiry(inquiry.questionId)
-                              }
-                            >
-                              삭제
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </section>
+                  <section id="questionlist">
+                    <h2 className="cc-section-title">1:1 문의내역</h2>
+                    <table className="cc-table">
+                      <thead>
+                        <tr>
+                          <th className="cc-th">번호</th>
+                          <th className="cc-th">제목</th>
+                          <th className="cc-th">작성일</th>
+                          <th className="cc-th">상태</th>
+                          <th className="cc-th">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inquiries.length > 0 ? (
+                          inquiries.map((inquiry, idx) => (
+                            <tr key={inquiry.questionId}>
+                              <td className="cc-td">{idx + 1}</td>
+                              <td
+                                className="cc-td"
+                                onClick={() => {
+                                  setSelectedInquiry(inquiry);
+                                  setShowDetailModal(true);
+                                }}
+                                style={{
+                                  cursor: "pointer",
+                                  textDecoration: "underline",
+                                }}
+                              >
+                                {inquiry.title}
+                              </td>
+                              <td className="cc-td">
+                                {inquiry.regDate
+                                  ? inquiry.regDate.split("T")[0]
+                                  : ""}
+                              </td>
+                              <td className="cc-td">
+                                <span
+                                  className={`cc-status-badge ${
+                                    inquiry.answerDTO ? "completed" : "waiting"
+                                  }`}
+                                >
+                                  {inquiry.answerDTO
+                                    ? "답변 완료"
+                                    : "답변 대기"}
+                                </span>
+                              </td>
+                              <td className="cc-td">
+                                <div className="cc-button-group">
+                                  <button
+                                    className="cc-action-button"
+                                    onClick={() =>
+                                      inquiry.answerDTO
+                                        ? handleRestrictedAction("edit")
+                                        : handleEditInquiry(inquiry)
+                                    }
+                                  >
+                                    수정
+                                  </button>
+                                  <button
+                                    className="cc-action-button delete"
+                                    onClick={() =>
+                                      inquiry.answerDTO
+                                        ? handleRestrictedAction("delete")
+                                        : handleDeleteInquiry(
+                                            inquiry.questionId
+                                          )
+                                    }
+                                  >
+                                    삭제
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td className="cc-td cc-empty-row" colSpan={5}>
+                              문의 내역이 없습니다.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </section>
+                </>
+              )}
             </>
           )}
         </div>
@@ -862,7 +867,7 @@ const CustomerCenter: React.FC = () => {
             <p>문의를 삭제하시겠습니까?</p>
             <div className="cc-modal-button-group">
               <button
-                className="cc-modal-button cancle"
+                className="cc-modal-button cancel"
                 onClick={() => setShowDeleteModal(false)}
               >
                 취소
@@ -987,6 +992,37 @@ const CustomerCenter: React.FC = () => {
                 </div>
               )}
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteAnswerModal && (
+        <div className="cc-overlay">
+          <div className="cc-modal">
+            <div className="cc-modal-header">
+              <h2>답변 삭제 확인</h2>
+              <button
+                className="cc-close-button"
+                onClick={() => setShowDeleteAnswerModal(false)}
+              >
+                <X />
+              </button>
+            </div>
+            <p>정말 답변을 삭제하시겠습니까?</p>
+            <div className="cc-modal-button-group">
+              <button
+                className="cc-modal-button cancel"
+                onClick={() => setShowDeleteAnswerModal(false)}
+              >
+                취소
+              </button>
+              <button
+                className="cc-modal-button"
+                onClick={handleDeleteAnswerConfirm}
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}
