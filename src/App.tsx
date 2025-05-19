@@ -26,12 +26,9 @@ import SalePage from "./pages/SalePage/SalePage";
 import BookmarkPage from "./pages/BookmarkPage";
 import AccountEditPage from "./pages/AccountEdit";
 import ProfileEditPage from "./pages/ProfileEdit";
-<<<<<<< HEAD
-import ChatPage from "./pages/ChatPage";
-=======
 import AccountEdit from "./pages/AccountEdit";
 import AccountDelete from "./pages/AccountDelete";
->>>>>>> ccbf3d0171f06c5f9cfa87ad874a2e810da2a0c6
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -61,7 +58,6 @@ function App() {
 
         {/*<Route path="worker" element={<WorkerPage />} />*/}
 
-
         <Route path="/chat" element={<ChatPage />} />
         <Route path="post">
           <Route index element={<PostList />} />
@@ -79,28 +75,13 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
- 
+
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />
       </Route>
 
       <Route path="/register" element={<RegisterPage />} />
-<<<<<<< HEAD
-      <Route
-        path="/profile-edit"
-        element={
-          <ProfileEditPage
-            profile={null}
-            onBack={() => window.history.back()}
-            onSave={async () => { }}
-          />
-        }
-      />
-
-      <Route path="/delete-account" element={<DeleteAccountPage />} />
-=======
->>>>>>> ccbf3d0171f06c5f9cfa87ad874a2e810da2a0c6
     </Routes>
   );
 }

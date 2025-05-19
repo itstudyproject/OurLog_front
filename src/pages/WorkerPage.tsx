@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import "../styles/WorkerPage.css";
-import {
-  fetchProfile,
-  updateProfile,
-  UserProfileDTO,
-} from "../hooks/profileApi";
+import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
 interface Post {
   id: number;
@@ -18,22 +14,12 @@ interface LikeStatus {
   count: number;
 }
 
-interface UserProfile {
-  userId: number;
-  nickname: string;
-  thumbnailImagePath: string;
-  followCnt: number;
-  followingCnt: number;
-}
-
 const baseUrl = "http://localhost:8080/ourlog";
 
 const WorkerPage: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { userId: paramUserId } = useParams();
-  const userId = Number(paramUserId); // 작가 ID
-  const loggedInUserId = Number(localStorage.getItem("userId")); // 로그인한 사용자 ID (localStorage에 저장했다고 가정)
+  const userId = Number(paramUserId);
+  const loggedInUserId = Number(localStorage.getItem("userId"));
 
   const [cardData, setCardData] = useState<Post[]>([]);
   const [likes, setLikes] = useState<LikeStatus[]>([]);
@@ -56,15 +42,15 @@ const WorkerPage: React.FC = () => {
 
     const token = localStorage.getItem("token");
 
+    // 프로필 정보 불러오기
     fetchProfile(userId)
       .then((data) => {
-        console.log("✅ 프로필 데이터:", data); // 콘솔 확인
-        setProfile(data); // 상태에 저장
-        setFollowCnt(data.followCnt); // followCnt 반영
-        setFollowingCnt(data.followingCnt); // followingCnt 반영
+        setProfile(data);
+        // TODO: 서버에서 팔로우 여부도 받아오면 setIsFollowing 여기서 처리 가능
       })
       .catch((err) => console.error(err));
 
+    // 게시글과 좋아요 상태 불러오기
     const fetchPostsAndLikes = async () => {
       try {
         const res = await fetch(`${baseUrl}/post?userId=${userId}`, {
@@ -142,20 +128,24 @@ const WorkerPage: React.FC = () => {
       if (!res.ok)
         throw new Error(`${isFollowing ? "언팔로우" : "팔로우"} 실패`);
 
-      const responseData = await res.json(); // 서버로부터 반환된 데이터를 받아옴
-      console.log(responseData); // 응답 데이터를 콘솔에 출력하여 확인
+      const responseData = await res.json();
+      // 서버에서 팔로우 수가 있으면 반영
+      if (responseData.followCnt !== undefined)
+        setFollowCnt(responseData.followCnt);
+      if (responseData.followingCnt !== undefined)
+        setFollowingCnt(responseData.followingCnt);
 
-      const newFollowCount = responseData.followCount || followCnt; // 서버에서 변경된 팔로우 수를 사용, 없으면 기존 값을 유지
-      setIsFollowing(!isFollowing); // 팔로우 상태 변경
-      setFollowCnt(newFollowCount); // 팔로우 수 업데이트
+      setIsFollowing(!isFollowing);
     } catch (err) {
       console.error("팔로우 토글 실패:", err);
     }
   };
+
   const handleOpenChat = () => {
     window.open("/chat", "_blank", "noopener,noreferrer");
   };
 
+  const navigate = useNavigate();
   const handleCardClick = (id: number) => {
     navigate(`/Art/${id}`);
   };
@@ -213,8 +203,7 @@ const WorkerPage: React.FC = () => {
           <div className="worker-buttons">
             {loggedInUserId !== userId && (
               <button onClick={handleFollowToggle} className="btn">
-                {isFollowing ? "팔로잉" : "팔로우"}{" "}
-                {/* 팔로우 상태에 따라 버튼 텍스트 변경 */}
+                {isFollowing ? "팔로잉" : "팔로우"}
               </button>
             )}
             <button className="btn" onClick={handleOpenChat}>
