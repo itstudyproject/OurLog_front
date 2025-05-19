@@ -12,14 +12,33 @@ import "../styles/WorkerPage.css";
 import "../styles/BidHistory.css";
 import "../styles/PurchaseBidPage.css";
 
-import { fetchProfile, updateProfile, UserProfileDTO } from "../hooks/profileApi";
+import {
+  fetchProfile,
+  updateProfile,
+  UserProfileDTO,
+} from "../hooks/profileApi";
 import AccountEdit from "./AccountEdit";
 import ProfileEdit from "./ProfileEdit";
 
 const recentPosts = [
-  { id: 1, image: "/images/mypage/Realization.jpg", title: "Realization", price: "₩1,000,000" },
-  { id: 2, image: "/images/mypage/Andrew Loomis.jpg", title: "Andrew Loomis", price: "₩800,000" },
-  { id: 3, image: "/images/mypage/White Roses.jpg", title: "White Roses", price: "₩730,000" },
+  {
+    id: 1,
+    image: "/images/mypage/Realization.jpg",
+    title: "Realization",
+    price: "₩1,000,000",
+  },
+  {
+    id: 2,
+    image: "/images/mypage/Andrew Loomis.jpg",
+    title: "Andrew Loomis",
+    price: "₩800,000",
+  },
+  {
+    id: 3,
+    image: "/images/mypage/White Roses.jpg",
+    title: "White Roses",
+    price: "₩730,000",
+  },
 ];
 
 const MyPage: React.FC = () => {
@@ -43,11 +62,11 @@ const MyPage: React.FC = () => {
   // 메뉴 선택 상태 관리
   const getCurrentTab = () => {
     const path = location.pathname;
-    if (path === '/mypage') return 'recent';
-    if (path.includes('/purchase-bid')) return 'purchase-bid';
-    if (path.includes('/sale')) return 'sale';
-    if (path.includes('/bookmark')) return 'bookmark';
-    return 'recent';
+    if (path === "/mypage") return "recent";
+    if (path.includes("/purchase-bid")) return "purchase-bid";
+    if (path.includes("/sale")) return "sale";
+    if (path.includes("/bookmark")) return "bookmark";
+    return "recent";
   };
 
   return (
@@ -55,9 +74,12 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title">
         <h2>마이페이지</h2>
       </div>
-      
+
       <div className="bid-item" style={{ padding: "20px" }}>
-        <div className="bid-artwork" style={{ width: "100px", height: "100px" }}>
+        <div
+          className="bid-artwork"
+          style={{ width: "100px", height: "100px" }}
+        >
           <img
             src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
@@ -70,21 +92,21 @@ const MyPage: React.FC = () => {
             <p>팔로잉: {profile?.followingCnt ?? 0}</p>
           </div>
           <div className="bid-actions" style={{ marginTop: "15px" }}>
-            <button 
-              className="detail-button" 
+            <button
+              className="detail-button"
               onClick={() => navigate("/mypage/edit")}
               style={{ marginRight: "10px" }}
             >
               프로필수정
             </button>
-            <button 
-              className="detail-button" 
+            <button
+              className="detail-button"
               onClick={() => navigate("/mypage/account/edit")}
               style={{ marginRight: "10px" }}
             >
               회원정보수정
             </button>
-            <button 
+            <button
               className="detail-button"
               onClick={() => navigate("/mypage/account/delete")}
               style={{ backgroundColor: "#e74c3c" }}
@@ -98,28 +120,32 @@ const MyPage: React.FC = () => {
       <div className="bid-history-title" style={{ marginTop: "30px" }}>
         <h2>메뉴</h2>
       </div>
-      
+
       <div className="sub-tab-nav">
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`} 
+        <button
+          className={`sub-tab ${getCurrentTab() === "recent" ? "active" : ""}`}
           onClick={() => navigate("/mypage")}
         >
           최근 본 게시물
         </button>
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
+        <button
+          className={`sub-tab ${
+            getCurrentTab() === "purchase-bid" ? "active" : ""
+          }`}
           onClick={() => navigate("/mypage/purchase-bid")}
         >
           구매/입찰목록
         </button>
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
+        <button
+          className={`sub-tab ${getCurrentTab() === "sale" ? "active" : ""}`}
           onClick={() => navigate("/mypage/sale")}
         >
           판매목록/현황
         </button>
-        <button 
-          className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
+        <button
+          className={`sub-tab ${
+            getCurrentTab() === "bookmark" ? "active" : ""
+          }`}
           onClick={() => navigate("/mypage/bookmark")}
         >
           북마크
