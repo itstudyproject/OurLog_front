@@ -140,12 +140,12 @@ const MyPage: React.FC = () => {
           className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`}
           onClick={() => navigate("/mypage")}
         >
-          최근 본 게시물
+          {/* 최근 본 게시물
         </button>
         <button
           className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/purchase-bid")}
-        >
+        > */}
           구매/입찰목록
         </button>
         <button
@@ -166,7 +166,7 @@ const MyPage: React.FC = () => {
 
 <Routes>
   {/* 최근 본 게시물 (기본) */}
-  <Route
+  {/* <Route
     index
     element={
       <RecentPostsCarousel
@@ -178,7 +178,7 @@ const MyPage: React.FC = () => {
         }))}
       />
     }
-  />
+  /> */}
 
   {/* 프로필 수정 */}
   <Route
