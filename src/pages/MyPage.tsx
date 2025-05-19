@@ -135,17 +135,17 @@ const MyPage: React.FC = () => {
       </div>
 
       <div className="sub-tab-nav">
-        <button
+        {/* <button
 
           className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`}
           onClick={() => navigate("/mypage")}
         >
-          {/* 최근 본 게시물
-        </button>
+          최근 본 게시물
+        </button> */}
         <button
           className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
           onClick={() => navigate("/mypage/purchase-bid")}
-        > */}
+        >
           구매/입찰목록
         </button>
         <button
