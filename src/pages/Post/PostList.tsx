@@ -49,54 +49,54 @@ const PostList = () => {
   const fetchPosts = () => {
     setLoading(true);
     const pageNumber = Math.max(1, currentPage);
-    
+
     const params = new URLSearchParams({
       page: String(pageNumber),
       size: String(postsPerPage),
       boardNo: String(selectedBoardId),
       type: "t",
-      keyword: searchTerm
+      keyword: searchTerm,
     });
-    
+
     fetch(`http://localhost:8080/ourlog/post/list?${params.toString()}`, {
-      method: 'GET',
-      headers: getAuthHeaders()
+      method: "GET",
+      headers: getAuthHeaders(),
     })
-    .then(async (res) => {
-      if (res.status === 403) {
-        removeToken();
-        navigate('/login');
-        throw new Error("인증이 필요합니다.");
-      }
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("서버 에러 응답:", text);
-        throw new Error(text || "서버 오류");
-      }
-      return res.json();
-    })
-    .then((data) => {
-      if (!data.pageResultDTO) {
-        throw new Error("잘못된 응답 형식");
-      }
-      const { pageResultDTO } = data;
-      const mappedPosts = (pageResultDTO.dtoList || []).map((item: any) => ({
-        id: item.postId || item.id,
-        title: item.title,
-        author: item.userName || item.author || item.writer || '',
-        createdAt: item.regDate || item.createdAt || '',
-        thumbnail: item.fileName || item.thumbnail || '',
-        boardId: item.boardNo || item.boardId,
-      }));
-      setPosts(mappedPosts);
-      setTotalPages(pageResultDTO.totalPage || 1);
-    })
-    .catch((err) => {
-      console.error("게시글 불러오기 실패:", err);
-      setPosts([]);
-      setTotalPages(1);
-    })
-    .finally(() => setLoading(false));
+      .then(async (res) => {
+        if (res.status === 403) {
+          removeToken();
+          navigate("/login");
+          throw new Error("인증이 필요합니다.");
+        }
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("서버 에러 응답:", text);
+          throw new Error(text || "서버 오류");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!data.pageResultDTO) {
+          throw new Error("잘못된 응답 형식");
+        }
+        const { pageResultDTO } = data;
+        const mappedPosts = (pageResultDTO.dtoList || []).map((item: any) => ({
+          id: item.postId || item.id,
+          title: item.title,
+          author: item.userName || item.author || item.writer || "",
+          createdAt: item.regDate || item.createdAt || "",
+          thumbnail: item.fileName || item.thumbnail || "",
+          boardId: item.boardNo || item.boardId,
+        }));
+        setPosts(mappedPosts);
+        setTotalPages(pageResultDTO.totalPage || 1);
+      })
+      .catch((err) => {
+        console.error("게시글 불러오기 실패:", err);
+        setPosts([]);
+        setTotalPages(1);
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -240,7 +240,9 @@ const PostList = () => {
         <tbody>
           {posts.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ textAlign: "center" }}>게시글이 없습니다.</td>
+              <td colSpan={5} style={{ textAlign: "center" }}>
+                게시글이 없습니다.
+              </td>
             </tr>
           ) : (
             posts.map((post) => (

@@ -112,6 +112,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  color: #fff;
 }
 
 .cc-question-box:hover {
@@ -141,12 +142,12 @@
   padding: 16px 24px;
   max-height: 500px;
   opacity: 1;
+  color: #fff;
 }
 
 .cc-info-text {
   margin-top: 16px;
-  font-size: 15px;
-  color: #ccc;
+  color: #fff;
   line-height: 1.6;
   white-space: pre-line;
 }
@@ -157,7 +158,7 @@
   border-radius: 8px;
   padding: 16px;
   margin-top: 16px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   background-color: rgba(255, 107, 107, 0.1);
 }
@@ -200,6 +201,13 @@
   color: #ffffff;
   text-align: center;
   vertical-align: middle;
+}
+
+.cc-empty-row {
+  text-align: center;
+  padding: 1rem;
+  color: #ccc;
+  font-style: italic;
 }
 
 .cc-status-badge {
@@ -252,7 +260,7 @@
 }
 
 .cc-action-button.cancel {
-  background-color: #ffdab9;
+  background-color: #fac67a;
   color: #fff;
 }
 .cc-action-button.cancel:hover {
@@ -264,7 +272,7 @@
 }
 
 .cc-action-button.delete {
-  background-color: #ed8d2d;
+  background-color: #f67e82;
 }
 
 .cc-action-button.delete:hover {
@@ -355,6 +363,8 @@
   font-size: 16px;
 }
 
+.cc-search-input:hover,
+.cc-search-input:focus,
 .cc-form-group input:hover,
 .cc-form-group input:focus,
 .cc-form-group textarea:hover,
@@ -417,11 +427,11 @@
 }
 
 .cc-modal-button.cancel {
-  background-color: #ffdab9;
+  background-color: #584f4f;
 }
 
 .cc-modal-button.cancel:hover {
-  background-color: #ff8c00;
+  background-color: #474242;
 }
 
 .cc-no-results {

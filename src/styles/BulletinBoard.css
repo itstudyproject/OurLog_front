@@ -87,6 +87,10 @@
   color: #9ca3af;
 }
 
+.no-post {
+  color: #777;
+}
+
 @media (max-width: 1024px) {
   .category-container {
     grid-template-columns: none;
