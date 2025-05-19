@@ -7,7 +7,6 @@ import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
 import RecentPostsCarousel from "./Post/RecentPostsCarousel";
-import DeleteAccountPage from "./DeleteAccountPage";
 import "../styles/WorkerPage.css";
 import "../styles/BidHistory.css";
 import "../styles/PurchaseBidPage.css";
@@ -15,6 +14,7 @@ import "../styles/PurchaseBidPage.css";
 import { fetchProfile, updateProfile, UserProfileDTO } from "../hooks/profileApi";
 import AccountEdit from "./AccountEdit";
 import ProfileEdit from "./ProfileEdit";
+import AccountDelete from "./AccountDelete";
 
 const recentPosts = [
   { id: 1, image: "/images/mypage/Realization.jpg", title: "Realization", price: "₩1,000,000" },
@@ -40,6 +40,8 @@ const MyPage: React.FC = () => {
       .catch((err) => console.error(err));
   }, [userId]);
 
+
+
   // 메뉴 선택 상태 관리
   const getCurrentTab = () => {
     const path = location.pathname;
@@ -49,6 +51,14 @@ const MyPage: React.FC = () => {
     if (path.includes('/bookmark')) return 'bookmark';
     return 'recent';
   };
+
+  // 편집 관련 페이지에서는 메뉴 숨김
+  const hideMenu = [
+    "/mypage/edit",
+    "/mypage/account/edit",
+    "/mypage/account/delete",
+   ].some(path => location.pathname.startsWith(path)); 
+
 
   return (
     <div className="bid-history-container">
@@ -95,6 +105,9 @@ const MyPage: React.FC = () => {
         </div>
       </div>
 
+      
+       {!hideMenu && (
+        <>
       <div className="bid-history-title" style={{ marginTop: "30px" }}>
         <h2>메뉴</h2>
       </div>
@@ -125,71 +138,86 @@ const MyPage: React.FC = () => {
           북마크
         </button>
       </div>
+      </>
+       )}
 
-      <Routes>
-        <Route
-          index
-          element={
-            <RecentPostsCarousel
-              posts={recentPosts.map((p) => ({
-                id: p.id,
-                title: p.title,
-                price: Number(p.price.replace(/[^0-9]/g, "")),
-                thumbnailUrl: p.image,
-              }))}
-            />
-          }
-        />
+<Routes>
+  {/* 최근 본 게시물 (기본) */}
+  <Route
+    index
+    element={
+      <RecentPostsCarousel
+        posts={recentPosts.map(p => ({
+          id: p.id,
+          title: p.title,
+          price: Number(p.price.replace(/[^0-9]/g, "")),
+          thumbnailUrl: p.image,
+        }))}
+      />
+    }
+  />
 
-        <Route
-          path="edit"
-          element={
-            <ProfileEdit
-              profile={profile}
-              onBack={() => navigate(-1)}
-              onSave={async (updated) => {
-                if (!userId) return;
-                const saved = await updateProfile(userId, updated);
-                setProfile(saved);
-                navigate(-1);
-              }}
-            />
+  {/* 프로필 수정 */}
+  <Route
+    path="edit"
+    element={
+      <ProfileEdit
+        profile={profile}
+        onBack={() => navigate(-1)}
+        onSave={async updated => {
+          if (!userId) return;
+          try {
+            const saved = await updateProfile(userId, updated);
+            setProfile(saved);
+            navigate(-1);
+          } catch (err: any) {
+            const msg = err instanceof Error ? err.message : String(err);
+            alert("저장에 실패했습니다: " + msg);
           }
-        />
+        }}
+      />
+    }
+  />
 
-<Route
-  path="edit"
-  element={
-    <ProfileEdit
-      profile={profile}
-      onBack={() => navigate(-1)}
-      onSave={async (updated) => {
-        if (!userId) return;
-        // 🔥 여기가 실제로 백엔드에 PUT 요청을 보내는 부분
-        const saved = await updateProfile(userId, updated);
-        setProfile(saved);
-        navigate(-1);
-      }}
-    />
-  }
-/>        <Route path="account/delete" element={<DeleteAccountPage />} />
-        <Route
-          path="purchase-bid"
-          element={
-            userId
-              ? <PurchaseBidPage userId={userId} />
-              : <p>로그인이 필요합니다.</p>
-          }
-        />
-        <Route path="sale"
-          element={
-            userId
-              ? <SalePage userId={userId} />
-              : <p>로그인이 필요합니다.</p>
-          }
-        />
-        <Route path="bookmark" element={<BookmarkPage />} />
-      </Routes>
+  {/* 회원정보 수정 */}
+  <Route
+    path="account/edit"
+    element={<AccountEdit />}
+  />
+
+  {/* 회원탈퇴 */}
+  <Route
+    path="account/delete"
+    element={<AccountDelete />}
+  />
+
+  {/* 구매/입찰목록 */}
+  <Route
+    path="purchase-bid"
+    element={
+      userId
+        ? <PurchaseBidPage userId={userId} />
+        : <p>로그인이 필요합니다.</p>
+    }
+  />
+
+  {/* 판매목록/현황 */}
+  <Route
+    path="sale"
+    element={
+      userId
+        ? <SalePage userId={userId} />
+        : <p>로그인이 필요합니다.</p>
+    }
+  />
+
+  {/* 북마크 */}
+  <Route
+    path="bookmark"
+    element={<BookmarkPage />}
+  />
+</Routes>
+
     </div>
   );
 };

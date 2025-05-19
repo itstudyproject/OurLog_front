@@ -10,6 +10,37 @@ export interface UserRegisterDTO {
   from_social: boolean;
 }
 
+export interface UserDTO {
+  userId:   number;
+  email:    string;
+  name:     string;
+  mobile?:  string;
+  // password는 보통 백엔드에서만 쓰이지만 필요하면 추가
+}
+
+// updates: { password?: string; mobile?: string; }
+export async function updateUserInfo(
+  userId: number,
+  updates: Partial<Pick<UserDTO, "mobile"> & { password?: string }>
+): Promise<UserDTO> {
+  const res = await fetch(
+    `http://localhost:8080/ourlog/profile/accountEdit/${userId}`,  // 컨트롤러 매핑에 맞춘 경로
+    {
+      method: "PATCH",
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updates),
+    }
+  );
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error("회원정보 수정 실패: " + text);
+  }
+  return res.json();
+}
+
 // 이메일 중복 검사
 export const checkEmailExists = async (email: string): Promise<boolean> => {
   try {

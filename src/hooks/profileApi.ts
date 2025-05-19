@@ -27,12 +27,12 @@ export const updateProfile = async (
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
   const res = await fetch(
-    `http://localhost:8080/ourlog/profile/edit/${userId}`,
+    `http://localhost:8080/ourlog/profile/profileEdit/${userId}`,
     {
-      method: "PUT",
+      method: "PATCH",
       headers: {
-        "Content-Type": "application/json",  
-        // ...getAuthHeaders(),                  
+        ...getAuthHeaders(),
+        "Content-Type": "application/json",                    
       },
       body: JSON.stringify(profile),         
     }
@@ -64,3 +64,36 @@ export const createProfile = async (
   if (!res.ok) throw new Error("프로필 생성 실패");
   return res.json();
 };
+
+///////////
+export async function uploadProfileImage(
+  userId: number,
+  file: File
+): Promise<string> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("로그인이 필요합니다.");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(
+    `http://localhost:8080/ourlog/profile/upload-image/${userId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // Content-Type 는 FormData 쓰면 자동 설정됩니다
+      },
+      body: formData,
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error("이미지 업로드 실패: " + text);
+  }
+
+  const json = (await res.json()) as { imagePath: string };
+  return json.imagePath;
+}
+
