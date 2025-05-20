@@ -12,6 +12,7 @@ export interface UserProfileDTO {
   name?: string;
   followCnt?: number;
   followingCnt?: number;
+  isFollowing?: boolean; // ✅ 이 줄이 있어야 함
 }
 
 export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
@@ -30,15 +31,14 @@ export const updateProfile = async (
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
   const res = await fetch(
-
     `http://localhost:8080/ourlog/profile/profileEdit/${userId}`,
     {
       method: "PATCH",
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",                    
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(profile),         
+      body: JSON.stringify(profile),
     }
   );
 
@@ -46,7 +46,6 @@ export const updateProfile = async (
     const text = await res.text();
     throw new Error("프로필 수정 실패: " + text);
   }
-
 
   return res.json();
 };
@@ -98,4 +97,3 @@ export async function uploadProfileImage(
   const json = (await res.json()) as { imagePath: string };
   return json.imagePath;
 }
-
