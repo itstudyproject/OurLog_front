@@ -60,32 +60,37 @@ const ArtList = () => {
 
         const { pageResultDTO } = data;
         const mappedArtworks: PostDTO[] = (pageResultDTO.dtoList || []).map((item: any) => ({
-          post_id: item.postId || item.id,
+          postId: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
           content: item.content || '',
-          author: {
-            id: item.userId || 0,
-            name: item.userName || item.author || item.writer || '',
-            profileImage: item.userProfileImage || '/images/default-avatar.png',
-            isFollowing: false
-          },
-          trade: item.trade ? {
+          nickname: item.nickname || item.userName || item.author || item.writer || '',
+          fileName: item.fileName,
+          views: item.views || item.viewCount || 0,
+          tag: item.tag,
+          thumbnailImagePath: item.thumbnailImagePath || null,
+          followers: item.followers || null,
+          downloads: item.downloads || null,
+          favoriteCnt: item.favoriteCnt || item.likeCount || null,
+          tradeDTO: item.trade ? {
             tradeId: item.trade.tradeId,
+            postId: item.trade.postId,
+            sellerId: item.trade.sellerId,
+            bidderId: item.trade.bidderId || null,
+            bidderNickname: item.trade.bidderNickname || null,
             startPrice: item.trade.startPrice,
-            highestBid: item.trade.highestBid,
+            highestBid: item.trade.highestBid || null,
+            bidAmount: item.trade.bidAmount || null,
             nowBuy: item.trade.nowBuy,
             tradeStatus: item.trade.tradeStatus,
-            bidderId: item.trade.bidderId,
-            bidderNickname: item.trade.bidderNickname,
-            lastBidTime: item.trade.lastBidTime
+            startBidTime: item.trade.startBidTime || null,
+            lastBidTime: item.trade.lastBidTime || null
           } : null,
-          createdAt: item.regDate || item.createdAt || '',
-          updatedAt: item.modDate || item.updatedAt || '',
-          images: item.fileName ? [item.fileName] : [],
-          likes: item.likeCount || 0,
-          views: item.viewCount || 0,
-          status: "ONGOING"
+          pictureDTOList: item.pictureDTOList || null,
+          profileImage: item.profileImage || item.userProfileImage || null,
+          replyCnt: item.replyCnt || null,
+          regDate: item.regDate || item.createdAt || null,
+          modDate: item.modDate || item.updatedAt || null,
         }));
 
         setArtworks(mappedArtworks);
@@ -123,7 +128,7 @@ const ArtList = () => {
     return onlyArt.filter(
       art =>
         art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        art.nickname.toLowerCase().includes(searchTerm.toLowerCase())
+        (art.nickname && art.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [sortedArtworks, searchTerm]);
 
@@ -153,26 +158,40 @@ const ArtList = () => {
   };
 
   // 경매 남은 시간 계산 함수 (최대 7일 제한)
-  function getTimeLeft(endTime: string | Date | undefined): string {
+  function getTimeLeft(endTime: string | Date | null): string {
     if (!endTime) return "마감 정보 없음";
     const end = new Date(endTime).getTime();
     const now = Date.now();
     const diff = end - now;
-    if (diff <= 0) return "경매 종료";
+    if (isNaN(end) || diff <= 0) return "경매 종료";
     const maxDiff = 7 * 24 * 60 * 60 * 1000;
-    if (diff > maxDiff) return "최대 7일";
+    if (diff > maxDiff) return "최대 7일 이상 남음";
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
     if (days > 0) return `${days}일 ${hours}시간 ${minutes}분 남음`;
     if (hours > 0) return `${hours}시간 ${minutes}분 남음`;
-    return `${minutes}분 남음`;
+    if (minutes > 0) return `${minutes}분 ${seconds}초 남음`;
+    return `${seconds}초 남음`;
   }
 
   if (loading) {
     return (
       <div className="loading">
         <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (!filteredArtworks || filteredArtworks.length === 0) {
+    return (
+      <div className="no-artworks">
+        <p>등록된 작품이 없습니다.</p>
+        {searchTerm && <p>'{searchTerm}'에 대한 검색 결과가 없습니다.</p>}
+        <button onClick={handleRegisterClick}>새 작품 등록하기</button>
       </div>
     );
   }
@@ -230,16 +249,16 @@ const ArtList = () => {
             onClick={() => handleArtworkClick(artwork.postId)}
           >
             <div className="art-list-item-image">
-              {artwork.thumbnailImagePath?.[0] ? (
+              {artwork.thumbnailImagePath ? (
                 <img
-                  src={artwork.thumbnailImagePath[0]}
+                  src={artwork.thumbnailImagePath ? `/ourlog/uploads/images/${artwork.thumbnailImagePath}` : ''}
                   alt={artwork.title}
                   className="art-list-item-thumbnail"
                 />
               ) : (
                 <div className="art-list-item-no-image">이미지 없음</div>
               )}
-              <div className="art-list-item-likes">♥ {artwork.favoriteCnt}</div>
+              <div className="art-list-item-likes">♥ {artwork.favoriteCnt ?? 0}</div>
             </div>
             <div className="art-list-item-info">
               <h3 className="art-list-item-title">{artwork.title}</h3>
@@ -261,8 +280,15 @@ const ArtList = () => {
 
       <div className="art-list-pagination">
         <button
-          onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
+          onClick={() => startPage > 1 && handlePageClick(startPage - 10)}
           disabled={startPage === 1}
+          className="art-list-page-btn art-list-arrow-btn"
+        >
+          &lt;&lt;
+        </button>
+        <button
+          onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
+          disabled={currentPage === 1}
           className="art-list-page-btn art-list-arrow-btn"
         >
           &lt;
@@ -277,11 +303,18 @@ const ArtList = () => {
           </button>
         ))}
         <button
+          onClick={() => currentPage < totalPages && handlePageClick(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="art-list-page-btn art-list-arrow-btn"
+        >
+          &gt;
+        </button>
+        <button
           onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
           disabled={endPage === totalPages}
           className="art-list-page-btn art-list-arrow-btn"
         >
-          &gt;
+          &gt;&gt;
         </button>
       </div>
     </div>
