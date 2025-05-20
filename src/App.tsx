@@ -21,13 +21,6 @@ import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
 import SearchPage from "./pages/SearchPage";
-import PurchaseBidPage from "./pages/PurchaseBidPage/PurchaseBidPage";
-import SalePage from "./pages/SalePage/SalePage";
-import BookmarkPage from "./pages/BookmarkPage";
-import AccountEditPage from "./pages/AccountEdit";
-import ProfileEditPage from "./pages/ProfileEdit";
-import AccountEdit from "./pages/AccountEdit";
-import AccountDelete from "./pages/AccountDelete";
 
 function App() {
   return (
@@ -71,7 +64,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
- 
+
       <Route path="post">
         <Route index element={<PostList />} />
         <Route path="register" element={<PostRegister />} />

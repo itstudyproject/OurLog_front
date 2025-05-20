@@ -26,13 +26,19 @@ const ArtworkSlider: React.FC = () => {
         const data = await res.json();
         const mapped = data.map((item: any) => ({
           title: item.title,
-          artist: item.userProfileDTO?.nickname || "unknown",
+          artist: item.nickname || "unknown",
           price:
-            typeof item.price === "number" && item.price > 0
-              ? `₩${item.price.toLocaleString()}`
+            item.tradeDTO &&
+            item.tradeDTO.price &&
+            !isNaN(Number(item.tradeDTO.price)) &&
+            Number(item.tradeDTO.price) > 0
+              ? `₩${Number(item.tradeDTO.price).toLocaleString()}`
               : "",
           link: `/Art/${item.postId}`,
           isArtist: false,
+          imageUrl: item.fileName
+            ? `http://localhost:8080/images/${item.fileName}`
+            : "/default-image.jpg",
         }));
 
         setArtworks(mapped);
@@ -57,10 +63,19 @@ const ArtworkSlider: React.FC = () => {
 
         const mapped = data.map((item: any) => ({
           title: item.title || "대표작 없음",
-          artist: item.userProfileDTO?.nickname || "unknown",
-          price: "",
-          link: `/worker/${item.userProfileDTO.userId}`,
+          artist: item.nickname || "unknown",
+          price:
+            item.tradeDTO &&
+            item.tradeDTO.price &&
+            !isNaN(Number(item.tradeDTO.price)) &&
+            Number(item.tradeDTO.price) > 0
+              ? `₩${Number(item.tradeDTO.price).toLocaleString()}`
+              : "",
+          link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
           isArtist: true,
+          imageUrl: item.fileName
+            ? `http://localhost:8080/images/${item.fileName}`
+            : "/default-image.jpg",
         }));
 
         setArtists(mapped);
