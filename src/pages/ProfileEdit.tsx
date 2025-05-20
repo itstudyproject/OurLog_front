@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserProfileDTO, uploadProfileImage } from "../hooks/profileApi";
+import { UploadResultDTO, UserProfileDTO, uploadProfileImage } from "../hooks/profileApi";
 import "../styles/ProfileEdit.css";
 
 interface ProfileEditProps {
@@ -23,6 +23,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
     // email:        profile?.email || "",
     nickname:     profile?.nickname || "",
     introduction: profile?.introduction || "",
+    originImagePath: profile?.originImagePath || "",
     thumbnailImagePath:
       profile?.thumbnailImagePath || "/images/Logo.png",
       // "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
@@ -45,20 +46,28 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   // 프로필 이미지 변경 핸들러
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      // 선택된 파일 로그
+      console.log("선택된 프로필 이미지 파일:", e.target.files[0]);
       try {
-        // userId는 props.profile?.userId 등에서 가져오세요
+        // userId 가져오기
         const userId = typeof profile?.userId === 'number' ? profile.userId : profile?.userId?.userId;
         if (!userId) {
           alert("유저 정보가 없습니다.");
           return;
         }
-        const imagePath = await uploadProfileImage(userId, e.target.files[0]);
+        // uploadProfileImage는 이제 UploadResultDTO 객체를 반환합니다.
+        const uploadResult: UploadResultDTO = await uploadProfileImage(userId, e.target.files[0]);
+        // 업로드 성공 후 반환된 결과 로그
+        console.log("프로필 이미지 업로드 성공, 반환 결과:", uploadResult);
+
+        // 백엔드 응답 객체의 imageURL과 thumbnailURL을 사용하여 상태 업데이트
         setProfileData((prev) => ({
           ...prev,
-          thumbnailImagePath: imagePath,
+          originImagePath: uploadResult.imageURL, // originImagePath 업데이트
+          thumbnailImagePath: uploadResult.thumbnailURL, // thumbnailImagePath 업데이트
         }));
-      } catch (err) {
-        alert("이미지 업로드 실패: " + err);
+      } catch (err: any) {
+        alert("이미지 업로드 실패: " + (err.message || err));
       }
     }
   };
@@ -67,6 +76,9 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 프로필 수정 요청 데이터 로그
+    console.log("프로필 수정 요청 데이터:", profileData);
+
     try {
       // 프로필 업데이트를 onSave prop 함수를 사용하여 처리
       await onSave({
@@ -74,6 +86,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
         // email: profileData.email,
         nickname:             profileData.nickname,
         introduction:         profileData.introduction,
+        originImagePath:   profileData.originImagePath,
         thumbnailImagePath:   profileData.thumbnailImagePath,
       });
 

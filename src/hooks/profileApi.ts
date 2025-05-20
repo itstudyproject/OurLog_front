@@ -1,6 +1,15 @@
 // src/hooks/profileApi.ts
 import { getAuthHeaders } from "../utils/auth";
 
+// 백엔드의 UploadResultDTO에 맞는 타입 정의
+export interface UploadResultDTO {
+  fileName: string;
+  uuid: string;
+  folderPath: string;
+  imageURL: string; // 백엔드 getImageUrl()에 해당
+  thumbnailURL: string; // 백엔드 getThumbnailUrl()에 해당
+}
+
 export interface UserProfileDTO {
   profileId?: number;
   userId: number | { userId: number };
@@ -70,7 +79,7 @@ export const createProfile = async (
 export async function uploadProfileImage(
   userId: number,
   file: File
-): Promise<string> {
+): Promise<UploadResultDTO> { // 반환 타입을 UploadResultDTO로 변경
   const token = localStorage.getItem("token");
   if (!token) throw new Error("로그인이 필요합니다.");
 
@@ -94,6 +103,7 @@ export async function uploadProfileImage(
     throw new Error("이미지 업로드 실패: " + text);
   }
 
-  const json = (await res.json()) as { imagePath: string };
-  return json.imagePath;
+  // 백엔드 응답 형태 (UploadResultDTO) 그대로 JSON 파싱하여 반환
+  const result: UploadResultDTO = await res.json();
+  return result; // UploadResultDTO 객체를 반환
 }
