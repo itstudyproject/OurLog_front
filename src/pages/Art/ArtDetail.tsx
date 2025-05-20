@@ -1,107 +1,85 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/auth";
 import "../../styles/ArtDetail.css";
 
-interface ArtPost {
-  id: number;
+export interface PostDTO {
+  postId: number;
+  userId: number;
   title: string;
-  author: string;
-  description: string;
-  currentBid: number;
-  startingBid: number;
-  buyNowPrice: number;
-  endTime: string;
-  createdAt: string;
-  imageSrc: string;
-  likes: number;
-  artistProfileImg: string;
-  isFollowing: boolean;
+  content: string;
+  nickname: string;
+  fileName: string;
+  boardNo: number;
+  views: number | null;
+  tag: string;
+  thumbnailImagePath: string;
+  followers: number | null;
+  downloads: number | null;
+  favoriteCnt: number | null;
+  tradeDTO: TradeDTO;
+  pictureDTOList: PictureDTO[];
+  profileImage: string | null;
+  replyCnt: number | null;
+  regDate: string | null;
+  modDate: string | null;
+}
+
+export interface TradeDTO {
+  tradeId: number;
+  postId: number;
+  sellerId: number;
+  bidderId: number;
+  bidderNickname: string;
+  startPrice: number;
+  highestBid: number;
+  bidAmount: number;
+  nowBuy: number;
+  tradeStatus: boolean;
+  startBidTime: Date;
+  lastBidTime: Date;
+}
+
+interface Comment {
+  replyId: number;
+  content: string;
+  userDTO: {
+    userId: number;
+    nickname: string;
+  };
+  regDate: string;
+  modDate: string;
+}
+
+// Post에 포함된 Picture 정보 Interface 추가
+export interface PictureDTO {
+  picId: number;
+  uuid: string;
+  picName: string;
+  path: string;
+  picDescribe: string | null; // 이미지 설명
+  downloads: number;
+  tag: string | null; // 이미지 관련 태그
+  originImagePath: string; // 원본 이미지 경로
+  thumbnailImagePath: string; // 썸네일 이미지 경로
+  resizedImagePath: string; // 리사이징된 이미지 경로
+  ownerId: number | null; // 이미지 소유자 ID (사용자 또는 게시물)
+  postId: number | null; // 이미지가 연결된 게시물 ID
 }
 
 const ArtDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<ArtPost | null>(null);
+  const [post, setPost] = useState<PostDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [bidAmount, setBidAmount] = useState<string>("");
+  const [bidAmount, setBidAmount] = useState<number>(0);
+  const [highestBid, setHighestBid] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [showShareOptions, setShowShareOptions] = useState<boolean>(false);
   const shareBtnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   
   const [countdown, setCountdown] = useState<string>("");
-  useEffect(() => {
-    const fetchArtPost = async () => {
-      try {
-        // 테스트용 1번 아트워크의 데이터
-        const dummyPost: ArtPost = {
-          id: 1,
-          title: "뚱글뚱글 파스타",
-          author: "작가1",
-          description:
-            "일러스트 디지털 드로잉 작품입니다. 파스타와 다양한 베이커리 음식들을 귀엽게 표현한 작품입니다. 주방이나 카페 등에 인테리어용으로 적합합니다.",
-          currentBid: 30000,
-          startingBid: 20000,
-          buyNowPrice: 50000,
-          endTime: "2023-12-31T23:59:59",
-          createdAt: "2023.05.15",
-          imageSrc: "/images/파스타.jpg",
-          likes: 128,
-          artistProfileImg: "/images/avatar.png",
-          isFollowing: false,
-        };
-        setPost(dummyPost);
-        setIsFollowing(dummyPost.isFollowing);
-        setBidAmount((dummyPost.currentBid + 1000).toString());
-        setLoading(false);
-      } catch (error) {
-        console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchArtPost();
-    // 카운트다운 타이머 설정
-    const timer = setInterval(() => {
-      if (post) {
-        const endTime = new Date(post.endTime).getTime();
-        const now = new Date().getTime();
-        const distance = endTime - now;
-        if (distance < 0) {
-          clearInterval(timer);
-          setCountdown("경매 종료");
-        } else {
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor(
-            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          );
-          const minutes = Math.floor(
-            (distance % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-          setCountdown(`${days}일 ${hours}:${minutes}:${seconds}`);
-        }
-      }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [id, post?.endTime]);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node) &&
-        shareBtnRef.current &&
-        !shareBtnRef.current.contains(e.target as Node)
-      ) {
-        setShowShareOptions(false);
-      }
-    }
-    if (showShareOptions) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showShareOptions]);
 
   const handleGoBack = () => {
     navigate("/Art");
@@ -113,23 +91,30 @@ const ArtDetail = () => {
       return;
     }
     const bid = Number(bidAmount);
-    if (post && bid <= post.currentBid) {
-      alert("현재 입찰가보다 높은 금액을 입력해주세요.");
-      return;
+
+    if (post && post.tradeDTO) {
+      const tradeData = post.tradeDTO;
+      if (bid <= tradeData.highestBid) {
+        alert("현재 입찰가보다 높은 금액을 입력해주세요.");
+        return;
+      }
+    } else {
+      console.warn("Post or tradeDTO not available during bid submission check.");
     }
-        const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
+    const confirmBid = window.confirm(`${bidAmount}원으로 입찰하시겠습니까?`);
     if (!confirmBid) return;
     alert(`${bidAmount}원 입찰이 완료되었습니다.`);
-    if (post) {
-      setPost({ ...post, currentBid: bid });
-      setBidAmount((bid + 1000).toString());
+    if (post?.tradeDTO?.highestBid !== undefined && post.tradeDTO.highestBid !== null) {
+      if (post.tradeDTO.highestBid + 1000 < bidAmount) {
+        setHighestBid(bidAmount);
+      }
     }
   };
 
   const handleBuyNow = () => {
     const confirmBuy = window.confirm("정말 즉시 구매하시겠습니까?");
     if (!confirmBuy) return;
-    navigate(`/Art/payment/${post?.id}`);
+    navigate(`/Art/payment/${post?.postId}`);
   }; 
     const handleOpenChat = () => {
     const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
@@ -165,8 +150,56 @@ const ArtDetail = () => {
   };
 
   const handleArtistClick = () => {
-    navigate(`/worker/${post?.author}`);  // 작가의 페이지로 이동
+    navigate(`/worker/${post?.nickname}`);  // 작가의 페이지로 이동
   };
+
+  const fetchArtworkDetail = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+        },
+      });
+
+      // if (!response.ok) {
+      //   throw new Error("작품을 불러오는데 실패했습니다.");
+      // }
+
+      const data = await response.json();
+      setPost(data);
+      setIsFollowing(false); // 서버 응답에 따라 변경 필요
+      setBidAmount(Number(data.currentBid) + 1000 || 0); // 서버 응답에 따라 변경 필요
+      setLoading(false);
+    } catch (error) {
+      console.error("작품 조회 실패:", error);
+      alert("작품을 불러오는데 실패했습니다.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchArtworkDetail();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node) &&
+        shareBtnRef.current &&
+        !shareBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowShareOptions(false);
+      }
+    }
+    if (showShareOptions) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showShareOptions]);
 
   if (loading) {
     return (
@@ -191,7 +224,7 @@ const ArtDetail = () => {
         <div className="left-content">
           <div className="art-image-container">
             <img
-              src={post.imageSrc}
+              src={post.fileName}
               alt={post.title}
               className="art-main-image"
             />
@@ -199,7 +232,7 @@ const ArtDetail = () => {
           <div className="artwork-description">
             <h3>작품 설명</h3>
             <div className="description-content">
-              <p>{post.description}</p>
+              <p>{post.content}</p>
             </div>
           </div>
         </div>
@@ -207,10 +240,10 @@ const ArtDetail = () => {
         <div className="art-info-container">
           <div className="artist-info">
             <div className="artist-avatar" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
-              <img src={post.artistProfileImg} alt={`${post.author} 프로필`} />
+              <img src={post.thumbnailImagePath} alt={`${post.nickname} 프로필`} />
             </div>
             <div className="artist-detail" onClick={handleArtistClick} style={{ cursor: 'pointer' }}>
-              <h3>{post.author}</h3>
+              <h3>{post.nickname}</h3>
               <p>일러스트레이터</p>
             </div>
             <div className="artist-buttons" style={{ position: 'relative' }}>
@@ -264,21 +297,21 @@ const ArtDetail = () => {
 
           <div className="art-title">
             <h2>{post.title}</h2>
-            <p className="art-date">등록일: {post.createdAt}</p>
+            <p className="art-date">등록일: {post?.tradeDTO?.startBidTime ? new Date(post.tradeDTO.startBidTime).toLocaleString() : '날짜 정보 없음'}</p>
           </div>
 
           <div className="bid-info">
             <div className="bid-detail">
               <span>시작가</span>
-              <p>{post.startingBid.toLocaleString()}원</p>
+              <p>{post.tradeDTO.startPrice}원</p>
             </div>
             <div className="bid-detail current">
               <span>현재 입찰가</span>
-              <p>{post.currentBid.toLocaleString()}원</p>
+              <p>{post.tradeDTO.highestBid}원</p>
             </div>
             <div className="bid-detail">
               <span>즉시 구매가</span>
-              <p>{post.buyNowPrice.toLocaleString()}원</p>
+              <p>{post.tradeDTO.nowBuy}원</p>
             </div>
           </div>
 
@@ -294,7 +327,10 @@ const ArtDetail = () => {
             <input
               type="number"
               value={bidAmount}
-              onChange={(e) => setBidAmount(e.target.value)}
+              onChange={(e) => {
+                const numValue = Number(e.target.value);
+                setBidAmount(isNaN(numValue) ? 0 : numValue);
+              }}
               placeholder="입찰 금액을 입력하세요"
             />
             <span className="currency">원</span>

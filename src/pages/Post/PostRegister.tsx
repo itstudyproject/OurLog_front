@@ -17,7 +17,7 @@ interface FormData {
   title: string;
   content: string;
   images: ImageFile[];
-  thumbnailId: string | null;
+  fileName: string | null;
   category: string;
 }
 
@@ -32,7 +32,7 @@ const PostRegister = () => {
     title: "",
     content: "",
     images: [],
-    thumbnailId: null,
+    fileName: null,
     category: initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -100,7 +100,7 @@ const PostRegister = () => {
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
           if (error) throw new Error(error);
-      
+
           const uploaded = await uploadImage(file);
           return {
             file: null,
@@ -119,8 +119,8 @@ const PostRegister = () => {
       setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        fileName:
+          prev.fileName || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -137,12 +137,12 @@ const PostRegister = () => {
       return {
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId === id
+        fileName:
+          prev.fileName === id
             ? newImages.length > 0
               ? newImages[0].id
               : null
-            : prev.thumbnailId,
+            : prev.fileName,
       };
     });
   };
@@ -150,7 +150,7 @@ const PostRegister = () => {
   const handleThumbnailSelect = (id: string) => {
     setFormData((prev) => ({
       ...prev,
-      thumbnailId: id,
+      fileName: id,
     }));
   };
 
@@ -189,7 +189,7 @@ const PostRegister = () => {
       content: newContent,
     }));
   };
-  
+
   const getBoardNo = (category: string): number => {
     switch (category) {
       case "새소식":
@@ -246,35 +246,18 @@ const PostRegister = () => {
         return;
       }
 
-      // 사용자 정보 조회
-      const userResponse = await fetch("http://localhost:8080/ourlog/user/me", {
-        method: "GET",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-
-      if (userResponse.status === 403) {
-        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        localStorage.removeItem('token');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.userId) {
+        alert("로그인이 필요합니다.");
         navigate("/login");
         return;
       }
-
-      if (!userResponse.ok) {
-        throw new Error("사용자 정보를 가져오는데 실패했습니다.");
-      }
-
-      const userData = await userResponse.json();
-      console.log("사용자 정보:", userData); // 디버깅용
 
       const postDTO = {
         title: formData.title,
         content: formData.content,
         boardNo: getBoardNo(formData.category),
-        fileName: formData.thumbnailId,
+        fileName: formData.fileName,
         pictureDTOList: formData.images.map((img) => ({
           picId: img.picId,
           uuid: img.uuid,
@@ -288,9 +271,8 @@ const PostRegister = () => {
           resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`
         })),
         userDTO: {
-          userId: userData.userId,
-          nickname: userData.nickname,
-          email: userData.email
+          userId: user.userId,
+          nickname: user.nickname || user.email || "익명"
         },
         tag: tags.join(','),
         views: 0,
@@ -299,24 +281,16 @@ const PostRegister = () => {
         replyCnt: 0
       };
 
-      console.log("전송할 데이터:", postDTO); // 디버깅용
+      console.log("전송할 데이터:", postDTO);
 
       const response = await fetch("http://localhost:8080/ourlog/post/register", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
         },
-        credentials: 'include',
         body: JSON.stringify(postDTO),
       });
-
-      if (response.status === 403) {
-        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        localStorage.removeItem('token');
-        navigate("/login");
-        return;
-      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -324,7 +298,7 @@ const PostRegister = () => {
       }
 
       const result = await response.json();
-      console.log("등록 결과:", result); // 디버깅용
+      console.log("등록 결과:", result);
 
       alert("게시물이 성공적으로 등록되었습니다.");
       navigate("/post");
@@ -408,13 +382,11 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${
-                              snapshot.isDragging ? "dragging" : ""
-                            } ${
-                              formData.thumbnailId === image.id
+                            className={`image-item ${snapshot.isDragging ? "dragging" : ""
+                              } ${formData.fileName === image.id
                                 ? "thumbnail-selected"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <img
                               src={image.preview}
@@ -431,7 +403,7 @@ const PostRegister = () => {
                               >
                                 ×
                               </button>
-                              {formData.thumbnailId === image.id ? (
+                              {formData.fileName === image.id ? (
                                 <span className="thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
@@ -480,9 +452,8 @@ const PostRegister = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${
-                            snapshot.isDragging ? "dragging" : ""
-                          }`}
+                          className={`content-image-wrapper ${snapshot.isDragging ? "dragging" : ""
+                            }`}
                         >
                           <img
                             src={image.preview}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAuthHeaders } from "../../utils/auth";
+import { getAuthHeaders, hasToken, removeToken } from "../../utils/auth";
 import "../../styles/PostDetail.css";
 
 interface Comment {
@@ -45,14 +45,11 @@ const PostDetail = () => {
 
   const fetchPost = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
         method: 'GET',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json'
+          ...getAuthHeaders(),
         },
-        credentials: 'include'
       });
 
       if (response.status === 403) {
@@ -75,14 +72,11 @@ const PostDetail = () => {
 
   const increaseViewCount = async () => {
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
         method: 'POST',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json'
+          ...getAuthHeaders(),
         },
-        credentials: 'include'
       });
 
       if (response.status === 403) {
@@ -115,23 +109,39 @@ const PostDetail = () => {
     if (!commentContent.trim()) return;
 
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.userId) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       const response = await fetch(`http://localhost:8080/ourlog/reply/${id}`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify({
           content: commentContent,
           postDTO: {
-            postId: Number(id)
+            postId: Number(id),
           },
           userDTO: {
-            userId: 5,
-            nickname: "테스트유저"
-          }
-        })
+            userId: user.userId,
+            nickname: user.nickname || user.email || "익명",
+          },
+        }),
       });
 
+      if (response.status === 403) {
+        alert("댓글 등록 권한이 없습니다. 로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('댓글 등록에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '댓글 등록에 실패했습니다.');
       }
 
       setCommentContent("");
@@ -148,11 +158,20 @@ const PostDetail = () => {
     try {
       const response = await fetch(`http://localhost:8080/ourlog/reply/remove/${replyId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
+      if (response.status === 403) {
+        alert("댓글 삭제 권한이 없습니다. 로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('댓글 삭제에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '댓글 삭제에 실패했습니다.');
       }
 
       fetchPost();

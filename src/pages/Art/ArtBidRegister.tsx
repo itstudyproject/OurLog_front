@@ -6,7 +6,7 @@ interface ArtBidRegisterProps {
     description: string;
     auction: {
       startPrice: number | "";
-      instantPrice: number | "";
+      nowBuy: number | "";
       startDate: string;
       endDate: string;
     };
@@ -57,17 +57,17 @@ const ArtBidRegister: React.FC<ArtBidRegisterProps> = ({ value, onChange }) => {
           />
         </div>
         <div className="auction-field">
-          <label className="auction-label" htmlFor="instantPrice">
+          <label className="auction-label" htmlFor="nowBuy">
             <span className="auction-label-icon">₩</span> 즉시구매가 <span className="auction-optional">(선택)</span>
           </label>
           <input
-            id="instantPrice"
+            id="nowBuy"
             type="number"
             min={0}
             className="auction-input"
-            value={value.auction.instantPrice}
+            value={value.auction.nowBuy}
             onChange={e =>
-              handleChange("instantPrice", e.target.value === "" ? "" : Number(e.target.value))
+              handleChange("nowBuy", e.target.value === "" ? "" : Number(e.target.value))
             }
             placeholder="예: 50000"
           />
