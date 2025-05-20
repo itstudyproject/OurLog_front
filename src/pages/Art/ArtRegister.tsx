@@ -378,25 +378,39 @@ const ArtRegister = () => {
       const thumbnailPicture = uploadedPictureDTOs.find(pic => pic.uuid === postData.fileName);
       const thumbnailUuid = thumbnailPicture ? thumbnailPicture.uuid : (uploadedPictureDTOs.length > 0 ? uploadedPictureDTOs[0].uuid : "");
 
-      const finalPostDTO: PostDTO = {
-          ...postData,
-          fileName: thumbnailUuid,
-          thumbnailImagePath: thumbnailPicture ? thumbnailPicture.thumbnailImagePath : "",
-          pictureDTOList: uploadedPictureDTOs,
+      const finalPostDTO = {
+          userId: postData.userId,
+          title: postData.title,
+          content: postData.content,
+          nickname: postData.nickname,
+          boardNo: postData.boardNo,
+          views: postData.views,
           tag: postData.tag.join(','),
+          thumbnailImagePath: thumbnailPicture ? thumbnailPicture.thumbnailImagePath : postData.thumbnailImagePath,
+          followers: postData.followers,
+          downloads: postData.downloads,
+          favoriteCnt: postData.favoriteCnt,
+          profileImage: postData.profileImage,
+          replyCnt: postData.replyCnt,
+          regDate: postData.regDate,
+          modDate: postData.modDate,
+          fileName: thumbnailUuid,
+          pictureDTOList: uploadedPictureDTOs,
           tradeDTO: {
               ...postData.tradeDTO,
               startBidTime: postData.startTime ? postData.startTime : new Date(),
               lastBidTime: postData.endTime ? postData.endTime : new Date(),
-          } as TradeDTO,
+          },
       };
 
-      console.log("전송할 최종 PostDTO:", finalPostDTO);
+      const finalPostDTOTyped: PostDTO = finalPostDTO as PostDTO;
+
+      console.log("전송할 최종 PostDTO:", finalPostDTOTyped);
 
       const postRes = await fetch("http://localhost:8080/ourlog/post/register", {
         method: "POST",
         headers: getAuthHeaders(),
-        body: JSON.stringify(finalPostDTO),
+        body: JSON.stringify(finalPostDTOTyped),
       });
 
       if (!postRes.ok) {

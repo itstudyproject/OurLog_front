@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/ArtList.css";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
-import { PostDTO } from "./ArtDetail"
+import { PostDTO } from '../../types/postTypes';
 
 const ArtList = () => {
   const navigate = useNavigate();
@@ -105,9 +105,15 @@ const ArtList = () => {
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
     if (sortType === 'popular') {
-      return [...artworks].sort((a, b) => b.favoriteCnt - a.favoriteCnt);
+      // favoriteCnt가 null일 경우 0으로 간주하여 정렬
+      return [...artworks].sort((a, b) => (b.favoriteCnt ?? 0) - (a.favoriteCnt ?? 0));
     }
-    return [...artworks].sort((a, b) => new Date(b.tradeDTO.startBidTime).getTime() - new Date(a.tradeDTO.startBidTime).getTime());
+    // tradeDTO나 startBidTime이 null일 경우 유효한 시간으로 간주하여 정렬 (예: 아주 오래된 시간)
+    return [...artworks].sort((a, b) => {
+      const timeA = a.tradeDTO?.startBidTime ? new Date(a.tradeDTO.startBidTime).getTime() : 0;
+      const timeB = b.tradeDTO?.startBidTime ? new Date(b.tradeDTO.startBidTime).getTime() : 0;
+      return timeB - timeA;
+    });
   }, [artworks, sortType]);
 
   // boardNo 5만 필터링
