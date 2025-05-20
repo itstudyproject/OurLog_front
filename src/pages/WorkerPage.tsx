@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "../styles/WorkerPage.css";
 import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
@@ -17,7 +17,7 @@ interface LikeStatus {
 const baseUrl = "http://localhost:8080/ourlog";
 
 const WorkerPage: React.FC = () => {
-  const { userId: paramUserId } = useParams();
+  const { userId: paramUserId } = useParams<{ userId: string }>();
   const userId = Number(paramUserId);
   const loggedInUserId = Number(localStorage.getItem("userId"));
 
@@ -38,30 +38,23 @@ const WorkerPage: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!userId) return;
+    if (isNaN(userId) || userId <= 0) return;
 
     const token = localStorage.getItem("token");
     console.log("token follow", token, "userId", userId);
 
-    // 프로필 정보 불러오기
     fetchProfile(userId)
       .then((data) => {
-        console.log("📦 fetchProfile 응답:", data); // ← 로그 추가!
-
+        console.log("📦 fetchProfile 응답:", data);
         setProfile(data);
-        if (typeof data.followCnt === "number") {
-          setFollowCnt(data.followCnt);
-        }
-        if (typeof data.followingCnt === "number") {
+        if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
+        if (typeof data.followingCnt === "number")
           setFollowingCnt(data.followingCnt);
-        }
-        if (typeof data.isFollowing === "boolean") {
+        if (typeof data.isFollowing === "boolean")
           setIsFollowing(data.isFollowing);
-        }
       })
       .catch((err) => console.error("❌ fetchProfile 실패:", err));
 
-    // 게시글과 좋아요 상태 불러오기
     const fetchPostsAndLikes = async () => {
       try {
         const res = await fetch(`${baseUrl}/post?userId=${userId}`, {
@@ -71,7 +64,6 @@ const WorkerPage: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
         const posts: Post[] = await res.json();
@@ -88,7 +80,6 @@ const WorkerPage: React.FC = () => {
                   credentials: "include",
                 }
               );
-
               const liked = JSON.parse(await likedRes.text());
 
               const countRes = await fetch(
@@ -119,28 +110,23 @@ const WorkerPage: React.FC = () => {
   }, [userId, loggedInUserId]);
 
   const handleFollowToggle = async () => {
-    console.log("🧩 팔로우 버튼 클릭됨");
-
-    if (loggedInUserId == null || userId == null || loggedInUserId === userId) {
-      console.log("🔴 조건 미충족: 실행 중단됨", {
-        loggedInUserId,
-        userId,
-        sameUser: loggedInUserId === userId,
-      });
+    if (
+      isNaN(loggedInUserId) ||
+      isNaN(userId) ||
+      loggedInUserId === 0 ||
+      userId === 0 ||
+      loggedInUserId === userId
+    ) {
+      console.log("🔴 팔로우 조건 미충족", { loggedInUserId, userId });
       return;
     }
-    //
-    const token = localStorage.getItem("token");
-    console.log("🟡 token:", token);
 
+    const token = localStorage.getItem("token");
     const isNowFollowing = !isFollowing;
     const method = isNowFollowing ? "POST" : "DELETE";
     const url = isNowFollowing
       ? `${baseUrl}/followers/${loggedInUserId}/follow/${userId}`
       : `${baseUrl}/followers/${loggedInUserId}/unfollow/${userId}`;
-
-    console.log("🟢 요청 URL:", url);
-    console.log("🟢 요청 Method:", method);
 
     setIsFollowing(isNowFollowing);
     setFollowCnt((prev) => prev + (isNowFollowing ? 1 : -1));
@@ -153,7 +139,6 @@ const WorkerPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!res.ok) throw new Error("팔로우 요청 실패");
 
       const data = await res.json();
@@ -208,13 +193,15 @@ const WorkerPage: React.FC = () => {
     <div className="worker-container">
       <div className="worker-header">
         <img
-          src={profile?.thumbnailImagePath}
+          src={profile?.thumbnailImagePath || "/default-profile.png"}
           alt="프로필 이미지"
           className="worker-profile-img"
         />
         <div className="worker-info">
           <div className="worker-meta-row">
-            <div className="worker-name">{profile?.nickname}</div>
+            <div className="worker-name">
+              {profile?.nickname || "닉네임 없음"}
+            </div>
             <div className="worker-stats">
               <div className="stat">
                 <span className="label">팔로우</span>
@@ -305,5 +292,4 @@ const WorkerPage: React.FC = () => {
     </div>
   );
 };
-
 export default WorkerPage;
