@@ -1,71 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAuthHeaders } from "../../utils/auth";
+import { getAuthHeaders, removeToken } from "../../utils/auth";
 import "../../styles/ArtDetail.css";
 
-export interface PostDTO {
-  postId: number;
-  userId: number;
-  title: string;
-  content: string;
-  nickname: string;
-  fileName: string;
-  boardNo: number;
-  views: number | null;
-  tag: string;
-  thumbnailImagePath: string;
-  followers: number | null;
-  downloads: number | null;
-  favoriteCnt: number | null;
-  tradeDTO: TradeDTO;
-  pictureDTOList: PictureDTO[];
-  profileImage: string | null;
-  replyCnt: number | null;
-  regDate: string | null;
-  modDate: string | null;
-}
-
-export interface TradeDTO {
-  tradeId: number;
-  postId: number;
-  sellerId: number;
-  bidderId: number;
-  bidderNickname: string;
-  startPrice: number;
-  highestBid: number;
-  bidAmount: number;
-  nowBuy: number;
-  tradeStatus: boolean;
-  startBidTime: Date;
-  lastBidTime: Date;
-}
-
-interface Comment {
-  replyId: number;
-  content: string;
-  userDTO: {
-    userId: number;
-    nickname: string;
-  };
-  regDate: string;
-  modDate: string;
-}
-
-// Post에 포함된 Picture 정보 Interface 추가
-export interface PictureDTO {
-  picId: number;
-  uuid: string;
-  picName: string;
-  path: string;
-  picDescribe: string | null; // 이미지 설명
-  downloads: number;
-  tag: string | null; // 이미지 관련 태그
-  originImagePath: string; // 원본 이미지 경로
-  thumbnailImagePath: string; // 썸네일 이미지 경로
-  resizedImagePath: string; // 리사이징된 이미지 경로
-  ownerId: number | null; // 이미지 소유자 ID (사용자 또는 게시물)
-  postId: number | null; // 이미지가 연결된 게시물 ID
-}
+// Import interfaces from the new type file
+import { PostDTO, TradeDTO, Comment } from '../../types/postTypes';
+import { PictureDTO } from '../../types/pictureTypes';
 
 const ArtDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -162,14 +102,23 @@ const ArtDetail = () => {
         },
       });
 
-      // if (!response.ok) {
-      //   throw new Error("작품을 불러오는데 실패했습니다.");
-      // }
+      if (response.status === 403) {
+        removeToken();
+        alert("로그인이 만료되었거나 게시글을 조회할 권한이 없습니다. 다시 로그인해주세요.");
+        navigate('/login');
+        return;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("서버 에러 응답:", errorText);
+        throw new Error(errorText || "작품을 불러오는데 실패했습니다.");
+      }
 
       const data = await response.json();
       setPost(data);
-      setIsFollowing(false); // 서버 응답에 따라 변경 필요
-      setBidAmount(Number(data.currentBid) + 1000 || 0); // 서버 응답에 따라 변경 필요
+      setIsFollowing(false);
+      setBidAmount(Number(data.currentBid) + 1000 || 0);
       setLoading(false);
     } catch (error) {
       console.error("작품 조회 실패:", error);
