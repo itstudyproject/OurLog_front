@@ -55,11 +55,8 @@ export const updateProfile = async (
 export const createProfile = async (
   profile: UserProfileDTO
 ): Promise<UserProfileDTO> => {
-  // user 필드가 숫자라면 객체로 변환
+  // userId를 객체로 감싸지 않습니다.
   const profileData = { ...profile };
-  if (typeof profileData.userId === 'number') {
-    profileData.userId = { userId: profileData.userId };
-  }
 
   const res = await fetch(`http://localhost:8080/ourlog/profile/create`, {
     method: "POST",
