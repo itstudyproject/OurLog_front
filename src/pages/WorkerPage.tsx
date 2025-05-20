@@ -19,7 +19,24 @@ const baseUrl = "http://localhost:8080/ourlog";
 const WorkerPage: React.FC = () => {
   const { userId: paramUserId } = useParams<{ userId: string }>();
   const userId = Number(paramUserId);
-  const loggedInUserId = Number(localStorage.getItem("userId"));
+
+  const rawLoggedInUserId = localStorage.getItem("user");
+  let loggedInUserId: number = NaN;
+
+  try {
+    const parsedData = rawLoggedInUserId ? JSON.parse(rawLoggedInUserId) : null;
+    if (parsedData && typeof parsedData.userId === "number") {
+      loggedInUserId = parsedData.userId;
+    }
+  } catch (error) {
+    console.error("❌ JSON 파싱 실패:", error);
+  }
+
+  console.log("✅ 초기 유저 확인", {
+    rawLoggedInUserId,
+    parsedUserId: loggedInUserId,
+    pageUserId: userId,
+  });
 
   const [cardData, setCardData] = useState<Post[]>([]);
   const [likes, setLikes] = useState<LikeStatus[]>([]);
@@ -41,8 +58,9 @@ const WorkerPage: React.FC = () => {
     if (isNaN(userId) || userId <= 0) return;
 
     const token = localStorage.getItem("token");
-    console.log("token follow", token, "userId", userId);
+    console.log("🟢 token & userId:", { token, userId });
 
+    // Fetch profile
     fetchProfile(userId)
       .then((data) => {
         console.log("📦 fetchProfile 응답:", data);
@@ -55,9 +73,10 @@ const WorkerPage: React.FC = () => {
       })
       .catch((err) => console.error("❌ fetchProfile 실패:", err));
 
+    // Fetch posts and likes
     const fetchPostsAndLikes = async () => {
       try {
-        const res = await fetch(`${baseUrl}/post?userId=${userId}`, {
+        const res = await fetch(`${baseUrl}/followers/getPost/${userId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -94,7 +113,7 @@ const WorkerPage: React.FC = () => {
 
               return { liked, count };
             } catch (err) {
-              console.error(`Like data fetch failed for post ${post.id}`, err);
+              console.error(`❌ Like data fetch 실패: post ${post.id}`, err);
               return { liked: false, count: 0 };
             }
           })
@@ -102,7 +121,7 @@ const WorkerPage: React.FC = () => {
 
         setLikes(likeResults);
       } catch (err) {
-        console.error("게시글/좋아요 불러오기 실패:", err);
+        console.error("❌ 게시글/좋아요 불러오기 실패:", err);
       }
     };
 
@@ -117,7 +136,7 @@ const WorkerPage: React.FC = () => {
       userId === 0 ||
       loggedInUserId === userId
     ) {
-      console.log("🔴 팔로우 조건 미충족", { loggedInUserId, userId });
+      console.warn("🔴 팔로우 조건 미충족", { loggedInUserId, userId });
       return;
     }
 
@@ -146,7 +165,7 @@ const WorkerPage: React.FC = () => {
       if (typeof data.followingCnt === "number")
         setFollowingCnt(data.followingCnt);
     } catch (err) {
-      console.error("팔로우 토글 실패:", err);
+      console.error("❌ 팔로우 토글 실패:", err);
       setIsFollowing(!isNowFollowing);
       setFollowCnt((prev) => prev + (isNowFollowing ? -1 : 1));
     }
@@ -162,6 +181,11 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleLikeToggle = async (index: number, postId: number) => {
+    if (isNaN(loggedInUserId)) {
+      console.warn("❌ 좋아요 실패: 로그인 사용자 정보 없음");
+      return;
+    }
+
     try {
       const response = await fetch(`${baseUrl}/ourlog/favorites/toggle`, {
         method: "POST",
@@ -185,7 +209,7 @@ const WorkerPage: React.FC = () => {
         )
       );
     } catch (err) {
-      console.error("좋아요 토글 실패:", err);
+      console.error("❌ 좋아요 토글 실패:", err);
     }
   };
 
@@ -214,7 +238,7 @@ const WorkerPage: React.FC = () => {
             </div>
           </div>
           <div className="worker-buttons">
-            {loggedInUserId !== userId && (
+            {!isNaN(loggedInUserId) && loggedInUserId !== userId && (
               <button onClick={handleFollowToggle} className="btn">
                 {isFollowing ? "팔로잉" : "팔로우"}
               </button>
@@ -292,4 +316,5 @@ const WorkerPage: React.FC = () => {
     </div>
   );
 };
+
 export default WorkerPage;
