@@ -44,10 +44,10 @@ function App() {
 
         <Route path="art">
           <Route index element={<ArtList />} />
-          <Route path=":id" element={<ArtDetail />} />
           <Route path="register" element={<ArtRegister />} />
-          <Route path="payment/:id" element={<Payment />} />
+          <Route path="payment" element={<Payment />} />
           <Route path="bids" element={<BidHistory />} />
+          <Route path=":id" element={<ArtDetail />} />
         </Route>
 
         <Route path="ranking" element={<RankingPage />} />
