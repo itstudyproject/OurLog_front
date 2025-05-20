@@ -5,7 +5,7 @@ interface Artwork {
   imageUrl: string;
   title: string;
   artist: string;
-  price: string;
+  highestBid: string;
   link: string;
   isArtist?: boolean;
 }
@@ -29,10 +29,10 @@ const ArtworkSlider: React.FC = () => {
           artist: item.nickname || "unknown",
           price:
             item.tradeDTO &&
-            item.tradeDTO.price &&
-            !isNaN(Number(item.tradeDTO.price)) &&
-            Number(item.tradeDTO.price) > 0
-              ? `₩${Number(item.tradeDTO.price).toLocaleString()}`
+            item.tradeDTO.highestBid &&
+            !isNaN(Number(item.tradeDTO.highestBid)) &&
+            Number(item.tradeDTO.highestBid) > 0
+              ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
               : "",
           link: `/Art/${item.postId}`,
           isArtist: false,
@@ -66,10 +66,10 @@ const ArtworkSlider: React.FC = () => {
           artist: item.nickname || "unknown",
           price:
             item.tradeDTO &&
-            item.tradeDTO.price &&
-            !isNaN(Number(item.tradeDTO.price)) &&
-            Number(item.tradeDTO.price) > 0
-              ? `₩${Number(item.tradeDTO.price).toLocaleString()}`
+            item.tradeDTO.highestBid &&
+            !isNaN(Number(item.tradeDTO.highestBid)) &&
+            Number(item.tradeDTO.highestBid) > 0
+              ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
               : "",
           link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
           isArtist: true,
@@ -160,8 +160,8 @@ const ArtworkSlider: React.FC = () => {
                 <div className="artworkslider-overlay">
                   <div className="artworkslider-title">{item.title}</div>
                   <div className="artworkslider-artist">{item.artist}</div>
-                  {item.price && (
-                    <div className="artworkslider-price">{item.price}</div>
+                  {item.highestBid && (
+                    <div className="artworkslider-price">{item.highestBid}</div>
                   )}
                 </div>
               </a>

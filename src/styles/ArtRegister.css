@@ -167,23 +167,60 @@
   background: #1a1a1a;
   border-radius: 8px;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-label {
+.art-type-title {
   display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
+}
+
+.user-profile {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #333;
+}
+
+.user-name {
   color: #fff;
   font-size: 14px;
 }
 
-.form-input,
-.form-textarea {
+.date-info {
+  color: #888;
+  font-size: 13px;
+}
+
+.post-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.post-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.post-input,
+.post-textarea {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   background: #2a2a2a;
   border: 1px solid #333;
   border-radius: 4px;
@@ -191,7 +228,7 @@
   margin-top: 8px;
 }
 
-.form-textarea {
+.post-textarea {
   min-height: 100px;
   resize: vertical;
 }
@@ -199,8 +236,9 @@
 .price-info {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
   margin-top: 16px;
+  margin-bottom: 16px;
 }
 
 .price-box {
@@ -227,13 +265,25 @@
 }
 
 .bid-section {
-  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bid-section .post-group {
+  margin-bottom: 0;
+}
+
+.bid-section .post-group:last-child {
+  margin-bottom: 0;
 }
 
 .button-group {
   display: flex;
   gap: 16px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #333;
 }
 
 .button {
@@ -255,30 +305,6 @@
   color: #fff;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.user-profile {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #333;
-}
-
-.user-name {
-  color: #fff;
-  font-size: 14px;
-}
-
-.date-info {
-  color: #888;
-  font-size: 13px;
-}
-
 /* DatePicker 커스텀 스타일 */
 .react-datepicker-wrapper {
   width: 100%;
@@ -286,7 +312,7 @@
 
 .react-datepicker__input-container input {
   width: 100%;
-  padding: 12px;
+  padding: 10px 12px;
   background: #2a2a2a;
   border: 1px solid #333;
   border-radius: 4px;

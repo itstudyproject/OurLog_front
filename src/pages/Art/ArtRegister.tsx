@@ -4,7 +4,9 @@ import { ko } from "date-fns/locale";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/ArtRegister.css";
-import { PostDTO, TradeDTO, PictureDTO } from "./ArtDetail";
+import { PostDTO } from "../../types/postTypes";
+import { PictureDTO } from "../../types/pictureTypes";
+import { TradeDTO } from "../../types/tradeTypes";
 import { getAuthHeaders, getToken, hasToken } from "../../utils/auth";
 
 interface ImageFile {
@@ -205,10 +207,21 @@ const ArtRegister = () => {
   };
 
   const handleThumbnailSelect = (imageId: string) => {
-    setPostData(prev => ({
-      ...prev,
-      fileName: imageId,
-    }));
+    setImageFiles(prev => {
+      const selectedImage = prev.find(img => img.id === imageId);
+      if (!selectedImage) return prev;
+
+      const otherImages = prev.filter(img => img.id !== imageId);
+      const newImageFiles = [selectedImage, ...otherImages];
+
+      // 썸네일 파일명 (UUID) 상태 업데이트
+      setPostData(postPrev => ({
+          ...postPrev,
+          fileName: imageId,
+      }));
+
+      return newImageFiles;
+    });
   };
 
   const handleImageDelete = (imageId: string) => {
@@ -376,6 +389,10 @@ const ArtRegister = () => {
       setUploadedPictures(uploadedPictureDTOs);
 
       const thumbnailPicture = uploadedPictureDTOs.find(pic => pic.uuid === postData.fileName);
+
+      // 경매 시작 시간을 현재 시간으로 고정
+      const currentStartTime = new Date();
+
       const thumbnailUuid = thumbnailPicture ? thumbnailPicture.uuid : (uploadedPictureDTOs.length > 0 ? uploadedPictureDTOs[0].uuid : "");
 
       const finalPostDTO = {
@@ -398,7 +415,7 @@ const ArtRegister = () => {
           pictureDTOList: uploadedPictureDTOs,
           tradeDTO: {
               ...postData.tradeDTO,
-              startBidTime: postData.startTime ? postData.startTime : new Date(),
+              startBidTime: currentStartTime,
               lastBidTime: postData.endTime ? postData.endTime : new Date(),
           },
       };
@@ -716,7 +733,9 @@ const ArtRegister = () => {
 
         <div className="art-info-section">
            <div className="user-info">
-            <div className="user-profile"></div>
+            <div className="user-profile">
+                <div className="user-profile-placeholder"></div>
+            </div>
             <span className="user-name">{postData.nickname || "로딩 중..."}</span>
           </div>
 
@@ -806,17 +825,9 @@ const ArtRegister = () => {
 
               <div className="post-group">
                 <label className="post-label">경매 시작 시간</label>
-                <DatePicker
-                  selected={postData.startTime}
-                  onChange={handleStartTimeChange}
-                  showTimeSelect
-                  timeFormat="HH:mm"
-                  timeIntervals={15}
-                  dateFormat="yyyy.MM.dd HH:mm"
-                  className="post-input"
-                  locale={ko}
-                  required
-                />
+                <p className="post-input-display">
+                    {new Date().toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replace('/', '. ').replace('/', '. ')}
+                </p>
               </div>
 
               <div className="post-group">
