@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/ArtList.css";
-import { ArtPost, ArtListResponse } from "../../types/art";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
+import { PostDTO } from "./ArtDetail"
 
 const ArtList = () => {
   const navigate = useNavigate();
-  const [artworks, setArtworks] = useState<ArtPost[]>([]);
+  const [artworks, setArtworks] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -59,7 +59,7 @@ const ArtList = () => {
         }
 
         const { pageResultDTO } = data;
-        const mappedArtworks: ArtPost[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+        const mappedArtworks: PostDTO[] = (pageResultDTO.dtoList || []).map((item: any) => ({
           post_id: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
@@ -105,9 +105,9 @@ const ArtList = () => {
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
     if (sortType === 'popular') {
-      return [...artworks].sort((a, b) => b.likes - a.likes);
+      return [...artworks].sort((a, b) => b.favoriteCnt - a.favoriteCnt);
     }
-    return [...artworks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return [...artworks].sort((a, b) => new Date(b.tradeDTO.startBidTime).getTime() - new Date(a.tradeDTO.startBidTime).getTime());
   }, [artworks, sortType]);
 
   // boardNo 5만 필터링
@@ -117,7 +117,7 @@ const ArtList = () => {
     return onlyArt.filter(
       art =>
         art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        art.author.name.toLowerCase().includes(searchTerm.toLowerCase())
+        art.nickname.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sortedArtworks, searchTerm]);
 
@@ -219,33 +219,33 @@ const ArtList = () => {
       <div className="art-list-grid">
         {filteredArtworks.map((artwork) => (
           <div
-            key={artwork.post_id}
+            key={artwork.postId}
             className="art-list-item-card"
-            onClick={() => handleArtworkClick(artwork.post_id)}
+            onClick={() => handleArtworkClick(artwork.postId)}
           >
             <div className="art-list-item-image">
-              {artwork.images?.[0] ? (
+              {artwork.thumbnailImagePath?.[0] ? (
                 <img
-                  src={artwork.images[0]}
+                  src={artwork.thumbnailImagePath[0]}
                   alt={artwork.title}
                   className="art-list-item-thumbnail"
                 />
               ) : (
                 <div className="art-list-item-no-image">이미지 없음</div>
               )}
-              <div className="art-list-item-likes">♥ {artwork.likes}</div>
+              <div className="art-list-item-likes">♥ {artwork.favoriteCnt}</div>
             </div>
             <div className="art-list-item-info">
               <h3 className="art-list-item-title">{artwork.title}</h3>
-              <p className="art-list-item-author">{artwork.author.name}</p>
+              <p className="art-list-item-author">{artwork.nickname}</p>
               <p className="art-list-item-price">
-                {artwork.trade
-                  ? `현재가: ${(artwork.trade.highestBid ?? artwork.trade.startPrice)?.toLocaleString()}원`
+                {artwork.tradeDTO
+                  ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
                   : "경매 정보 없음"}
               </p>
-              {artwork.trade && artwork.trade.endTime && (
+              {artwork.tradeDTO && artwork.tradeDTO.lastBidTime && (
                 <span className="auction-time-left">
-                  {getTimeLeft(artwork.trade.endTime)}
+                  {getTimeLeft(artwork.tradeDTO.lastBidTime)}
                 </span>
               )}
             </div>

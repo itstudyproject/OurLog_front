@@ -176,6 +176,18 @@ const PostList = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // 날짜 포맷 함수 추가
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -248,13 +260,20 @@ const PostList = () => {
       </div>
 
       <table>
+        <colgroup>
+          <col style={{ width: '60px' }} />
+          <col style={{ width: '40%' }} />
+          <col style={{ width: '100px' }} />
+          <col style={{ width: '120px' }} />
+          <col style={{ width: '120px' }} />
+        </colgroup>
         <thead>
           <tr>
             <th>No.</th>
-            <th>제목</th>
+            <th style={{ textAlign: 'left' }}>제목</th>
             <th>썸네일</th>
             <th>작성자</th>
-            <th>작성일자</th>
+            <th style={{ minWidth: '100px' }}>작성일자</th>
           </tr>
         </thead>
         <tbody>
@@ -269,7 +288,7 @@ const PostList = () => {
                 onClick={() => handlePostClick(post.id)}
               >
                 <td>{post.id}</td>
-                <td>{post.title}</td>
+                <td style={{ textAlign: 'left' }}>{post.title}</td>
                 <td>
                   {post.thumbnail ? (
                     <img
@@ -282,7 +301,7 @@ const PostList = () => {
                   )}
                 </td>
                 <td>{post.author}</td>
-                <td>{post.createdAt}</td>
+                <td>{formatDate(post.createdAt)}</td>
               </tr>
             ))
           )}
