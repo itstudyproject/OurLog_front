@@ -1,3 +1,5 @@
+(window as any).global = window;
+
 import MainBanner from "../components/MainBanner";
 import ArtworkSlider from "../components/ArtworkSlider";
 import BulletinBoard from "../components/BulletinBoard";

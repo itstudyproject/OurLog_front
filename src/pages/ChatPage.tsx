@@ -1,18 +1,17 @@
-// ChatPage.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
 import "../styles/ChatPage.css";
 
-const userProfiles: { [key: string]: string } = {
-  ann: "/images/ann_01.jpg",
-  john: "/images/john_01.jpg",
-  mary: "/images/mary_01.jpg",
-  오달숙: "/images/오달숙_01.jpg",
-  제임스: "/images/제임스_01.jpg",
-};
+interface UserProfile {
+  nickname: string;
+  profileImage: string;
+}
 
 interface ChatMessage {
   sender: string;
+  receiver?: string;
   message: string;
   paymentInfo?: {
     itemImage: string;
@@ -24,8 +23,12 @@ interface ChatMessage {
   isPaymentComplete?: boolean;
 }
 
+const WEBSOCKET_URL = "http://localhost:8080/ourlog";
+
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const [userProfiles, setUserProfiles] = useState<UserProfile[]>([]);
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -35,17 +38,100 @@ const ChatPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [cardNumber, setCardNumber] = useState<string>("");
 
+  const stompClient = useRef<any>(null);
+
+  // 글로벌 객체가 없으면 window를 할당 (브라우저 호환성)
+  useEffect(() => {
+    if (typeof global === "undefined") {
+      (window as any).global = window;
+    }
+  }, []);
+
+  // 1. 사용자 목록 API 호출
+  useEffect(() => {
+    fetch("/chat/users")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("유저 목록 불러오기 실패");
+        }
+        // 여기서 HTML이 오면 res.json()에서 에러 발생 가능
+        return res.json();
+      })
+      .then((data: UserProfile[]) => setUserProfiles(data))
+      .catch(console.error);
+    console.log("유저 목록:", userProfiles);
+  }, []);
+
+  // 2. currentUser가 변경될 때 WebSocket 연결 & 구독
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const socket = new SockJS(WEBSOCKET_URL);
+    const client = Stomp.over(socket);
+    client.debug = null; // 로그 끄기
+
+    client.connect(
+      {},
+      () => {
+        client.subscribe(`/topic/messages/${currentUser}`, (message: any) => {
+          console.log("수신 메시지 원본:", message.body);
+
+          // JSON인지 검사하는 함수
+          const isJSON = (str: string) => {
+            try {
+              JSON.parse(str);
+              return true;
+            } catch {
+              return false;
+            }
+          };
+
+          if (isJSON(message.body)) {
+            try {
+              const received: ChatMessage = JSON.parse(message.body);
+              setMessagesByUser((prev) => ({
+                ...prev,
+                [currentUser]: [...(prev[currentUser] || []), received],
+              }));
+            } catch (e) {
+              console.error("메시지 파싱 실패, 받은 데이터:", message.body);
+            }
+          } else {
+            console.error("JSON 형식이 아닌 메시지 수신:", message.body);
+            // 필요하면 여기서 HTML 메시지 처리나 무시 로직 추가 가능
+          }
+        });
+      },
+      (error) => {
+        console.error("STOMP 연결 실패:", error);
+      }
+    );
+
+    stompClient.current = client;
+
+    return () => {
+      if (stompClient.current) {
+        stompClient.current.disconnect(() => {
+          console.log("Disconnected");
+        });
+        stompClient.current = null;
+      }
+      console.log("현재 선택된 유저:", currentUser);
+    };
+  }, [currentUser]);
+
   const handleOpenChatModal = (user: string) => {
-    const confirmChat = window.confirm(`${user}님과 채팅을 시작하시겠습니까?`);
-    if (!confirmChat) return;
-    setCurrentUser(user);
-    setIsListModalVisible(false);
-    setIsChatModalVisible(true);
-    setMessagesByUser((prev) => ({ ...prev, [user]: prev[user] || [] }));
+    console.log("유저 선택:", user);
+    if (window.confirm(`${user}님과 채팅을 시작하시겠습니까?`)) {
+      setCurrentUser(user);
+      setIsListModalVisible(false);
+      setIsChatModalVisible(true);
+      setMessagesByUser((prev) => ({ ...prev, [user]: prev[user] || [] }));
+    }
   };
 
   const handleCloseListModal = () => {
-    navigate("/"); // 전체 창 닫기
+    setIsListModalVisible(false);
   };
 
   const handleExitClick = () => {
@@ -57,15 +143,33 @@ const ChatPage: React.FC = () => {
 
   const handleSendMessage = () => {
     if (newMessage.trim() === "" || !currentUser) return;
+
     const message: ChatMessage = {
       sender: "Me",
+      receiver: currentUser,
       message: newMessage,
     };
+
+    // 클라이언트 화면 먼저 갱신
     setMessagesByUser((prev) => ({
       ...prev,
       [currentUser]: [...(prev[currentUser] || []), message],
     }));
     setNewMessage("");
+
+    if (stompClient.current && stompClient.current.connected) {
+      stompClient.current.send(
+        "/app/chat/send",
+        {},
+        JSON.stringify({
+          sender: "Me",
+          receiver: currentUser,
+          message: newMessage,
+        })
+      );
+    } else {
+      alert("서버와 연결되어 있지 않습니다.");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -79,6 +183,7 @@ const ChatPage: React.FC = () => {
     if (!currentUser) return;
     const message: ChatMessage = {
       sender: currentUser,
+      receiver: "Me",
       message: "상대방이 안전결제를 요청했습니다.",
       paymentInfo: {
         itemImage: "/images/파스타.jpg",
@@ -91,41 +196,17 @@ const ChatPage: React.FC = () => {
       ...prev,
       [currentUser]: [...(prev[currentUser] || []), message],
     }));
-  };
 
-  const handleAcceptPayment = () => {
-    const message: ChatMessage = {
-      sender: "Me",
-      message: "안전결제를 수락하셨습니다.",
-      paymentInfo: {
-        itemImage: "/images/파스타.jpg",
-        itemName: "디지털 아트워크",
-        price: 50000,
-      },
-      isPaymentFormVisible: false,
-      hidden: true,
-    };
-    setMessagesByUser((prev) => ({
-      ...prev,
-      [currentUser || ""]: [...(prev[currentUser || ""] || []), message],
-    }));
-  };
-
-  const handleRejectPayment = () => {
-    const message: ChatMessage = {
-      sender: "Me",
-      message: "안전결제를 거절하셨습니다.",
-    };
-    setMessagesByUser((prev) => ({
-      ...prev,
-      [currentUser || ""]: [...(prev[currentUser || ""] || []), message],
-    }));
+    if (stompClient.current && stompClient.current.connected) {
+      stompClient.current.send("/app/chat/send", {}, JSON.stringify(message));
+    }
   };
 
   const togglePaymentForm = (index: number) => {
+    if (!currentUser) return;
     setMessagesByUser((prev) => ({
       ...prev,
-      [currentUser || ""]: prev[currentUser || ""].map((msg, i) =>
+      [currentUser]: prev[currentUser].map((msg, i) =>
         i === index
           ? { ...msg, isPaymentFormVisible: !msg.isPaymentFormVisible }
           : msg
@@ -141,6 +222,8 @@ const ChatPage: React.FC = () => {
 
     alert("결제가 완료되었습니다.");
 
+    if (!currentUser) return;
+
     const paymentSuccessMessage: ChatMessage = {
       sender: "Me",
       message: "결제가 완료되었습니다.",
@@ -150,14 +233,10 @@ const ChatPage: React.FC = () => {
 
     setMessagesByUser((prev) => ({
       ...prev,
-      [currentUser || ""]: prev[currentUser || ""]
+      [currentUser]: prev[currentUser]
         .map((msg, i) =>
           i === index
-            ? {
-                ...msg,
-                isPaymentFormVisible: false,
-                isPaymentComplete: true,
-              }
+            ? { ...msg, isPaymentFormVisible: false, isPaymentComplete: true }
             : msg
         )
         .concat(paymentSuccessMessage),
@@ -178,15 +257,20 @@ const ChatPage: React.FC = () => {
               </button>
             </div>
             <ul className="chat-list">
-              {Object.keys(userProfiles).map((user, idx) => (
-                <li key={idx} onClick={() => handleOpenChatModal(user)}>
-                  <img src={userProfiles[user]} alt={user} />
+              {userProfiles.map((user, idx) => (
+                <li
+                  key={idx}
+                  onClick={() => handleOpenChatModal(user.nickname)}
+                >
+                  <img src={user.profileImage} alt={user.nickname} />
                   <div className="chat-info">
-                    <strong>{user}</strong>
+                    <strong>{user.nickname}</strong>
                     <p>
-                      {messagesByUser[user] && messagesByUser[user].length > 0
-                        ? messagesByUser[user][messagesByUser[user].length - 1]
-                            .message
+                      {messagesByUser[user.nickname] &&
+                      messagesByUser[user.nickname].length > 0
+                        ? messagesByUser[user.nickname][
+                            messagesByUser[user.nickname].length - 1
+                          ].message
                         : "대화를 시작해보세요"}
                     </p>
                   </div>
@@ -198,112 +282,115 @@ const ChatPage: React.FC = () => {
       )}
 
       {isChatModalVisible && currentUser && (
-        <div className="chat-modal">
-          <div className="chat-header">
-            <div className="chat-header-left">
-              <img
-                src={userProfiles[currentUser] || "/profile-placeholder.jpg"}
-                alt={currentUser}
-              />
-              <span>{currentUser}</span>
-            </div>
-            <button className="exit-btn" onClick={handleExitClick}>
-              나가기
-            </button>
-          </div>
-
-          {messagesByUser[currentUser].map((msg, index) =>
-            msg.hidden ? null : (
-              <div
-                key={index}
-                className={`message-row ${msg.sender === "Me" ? "me" : "you"}`}
-              >
-                {msg.sender !== "Me" && (
-                  <img
-                    src={
-                      userProfiles[currentUser] || "/profile-placeholder.jpg"
-                    }
-                    alt="상대방"
-                    className="profile-icon"
-                  />
-                )}
-                <div
-                  className={`message ${
-                    msg.sender === "Me" ? "me-message" : "you-message"
-                  }`}
-                >
-                  {msg.message.split("\n").map((line, i) => (
-                    <div key={i}>{line}</div>
-                  ))}
-                  {msg.paymentInfo && (
-                    <div className="payment-card">
-                      <img src={msg.paymentInfo.itemImage} alt="상품 이미지" />
-                      <div className="item-details">
-                        <strong>{msg.paymentInfo.itemName}</strong>
-                        <p>{msg.paymentInfo.price.toLocaleString()}원</p>
-                      </div>
-                      {!msg.isPaymentFormVisible ? (
-                        <button
-                          className="go-to-payment"
-                          onClick={() => togglePaymentForm(index)}
-                          disabled={msg.isPaymentComplete}
-                        >
-                          결제하기
-                        </button>
-                      ) : (
-                        <div className="payment-form">
-                          <p>
-                            <strong>결제 정보 확인</strong>
-                          </p>
-                          <label>
-                            카드 번호:
-                            <input
-                              type="text"
-                              placeholder="123456789012"
-                              value={cardNumber}
-                              onChange={(e) =>
-                                setCardNumber(
-                                  e.target.value.replace(/[^0-9]/g, "")
-                                )
-                              }
-                              maxLength={12}
-                            />
-                          </label>
-                          <p>
-                            최종 결제 금액:{" "}
-                            {msg.paymentInfo.price.toLocaleString()}원
-                          </p>
-                          <div className="payment-buttons">
-                            <button onClick={() => togglePaymentForm(index)}>
-                              돌아가기
-                            </button>
-                            <button onClick={() => handlePaymentSubmit(index)}>
-                              결제 진행
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+        <div className="modal-overlay">
+          <div className="chat-modal">
+            <div className="chat-header">
+              <div className="chat-header-left">
+                <img
+                  src={
+                    userProfiles.find((u) => u.nickname === currentUser)
+                      ?.profileImage || "/profile-placeholder.jpg"
+                  }
+                  alt={currentUser}
+                />
+                <span>{currentUser}</span>
               </div>
-            )
-          )}
+              <button className="exit-btn" onClick={handleExitClick}>
+                나가기
+              </button>
+            </div>
 
-          <div className="chat-footer">
-            <textarea
-              value={newMessage}
-              placeholder="메시지를 입력하세요..."
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={1}
-            />
-            <button onClick={handleSendMessage}>보내기</button>
-            <div className="secure-payment-box">
-              <button
-                className="secure-payment-btn"
-                onClick={handleSecurePaymentRequest}
-              >
+            <div className="chat-messages">
+              {messagesByUser[currentUser]?.map(
+                (msg, index) =>
+                  !msg.hidden && (
+                    <div
+                      key={index}
+                      className={`message-row ${
+                        msg.sender === "Me" ? "me" : "you"
+                      }`}
+                    >
+                      {msg.sender !== "Me" && (
+                        <img
+                          src={
+                            userProfiles.find((u) => u.nickname === currentUser)
+                              ?.profileImage || "/profile-placeholder.jpg"
+                          }
+                          alt="상대방"
+                          className="profile-icon"
+                        />
+                      )}
+                      <div
+                        className={`message ${
+                          msg.sender === "Me" ? "me-message" : "you-message"
+                        }`}
+                      >
+                        {msg.message.split("\n").map((line, i) => (
+                          <div key={i}>{line}</div>
+                        ))}
+
+                        {msg.paymentInfo && (
+                          <div className="payment-card">
+                            <img
+                              src={msg.paymentInfo.itemImage}
+                              alt={msg.paymentInfo.itemName}
+                            />
+                            <div>
+                              <p>{msg.paymentInfo.itemName}</p>
+                              <p>₩{msg.paymentInfo.price.toLocaleString()}</p>
+                            </div>
+
+                            {!msg.isPaymentFormVisible &&
+                              !msg.isPaymentComplete && (
+                                <button
+                                  onClick={() => togglePaymentForm(index)}
+                                  className="payment-btn"
+                                >
+                                  결제하기
+                                </button>
+                              )}
+
+                            {msg.isPaymentFormVisible && (
+                              <form
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  handlePaymentSubmit(index);
+                                }}
+                                className="payment-form"
+                              >
+                                <input
+                                  type="text"
+                                  placeholder="카드 번호 12자리"
+                                  value={cardNumber}
+                                  onChange={(e) =>
+                                    setCardNumber(e.target.value)
+                                  }
+                                  maxLength={12}
+                                />
+                                <button type="submit">결제 완료</button>
+                              </form>
+                            )}
+
+                            {msg.isPaymentComplete && (
+                              <p>결제가 완료되었습니다.</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+              )}
+            </div>
+
+            <div className="chat-input-area">
+              <textarea
+                placeholder="메시지를 입력하세요..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <button onClick={handleSendMessage}>전송</button>
+              <button onClick={handleSecurePaymentRequest}>
                 안전결제 요청
               </button>
             </div>
