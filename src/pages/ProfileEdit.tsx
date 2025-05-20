@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserProfileDTO } from "../hooks/profileApi";
+import { UserProfileDTO, uploadProfileImage } from "../hooks/profileApi";
 import "../styles/ProfileEdit.css";
 
 interface ProfileEditProps {
@@ -43,18 +43,23 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   };
 
   // 프로필 이미지 변경 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setProfileData((prev) => ({
-            ...prev,
-            profilePicture: event.target?.result as string,
-          }));
+      try {
+        // userId는 props.profile?.userId 등에서 가져오세요
+        const userId = typeof profile?.userId === 'number' ? profile.userId : profile?.userId?.userId;
+        if (!userId) {
+          alert("유저 정보가 없습니다.");
+          return;
         }
-      };
-      reader.readAsDataURL(e.target.files[0]);
+        const imagePath = await uploadProfileImage(userId, e.target.files[0]);
+        setProfileData((prev) => ({
+          ...prev,
+          thumbnailImagePath: imagePath,
+        }));
+      } catch (err) {
+        alert("이미지 업로드 실패: " + err);
+      }
     }
   };
 

@@ -30,6 +30,10 @@ useEffect(() => {
   }, [userId]);
 
 const handlePasswordChange = async () => {
+    if (!currentPw) {
+      alert("현재 비밀번호를 입력해주세요.");
+      return;
+    }
     if (newPw !== confirmPw) {
       alert("새 비밀번호가 일치하지 않습니다.");
       return;
@@ -49,7 +53,7 @@ const handlePasswordChange = async () => {
 
   return (
     <div className="account-edit-container">
-            <div className="account-edit-header">
+      <div className="account-edit-header">
         <h1 className="header-title">회원정보수정</h1>
       </div>
       {/* 비밀번호 변경 섹션 */}
@@ -91,7 +95,10 @@ const handlePasswordChange = async () => {
           onChange={(e) => setMobile(e.target.value)}
         />
       </div>
-      <button className="secondary-button" onClick={handlePasswordChange}>
+      <button className="cancel-button" style={{marginBottom: "10px"}} onClick={() => navigate("/mypage")}>
+        뒤로가기
+      </button>
+      <button className="save-button" onClick={handlePasswordChange}>
         변경하기
       </button>
     </div>
