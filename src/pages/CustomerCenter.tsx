@@ -98,10 +98,6 @@ const CustomerCenter: React.FC = () => {
   );
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
 
-  // 공통적으로 쓰이는 상태들 페이지네이션
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
   // 관리자용 전용 페이지네이션
   const [adminPage, setAdminPage] = useState(1);
   const [adminTotalPages, setAdminTotalPages] = useState(1);
@@ -157,7 +153,7 @@ const CustomerCenter: React.FC = () => {
   }, [isAdmin]);
 
   // 관리자용 전체 질문 목록 가져오기
-  const fetchAllQuestions = async (page = 1) => {
+  const fetchAllQuestions = async (page: number = 1) => {
     const token = getToken();
     if (!token) {
       console.error("토큰이 없습니다.");
@@ -173,16 +169,13 @@ const CustomerCenter: React.FC = () => {
           credentials: "include",
         }
       );
-      console.log("📥 응답 상태 코드:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("📦 전체 질문 목록 응답 데이터:", data);
         data.dtoList.forEach((q) => console.log(q));
         setAllQuestions(data.dtoList);
         setAdminPage(data.page);
         setAdminTotalPages(data.totalPages || 1);
-        console.log("adminTotalPages:", adminTotalPages);
       } else {
         console.error("전체 질문 목록 조회 실패:", response.status);
       }
@@ -213,7 +206,7 @@ const CustomerCenter: React.FC = () => {
         setInquiries(data);
       } else if (response.status === 401) {
         console.error("인증이 만료되었습니다.");
-        removeToken(); // ✅ 유틸 함수 사용
+        removeToken();
       } else {
         console.error("문의 목록 조회 실패:", response.status);
       }
@@ -309,7 +302,7 @@ const CustomerCenter: React.FC = () => {
 
     const token = getToken();
     if (!token) {
-      alert("로그인이 필요합니다.");
+      setAlertMessage("로그인이 필요합니다.");
       return;
     }
 
