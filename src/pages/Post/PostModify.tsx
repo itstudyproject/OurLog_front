@@ -281,6 +281,8 @@ const PostModify = () => {
     setIsSubmitting(true);
 
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
       const postDTO = {
         postId: id,
         title: formData.title,
@@ -293,6 +295,7 @@ const PostModify = () => {
           path: img.path,
         })),
         tag: tags.join(","),
+        userId: user.userId,
       };
 
       const response = await fetch(`http://localhost:8080/ourlog/post/modify`, {
@@ -306,7 +309,7 @@ const PostModify = () => {
 
       if (!response.ok) throw new Error("게시물 수정에 실패했습니다.");
       alert("게시물이 성공적으로 수정되었습니다.");
-      navigate(`/post/detail/${id}`);
+      navigate(`/post/${id}`);
     } catch (error) {
       alert("게시물 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -320,7 +323,7 @@ const PostModify = () => {
         "수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
       )
     ) {
-      navigate(`/post/detail/${id}`);
+      navigate(`/post/${id}`);
     }
   };
 

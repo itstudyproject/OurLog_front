@@ -64,7 +64,7 @@ function App() {
           <Route path="request" element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
           <Route path="Register" element={<PostRegister />} />
-          <Route path="Modify/:id" element={<PostModify />} />
+          <Route path="modify/:id" element={<PostModify />} />
         </Route>
       </Route>
 
