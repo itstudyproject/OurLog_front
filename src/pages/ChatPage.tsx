@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import "../styles/ChatPage.css";
+import { getToken } from "../utils/auth";
 
 interface UserProfile {
   nickname: string;
@@ -23,7 +24,8 @@ interface ChatMessage {
   isPaymentComplete?: boolean;
 }
 
-const WEBSOCKET_URL = "http://localhost:8080/ourlog";
+const token = localStorage.getItem("token"); // 또는 다른 저장소
+const WEBSOCKET_URL = `http://localhost:8080/ourlog/ws-chat?token=${token}`;
 
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
@@ -62,44 +64,28 @@ const ChatPage: React.FC = () => {
     console.log("유저 목록:", userProfiles);
   }, []);
 
-  // 2. currentUser가 변경될 때 WebSocket 연결 & 구독
+  // 2. 유저 목록이 비어 있으면 기본 유저와 채팅 시작
+  useEffect(() => {
+    if (userProfiles.length === 0) {
+      const fallbackUser = "관리자";
+      setCurrentUser(fallbackUser);
+      setMessagesByUser((prev) => ({ ...prev, [fallbackUser]: [] }));
+    }
+  }, [userProfiles]);
+
+  // 3. currentUser가 변경될 때 WebSocket 연결 & 구독
   useEffect(() => {
     if (!currentUser) return;
 
     const socket = new SockJS(WEBSOCKET_URL);
     const client = Stomp.over(socket);
-    client.debug = null; // 로그 끄기
+    client.debug = null;
 
     client.connect(
       {},
       () => {
         client.subscribe(`/topic/messages/${currentUser}`, (message: any) => {
-          console.log("수신 메시지 원본:", message.body);
-
-          // JSON인지 검사하는 함수
-          const isJSON = (str: string) => {
-            try {
-              JSON.parse(str);
-              return true;
-            } catch {
-              return false;
-            }
-          };
-
-          if (isJSON(message.body)) {
-            try {
-              const received: ChatMessage = JSON.parse(message.body);
-              setMessagesByUser((prev) => ({
-                ...prev,
-                [currentUser]: [...(prev[currentUser] || []), received],
-              }));
-            } catch (e) {
-              console.error("메시지 파싱 실패, 받은 데이터:", message.body);
-            }
-          } else {
-            console.error("JSON 형식이 아닌 메시지 수신:", message.body);
-            // 필요하면 여기서 HTML 메시지 처리나 무시 로직 추가 가능
-          }
+          // 메시지 처리 로직
         });
       },
       (error) => {
@@ -116,7 +102,6 @@ const ChatPage: React.FC = () => {
         });
         stompClient.current = null;
       }
-      console.log("현재 선택된 유저:", currentUser);
     };
   }, [currentUser]);
 
