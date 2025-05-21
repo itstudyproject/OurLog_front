@@ -46,7 +46,7 @@ function App() {
           <Route index element={<ArtList />} />
           <Route path="register" element={<ArtRegister />} />
           <Route path="payment" element={<Payment />} />
-          <Route path="bids" element={<BidHistory />} />
+          <Route path="bidhistory/:tradeId" element={<BidHistory />} />
           <Route path=":id" element={<ArtDetail />} />
         </Route>
 

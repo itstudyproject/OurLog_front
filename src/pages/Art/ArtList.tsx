@@ -72,19 +72,19 @@ const ArtList = () => {
           followers: item.followers || null,
           downloads: item.downloads || null,
           favoriteCnt: item.favoriteCnt || item.likeCount || null,
-          tradeDTO: item.trade ? {
-            tradeId: item.trade.tradeId,
-            postId: item.trade.postId,
-            sellerId: item.trade.sellerId,
-            bidderId: item.trade.bidderId || null,
-            bidderNickname: item.trade.bidderNickname || null,
-            startPrice: item.trade.startPrice,
-            highestBid: item.trade.highestBid || null,
-            bidAmount: item.trade.bidAmount || null,
-            nowBuy: item.trade.nowBuy,
-            tradeStatus: item.trade.tradeStatus,
-            startBidTime: item.trade.startBidTime || null,
-            lastBidTime: item.trade.lastBidTime || null
+          tradeDTO: item.tradeDTO ? {
+            tradeId: item.tradeDTO.tradeId,
+            postId: item.tradeDTO.postId,
+            sellerId: item.tradeDTO.sellerId,
+            bidderId: item.tradeDTO.bidderId || null,
+            bidderNickname: item.tradeDTO.bidderNickname || null,
+            startPrice: item.tradeDTO.startPrice,
+            highestBid: item.tradeDTO.highestBid || null,
+            bidAmount: item.tradeDTO.bidAmount || null,
+            nowBuy: item.tradeDTO.nowBuy,
+            tradeStatus: item.tradeDTO.tradeStatus,
+            startBidTime: item.tradeDTO.startBidTime || null,
+            lastBidTime: item.tradeDTO.lastBidTime || null
           } : null,
           pictureDTOList: item.pictureDTOList || null,
           profileImage: item.profileImage || item.userProfileImage || null,
@@ -242,40 +242,51 @@ const ArtList = () => {
       </div>
 
       <div className="art-list-grid">
-        {filteredArtworks.map((artwork) => (
-          <div
-            key={artwork.postId}
-            className="art-list-item-card"
-            onClick={() => handleArtworkClick(artwork.postId)}
-          >
-            <div className="art-list-item-image">
-              {artwork.thumbnailImagePath ? (
-                <img
-                  src={artwork.thumbnailImagePath ? `/ourlog/uploads/images/${artwork.thumbnailImagePath}` : ''}
-                  alt={artwork.title}
-                  className="art-list-item-thumbnail"
-                />
-              ) : (
-                <div className="art-list-item-no-image">이미지 없음</div>
-              )}
-              <div className="art-list-item-likes">♥ {artwork.favoriteCnt ?? 0}</div>
+        {filteredArtworks.map((artwork) => {
+          // ✅ 백엔드에서 originImagePath를 제대로 내려주면 이 부분이 작동합니다.
+          const imageUrl = artwork.pictureDTOList && artwork.pictureDTOList.length > 0 && artwork.pictureDTOList[0].originImagePath
+            ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}` // 백엔드 전체 URL 포함
+            : null;
+
+          console.log("Artwork TradeDTO:", artwork.tradeDTO);
+
+          return (
+            <div
+              key={artwork.postId}
+              className="art-list-item-card"
+              onClick={() => handleArtworkClick(artwork.postId)}
+            >
+              <div className="art-list-item-image">
+                {imageUrl ? ( // 조정된 이미지 URL이 있을 경우 표시
+                  <img
+                    src={imageUrl} // 수정된 URL 사용
+                    alt={artwork.title}
+                    className="art-list-item-thumbnail"
+                  />
+                ) : (
+                  <div className="art-list-item-no-image">이미지 없음</div>
+                )}
+                <div className="art-list-item-likes">♥ {artwork.favoriteCnt ?? 0}</div>
+              </div>
+              <div className="art-list-item-info">
+                <h3 className="art-list-item-title">{artwork.title}</h3>
+                <p className="art-list-item-author">{artwork.nickname}</p>
+                {/* ✅ tradeDTO가 있을 때만 경매 정보 표시 */}
+                <p className="art-list-item-price">
+                  {artwork.tradeDTO
+                    ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
+                    : "경매 정보 없음"}
+                </p>
+                {/* ✅ tradeDTO와 lastBidTime이 있을 때만 남은 시간 표시 */}
+                {artwork.tradeDTO && artwork.tradeDTO.lastBidTime && (
+                  <span className="auction-time-left">
+                    {getTimeLeft(artwork.tradeDTO.lastBidTime)}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="art-list-item-info">
-              <h3 className="art-list-item-title">{artwork.title}</h3>
-              <p className="art-list-item-author">{artwork.nickname}</p>
-              <p className="art-list-item-price">
-                {artwork.tradeDTO
-                  ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
-                  : "경매 정보 없음"}
-              </p>
-              {artwork.tradeDTO && artwork.tradeDTO.lastBidTime && (
-                <span className="auction-time-left">
-                  {getTimeLeft(artwork.tradeDTO.lastBidTime)}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="art-list-pagination">

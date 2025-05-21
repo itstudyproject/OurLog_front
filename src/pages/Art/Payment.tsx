@@ -76,10 +76,27 @@ const ArtPayment = () => {
     // TODO: 실제 결제 처리 로직 구현 (API 호출 등)
     console.log("결제 진행:", paymentInfo, "선택된 방법:", selectedMethod);
 
-    // 결제 완료 후 리다이렉션 (예: 주문 완료 페이지 또는 마이페이지 구매 내역)
-    // 현재는 더미 경로로 이동합니다.
-    alert("결제가 완료되었습니다! (더미)"); // 실제 결제 후 성공/실패 처리 필요
-    navigate("/Art"); // 예시: 아트 목록 페이지로 이동
+    // 결제 완료 메시지 표시 후 입찰 기록 페이지로 이동
+    const isPaymentSuccessful = true; // TODO: 실제 결제 결과에 따라 변경
+
+    if (isPaymentSuccessful) {
+        const confirmComplete = window.confirm("결제가 완료되었습니다!");
+        if (confirmComplete) {
+            // tradeId를 가져와 입찰 기록 페이지로 이동
+            // tradeId는 더 이상 URL 파라미터로 전달하지 않음
+            // const tradeId = postData?.tradeDTO?.tradeId;
+            // if (tradeId) {
+                // BidHistory 경로를 /Art/bidhistory로 수정
+                navigate(`/Art/bidhistory`);
+            // } else {
+            //     console.error("Trade ID is missing for navigation.");
+        } else {
+            // 사용자가 확인을 누르지 않으면 현재 페이지에 머무릅니다.
+        }
+    } else {
+        // TODO: 결제 실패 처리
+        alert("결제에 실패했습니다.");
+    }
   };
 
   if (loading || !postData || !paymentInfo) {
