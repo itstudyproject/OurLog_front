@@ -278,6 +278,7 @@ const CustomerCenter: React.FC = () => {
           content: inquiryForm.content,
         }),
       });
+      setAlertMessage("문의가 수정되었습니다.");
     } else {
       // 등록
       await fetch("http://localhost:8080/ourlog/question/inquiry", {
@@ -288,6 +289,7 @@ const CustomerCenter: React.FC = () => {
           content: inquiryForm.content,
         }),
       });
+      setAlertMessage("문의가 등록되었습니다.");
     }
 
     // 등록/수정 후 내 문의 목록 새로고침
@@ -326,6 +328,7 @@ const CustomerCenter: React.FC = () => {
         setAlertMessage(`삭제 실패: ${res.status} ${errorText}`);
       } else {
         setShowDeleteModal(false);
+        setAlertMessage("문의가 삭제되었습니다.");
         fetchMyQuestions();
       }
     } catch (e) {
@@ -347,11 +350,6 @@ const CustomerCenter: React.FC = () => {
     questionId: number,
     answerContentValue: string
   ) => {
-    if (!answerContentValue.trim()) {
-      setAlertMessage("답변 내용을 입력하세요.");
-      setShowAlertModal(true);
-      return;
-    }
     const token = getToken();
     if (!token) {
       setAlertMessage("토큰이 없습니다.");
@@ -620,30 +618,33 @@ const CustomerCenter: React.FC = () => {
                       <div className="cc-answer-form">
                         <label>답변</label>
 
-                        <textarea
-                          value={answerContent[question.questionId] || ""}
-                          onChange={(e) =>
-                            setAnswerContent({
-                              ...answerContent,
-                              [question.questionId]: e.target.value,
-                            })
-                          }
-                          placeholder="답변을 입력하세요"
-                          className="cc-admin-answer-textarea"
-                        />
-                        <div className="cc-button-wrapper">
-                          <button
-                            className="cc-action-button"
-                            onClick={() =>
-                              handleAnswerSubmit(
-                                question.questionId,
-                                answerContent[question.questionId] || ""
-                              )
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAnswerSubmit(
+                              question.questionId,
+                              answerContent[question.questionId] || ""
+                            );
+                          }}
+                        >
+                          <textarea
+                            value={answerContent[question.questionId] || ""}
+                            onChange={(e) =>
+                              setAnswerContent({
+                                ...answerContent,
+                                [question.questionId]: e.target.value,
+                              })
                             }
-                          >
-                            답변 등록
-                          </button>
-                        </div>
+                            required
+                            placeholder="답변을 입력하세요"
+                            className="cc-admin-answer-textarea"
+                          />
+                          <div className="cc-button-wrapper">
+                            <button className="cc-action-button" type="submit">
+                              답변 등록
+                            </button>
+                          </div>
+                        </form>
                       </div>
                     )}
                   </div>
@@ -986,6 +987,7 @@ const CustomerCenter: React.FC = () => {
                         onChange={(e) =>
                           setEditingAnswerContent(e.target.value)
                         }
+                        required
                       />
                       {isAdmin && (
                         <>
