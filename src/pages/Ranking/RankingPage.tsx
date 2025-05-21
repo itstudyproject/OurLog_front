@@ -11,6 +11,16 @@ type Artwork = {
   views: number;
   followers: number;
   downloads: number;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 };
 
 type RankingKey = "views" | "followers" | "downloads";
@@ -63,19 +73,48 @@ const RankingPage: React.FC = () => {
 
       const data = JSON.parse(raw);
       const mapped: Artwork[] = data.map((item: any) => {
-        const hasUser = item.userProfileDTO && item.userProfileDTO.nickname;
+        const hasUser =
+          item.userProfileDTO && item.userProfileDTO.user.nickname;
+
+        let artworkImageSrc = "/default-image.jpg";
+
+        if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+          const firstPic = item.pictureDTOList[0];
+          if (firstPic.thumbnailImagePath) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.thumbnailImagePath}`;
+          } else if (firstPic.resizedImagePath) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.resizedImagePath}`;
+          } else if (firstPic.originImagePath) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.originImagePath}`;
+          } else if (firstPic.fileName) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.fileName}`;
+          }
+        }
+
+        if (artworkImageSrc === "/default-image.jpg") {
+          if (item.thumbnailImagePath) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.thumbnailImagePath}`;
+          } else if (item.fileName) {
+            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.fileName}`;
+          }
+        }
+
         return {
           id: item.postId,
           title: item.title,
           author: hasUser ? item.userProfileDTO.nickname : "unknown",
-          avatar:
-            hasUser && item.userProfileDTO.profileImage
-              ? `/avatar/${item.userProfileDTO.thumbnailImagePath}` // ✅ 경로 수정
+          avatar: hasUser && item.userProfileDTO?.profileImage
+              ? `http://localhost:8080/ourlog/picture/display/${item.userProfileDTO.profileImage}`
               : "/images/default-avatar.png",
-          imageSrc: `/image/${item.fileName}`, // ✅ 경로 수정
+          imageSrc: artworkImageSrc,
           views: item.views,
           followers: item.followers,
           downloads: item.downloads,
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList
         };
       });
 

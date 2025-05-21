@@ -9,6 +9,16 @@ interface Artwork {
   highestBid: string;
   link: string;
   isArtist?: boolean;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 }
 
 const VIEWS_API_URL = "http://localhost:8080/ourlog/ranking?type=views";
@@ -50,9 +60,34 @@ const ArtworkSlider: React.FC = () => {
               : "",
           link: `/Art/${item.postId}`,
           isArtist: false,
-          imageUrl: item.fileName
-            ? `http://localhost:8080/images/${item.fileName}`
-            : "/default-image.jpg",
+          imageUrl: (() => {
+            let artworkImageSrc = "/default-image.jpg";
+            if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+              const firstPic = item.pictureDTOList[0];
+              if (firstPic.thumbnailImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.thumbnailImagePath}`;
+              } else if (firstPic.resizedImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.resizedImagePath}`;
+              } else if (firstPic.originImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.originImagePath}`;
+              } else if (firstPic.fileName) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.fileName}`;
+              }
+            }
+            if (artworkImageSrc === "/default-image.jpg") {
+              if (item.thumbnailImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.thumbnailImagePath}`;
+              } else if (item.fileName) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.fileName}`;
+              }
+            }
+            return artworkImageSrc;
+          })(),
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList,
         }));
 
         setArtworks(mapped);
@@ -78,9 +113,34 @@ const ArtworkSlider: React.FC = () => {
               : "",
           link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
           isArtist: true,
-          imageUrl: item.fileName
-            ? `http://localhost:8080/images/${item.fileName}`
-            : "/default-image.jpg",
+          imageUrl: (() => {
+            let artworkImageSrc = "/default-image.jpg";
+            if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+              const firstPic = item.pictureDTOList[0];
+              if (firstPic.thumbnailImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.thumbnailImagePath}`;
+              } else if (firstPic.resizedImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.resizedImagePath}`;
+              } else if (firstPic.originImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.originImagePath}`;
+              } else if (firstPic.fileName) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.fileName}`;
+              }
+            }
+            if (artworkImageSrc === "/default-image.jpg") {
+              if (item.thumbnailImagePath) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.thumbnailImagePath}`;
+              } else if (item.fileName) {
+                artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.fileName}`;
+              }
+            }
+            return artworkImageSrc;
+          })(),
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList,
         }));
 
         setArtists(mapped);
