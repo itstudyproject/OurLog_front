@@ -36,6 +36,17 @@ const ArtDetail = () => {
     }
 
     const currentHighestBid = post.tradeDTO.highestBid ?? post.tradeDTO.startPrice;
+
+    if (post?.tradeDTO?.nowBuy !== null && bid === post.tradeDTO.nowBuy) {
+        const confirmNowBuy = window.confirm(
+            `현재 지정한 입찰 금액(${bid.toLocaleString()}원)은 즉시구매가와 동일합니다.\n즉시구매 페이지로 이동하시겠습니까?`
+        );
+        if (confirmNowBuy) {
+            handleBuyNow();
+        }
+        return;
+    }
+
     const minBidAmount = currentHighestBid + 1000;
     if (bid < minBidAmount) {
         alert(`입찰가는 현재 최고가(${currentHighestBid.toLocaleString()}원)보다 1000원 이상 높아야 합니다.`);
@@ -53,14 +64,11 @@ const ArtDetail = () => {
             return;
         }
 
-        const currentUserId = post.userId;
-        if (!currentUserId) {
-             alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해주세요.");
-             navigate('/login');
-             return;
-        }
-
         const tradeId = post.tradeDTO.tradeId;
+        if (!tradeId) {
+            alert("경매 정보를 찾을 수 없습니다.");
+            return;
+        }
 
         const response = await fetch(`http://localhost:8080/ourlog/trades/${tradeId}/bid`, {
             method: 'POST',
@@ -69,20 +77,19 @@ const ArtDetail = () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                tradeId: tradeId,
                 bidAmount: bid,
             }),
         });
 
+        const responseText = await response.text();
+
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("입찰 실패 응답:", errorText);
-            // Attempt to parse error text as JSON if it looks like a JSON error response
+            console.error("입찰 실패 응답:", responseText);
             try {
-                const errorJson = JSON.parse(errorText);
-                alert(`입찰 실패: ${errorJson.message || errorText || '서버 오류'}`);
+                const errorJson = JSON.parse(responseText);
+                 alert(`입찰 실패: ${errorJson.message || responseText || '서버 오류'}`);
             } catch (e) {
-                 alert(`입찰 실패: ${errorText || '서버 오류'}`);
+                 alert(`입찰 실패: ${responseText || '서버 오류'}`);
             }
             if (post?.postId) {
                  fetchArtworkDetail(post.postId.toString());
@@ -90,16 +97,14 @@ const ArtDetail = () => {
             return;
         }
 
-        const successMessage = await response.text();
-        alert(`입찰 성공: ${successMessage}`);
-
+        alert(`입찰 성공: ${responseText}`);
         if (post?.postId) {
              fetchArtworkDetail(post.postId.toString());
         }
 
     } catch (error) {
         console.error("입찰 요청 중 오류 발생:", error);
-        alert("입찰 요청 중 오류가 발생했습니다.");
+        alert(`입찰 요청 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`);
          if (post?.postId) {
              fetchArtworkDetail(post.postId.toString());
          }
@@ -112,16 +117,16 @@ const ArtDetail = () => {
     if (post?.tradeDTO?.tradeId !== undefined && post.tradeDTO.tradeId !== null) {
       navigate(`/Art/payment`, { state: { post } });
     } else {
-      console.warn("Trade ID is null or undefined, cannot navigate to bid history.");
+      console.warn("Trade ID is null or undefined, cannot navigate to payment.");
       alert("결제를 진행할 수 없습니다. 경매 정보가 올바르지 않습니다.");
     }
-  }; 
-    const handleOpenChat = () => {
+  };
+
+  const handleOpenChat = () => {
     const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
     if (confirmChat) {
       window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
     }
-
   };  
   const handleBidHistory = () => {
     alert("입찰 내역을 확인합니다.");

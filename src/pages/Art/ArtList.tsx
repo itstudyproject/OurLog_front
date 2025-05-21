@@ -13,7 +13,7 @@ const ArtList = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(1);
-  const artworksPerPage = 10;
+  const artworksPerPage = 15;
 
   useEffect(() => {
     if (!hasToken()) {

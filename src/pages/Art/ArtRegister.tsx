@@ -460,7 +460,7 @@ const ArtRegister = () => {
       });
 
       if (!tradeRes.ok) {
-          const errorBody = await postRes.text();
+          const errorBody = await tradeRes.text();
           console.error("경매 등록 실패 응답:", errorBody);
            throw new Error(`경매 등록 실패: ${tradeRes.status} - ${errorBody}`);
       }
