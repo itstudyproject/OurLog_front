@@ -82,14 +82,16 @@ const ChatPage: React.FC = () => {
 
     const socket = new SockJS(url);
     const client = Stomp.over(socket);
-    client.debug = null;
+    client.debug = null; // 로그 제거
 
-    // Authorization 헤더 생략
     client.connect(
-      {}, // 헤더를 빈 객체로 전달 (Authorization 헤더 없음)
+      {}, // 헤더는 전달하지 않음 (JWT는 쿼리파라미터로 전달)
       () => {
+        console.log("STOMP 연결 성공");
+
         client.subscribe(`/topic/messages/${currentUser}`, (message: any) => {
           const body = JSON.parse(message.body) as ChatMessage;
+
           setMessagesByUser((prev) => ({
             ...prev,
             [currentUser]: [...(prev[currentUser] || []), body],
