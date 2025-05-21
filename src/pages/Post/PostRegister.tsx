@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
@@ -39,6 +39,7 @@ const PostRegister = () => {
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>("");
+  const [countdown, setCountdown] = useState<string>("경매 정보 없음");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -320,6 +321,50 @@ const PostRegister = () => {
     localStorage.setItem("draftPost", JSON.stringify(formData));
     alert("임시저장 되었습니다.");
   };
+
+  useEffect(() => {
+    if (post?.tradeDTO?.lastBidTime) {
+      const endTime = new Date(post.tradeDTO.lastBidTime).getTime();
+      const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance < 0) {
+          clearInterval(timer);
+          setCountdown("경매 종료");
+          // ✅ Optionally refetch post detail here to update tradeStatus
+          // if (!post.tradeDTO.tradeStatus) {
+          //   fetchArtworkDetail(post.postId.toString());
+          // }
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          // ✅ Modified countdown logic
+          let countdownText = "";
+          if (days > 0) {
+            countdownText += `${days}일 `;
+          }
+          if (days > 0 || hours > 0) { // Display hours if days > 0 or hours > 0
+             countdownText += `${hours}시간 `;
+          }
+           if (days > 0 || hours > 0 || minutes > 0) { // Display minutes if days > 0, hours > 0, or minutes > 0
+             countdownText += `${minutes}분 `;
+           }
+          countdownText += `${seconds}초`; // Always display seconds when time is positive
+
+          setCountdown(countdownText.trim()); // Trim any leading/trailing space
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+       setCountdown("경매 정보 없음");
+    }
+
+  }, [post?.tradeDTO?.lastBidTime, post?.postId]); // Added post?.postId dependency for potential refetch
 
   return (
     <div className="post-register-wrapper">

@@ -294,12 +294,23 @@ const ArtDetail = () => {
       <div className="art-detail-content">
         <div className="left-content">
           <div className="art-image-container">
-            {post.fileName ? (
-              <img
-                src={post.fileName}
-                alt={post.title || 'Artwork image'}
-                className="art-main-image"
-              />
+            {post?.pictureDTOList && post.pictureDTOList.length > 0 ? (
+              <div className="artwork-images">
+                {post.pictureDTOList.map((picture, index) => {
+                  const imageUrl = picture.originImagePath
+                    ? `http://localhost:8080/ourlog/picture/display/${picture.originImagePath}`
+                    : null;
+
+                  return imageUrl ? (
+                    <img
+                      key={picture.uuid || index}
+                      src={imageUrl}
+                      alt={`${post.title || 'Artwork image'} ${index + 1}`}
+                      className="art-main-image"
+                    />
+                  ) : null;
+                })}
+              </div>
             ) : (
               <div className="no-image-placeholder">이미지 없음</div>
             )}
