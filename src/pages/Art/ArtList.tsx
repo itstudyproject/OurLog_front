@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/ArtList.css";
-import { ArtPost, ArtListResponse } from "../../types/art";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
+import { PostDTO } from '../../types/postTypes';
 
 const ArtList = () => {
   const navigate = useNavigate();
-  const [artworks, setArtworks] = useState<ArtPost[]>([]);
+  const [artworks, setArtworks] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(1);
-  const artworksPerPage = 10;
+  const artworksPerPage = 15;
 
   useEffect(() => {
     if (!hasToken()) {
@@ -58,31 +59,38 @@ const ArtList = () => {
         }
 
         const { pageResultDTO } = data;
-        const mappedArtworks: ArtPost[] = (pageResultDTO.dtoList || []).map((item: any) => ({
-          post_id: item.postId || item.id,
+        const mappedArtworks: PostDTO[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+          postId: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
           content: item.content || '',
-          description: item.content || '',
-          author: {
-            id: item.userId || 0,
-            name: item.userName || item.author || item.writer || '',
-            profileImage: item.userProfileImage || '/images/default-avatar.png',
-            isFollowing: false
-          },
-          auction: {
-            startingBid: item.startPrice || 0,
-            currentBid: item.currentBid || item.startPrice || 0,
-            buyNowPrice: item.instantPrice || 0,
-            endTime: item.endTime || new Date().toISOString(),
-            bidCount: item.bidCount || 0
-          },
-          createdAt: item.regDate || item.createdAt || '',
-          updatedAt: item.modDate || item.updatedAt || '',
-          images: item.fileName ? [item.fileName] : [],
-          likes: item.likeCount || 0,
-          views: item.viewCount || 0,
-          status: "ONGOING"
+          nickname: item.nickname || item.userName || item.author || item.writer || '',
+          fileName: item.fileName,
+          views: item.views || item.viewCount || 0,
+          tag: item.tag,
+          thumbnailImagePath: item.thumbnailImagePath || null,
+          followers: item.followers || null,
+          downloads: item.downloads || null,
+          favoriteCnt: item.favoriteCnt || item.likeCount || null,
+          tradeDTO: item.tradeDTO ? {
+            tradeId: item.tradeDTO.tradeId,
+            postId: item.tradeDTO.postId,
+            sellerId: item.tradeDTO.sellerId,
+            bidderId: item.tradeDTO.bidderId || null,
+            bidderNickname: item.tradeDTO.bidderNickname || null,
+            startPrice: item.tradeDTO.startPrice,
+            highestBid: item.tradeDTO.highestBid || null,
+            bidAmount: item.tradeDTO.bidAmount || null,
+            nowBuy: item.tradeDTO.nowBuy,
+            tradeStatus: item.tradeDTO.tradeStatus,
+            startBidTime: item.tradeDTO.startBidTime || null,
+            lastBidTime: item.tradeDTO.lastBidTime || null
+          } : null,
+          pictureDTOList: item.pictureDTOList || null,
+          profileImage: item.profileImage || item.userProfileImage || null,
+          replyCnt: item.replyCnt || null,
+          regDate: item.regDate || item.createdAt || null,
+          modDate: item.modDate || item.updatedAt || null,
         }));
 
         setArtworks(mappedArtworks);
@@ -102,9 +110,15 @@ const ArtList = () => {
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
     if (sortType === 'popular') {
-      return [...artworks].sort((a, b) => b.likes - a.likes);
+      // favoriteCnt가 null일 경우 0으로 간주하여 정렬
+      return [...artworks].sort((a, b) => (b.favoriteCnt ?? 0) - (a.favoriteCnt ?? 0));
     }
-    return [...artworks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // tradeDTO나 startBidTime이 null일 경우 유효한 시간으로 간주하여 정렬 (예: 아주 오래된 시간)
+    return [...artworks].sort((a, b) => {
+      const timeA = a.tradeDTO?.startBidTime ? new Date(a.tradeDTO.startBidTime).getTime() : 0;
+      const timeB = b.tradeDTO?.startBidTime ? new Date(b.tradeDTO.startBidTime).getTime() : 0;
+      return timeB - timeA;
+    });
   }, [artworks, sortType]);
 
   // boardNo 5만 필터링
@@ -114,7 +128,7 @@ const ArtList = () => {
     return onlyArt.filter(
       art =>
         art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        art.author.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (art.nickname && art.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [sortedArtworks, searchTerm]);
 
@@ -135,6 +149,7 @@ const ArtList = () => {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchTerm(searchInput);
     setCurrentPage(1);
   };
 
@@ -142,10 +157,53 @@ const ArtList = () => {
     navigate('/art/register');
   };
 
+  // 경매 남은 시간 계산 함수 (최대 7일 제한)
+  function getTimeLeft(endTime: string | Date | null): { text: string, isEndingSoon: boolean, isEnded: boolean } {
+    if (!endTime) return { text: "마감 정보 없음", isEndingSoon: false, isEnded: false };
+    const end = new Date(endTime).getTime();
+    const now = Date.now();
+    const diff = end - now;
+    const oneMinuteInMillis = 60 * 1000;
+    const oneHourInMillis = 60 * oneMinuteInMillis;
+    const oneDayInMillis = 24 * oneHourInMillis;
+
+    if (isNaN(end) || diff <= 0) return { text: "경매 종료", isEndingSoon: false, isEnded: true };
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    let text = "";
+    if (diff < oneMinuteInMillis) {
+      text = `${seconds}초 남음`;
+    } else if (diff < oneHourInMillis) {
+      text = `${minutes}분 남음`;
+    } else if (diff < oneDayInMillis) {
+      text = `${hours}시간 ${minutes}분 남음`;
+    } else {
+      text = `${days}일 ${hours}시간 ${minutes}분 남음`;
+    }
+
+    const isEndingSoon = diff > 0 && diff <= oneHourInMillis;
+
+    return { text, isEndingSoon, isEnded: false };
+  }
+
   if (loading) {
     return (
       <div className="loading">
         <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (!filteredArtworks || filteredArtworks.length === 0) {
+    return (
+      <div className="no-artworks">
+        <p>등록된 작품이 없습니다.</p>
+        {searchTerm && <p>'{searchTerm}'에 대한 검색 결과가 없습니다.</p>}
+        <button onClick={handleRegisterClick}>새 작품 등록하기</button>
       </div>
     );
   }
@@ -176,8 +234,8 @@ const ArtList = () => {
           <form onSubmit={handleSearchSubmit} className="art-list-search-form">
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="키워드로 검색해주세요"
               className="art-list-search-input"
             />
@@ -196,37 +254,79 @@ const ArtList = () => {
       </div>
 
       <div className="art-list-grid">
-        {filteredArtworks.map((artwork) => (
-          <div
-            key={artwork.post_id}
-            className="art-list-item-card"
-            onClick={() => handleArtworkClick(artwork.post_id)}
-          >
-            <div className="art-list-item-image">
-              {artwork.images?.[0] ? (
-                <img
-                  src={artwork.images[0]}
-                  alt={artwork.title}
-                  className="art-list-item-thumbnail"
-                />
-              ) : (
-                <div className="art-list-item-no-image">이미지 없음</div>
-              )}
-              <div className="art-list-item-likes">♥ {artwork.likes}</div>
+        {filteredArtworks.map((artwork) => {
+          // ✅ 백엔드에서 originImagePath를 제대로 내려주면 이 부분이 작동합니다.
+          const imageUrl = artwork.pictureDTOList && artwork.pictureDTOList.length > 0 && artwork.pictureDTOList[0].originImagePath
+            ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}` // 백엔드 전체 URL 포함
+            : null;
+
+          console.log("Artwork TradeDTO:", artwork.tradeDTO);
+
+          const timeInfo = getTimeLeft(artwork.tradeDTO?.lastBidTime || null);
+
+          return (
+            <div
+              key={artwork.postId}
+              className="art-list-item-card"
+              onClick={() => handleArtworkClick(artwork.postId)}
+            >
+              <div className="art-list-item-image">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl} // 수정된 URL 사용
+                    alt={artwork.title}
+                    className="art-list-item-thumbnail"
+                  />
+                ) : (
+                  <div className="art-list-item-no-image">이미지 없음</div>
+                )}
+                <div className="art-list-item-likes">♥ {artwork.favoriteCnt ?? 0}</div>
+              </div>
+              <div className="art-list-item-info">
+                <h3 className="art-list-item-title">{artwork.title}</h3>
+                <p className="art-list-item-author">{artwork.nickname}</p>
+                {/* ✅ tradeDTO가 있을 때만 경매 정보 표시 */}
+                <p className="art-list-item-price">
+                  {artwork.tradeDTO
+                    ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
+                    : "경매 정보 없음"}
+                </p>
+                {/* ✅ tradeDTO와 lastBidTime이 있을 때만 남은 시간 표시 */}
+                {artwork.tradeDTO ? (
+                  artwork.tradeDTO.tradeStatus ? ( // 경매 종료 시
+                    <span className="auction-time-left" style={{ color: 'red' }}>경매 종료</span>
+                  ) : ( // 경매 진행 중
+                    artwork.tradeDTO.lastBidTime && (
+                      <span
+                        className="auction-time-left"
+                        // ✅ 남은 시간에 따라 스타일 및 텍스트 변경
+                        style={{ color: timeInfo.isEndingSoon ? 'red' : 'inherit' }}
+                      >
+                        {timeInfo.text}
+                        {timeInfo.isEndingSoon && " (종료 임박)"}
+                      </span>
+                    )
+                  )
+                ) : ( // tradeDTO 없음
+                  <span className="auction-time-left">경매 정보 없음</span>
+                )}
+              </div>
             </div>
-            <div className="art-list-item-info">
-              <h3 className="art-list-item-title">{artwork.title}</h3>
-              <p className="art-list-item-author">{artwork.author.name}</p>
-              <p className="art-list-item-price">{artwork.auction.currentBid.toLocaleString()}원</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="art-list-pagination">
         <button
-          onClick={() => startPage > 1 && handlePageClick(startPage - 1)}
+          onClick={() => startPage > 1 && handlePageClick(startPage - 10)}
           disabled={startPage === 1}
+          className="art-list-page-btn art-list-arrow-btn"
+        >
+          &lt;&lt;
+        </button>
+        <button
+          onClick={() => currentPage > 1 && handlePageClick(currentPage - 1)}
+          disabled={currentPage === 1}
           className="art-list-page-btn art-list-arrow-btn"
         >
           &lt;
@@ -241,11 +341,18 @@ const ArtList = () => {
           </button>
         ))}
         <button
+          onClick={() => currentPage < totalPages && handlePageClick(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="art-list-page-btn art-list-arrow-btn"
+        >
+          &gt;
+        </button>
+        <button
           onClick={() => endPage < totalPages && handlePageClick(endPage + 1)}
           disabled={endPage === totalPages}
           className="art-list-page-btn art-list-arrow-btn"
         >
-          &gt;
+          &gt;&gt;
         </button>
       </div>
     </div>

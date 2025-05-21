@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAuthHeaders } from "../../utils/auth";
+import { getAuthHeaders, hasToken, removeToken } from "../../utils/auth";
 import "../../styles/PostDetail.css";
 
 interface Comment {
@@ -45,40 +45,48 @@ const PostDetail = () => {
 
   const fetchPost = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
       const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
+      if (response.status === 403) {
+        alert("로그인이 필요합니다.");
+        navigate('/login');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error(response.status === 404 
-          ? '게시글을 찾을 수 없습니다.' 
-          : '게시글을 불러오는데 실패했습니다.');
+        throw new Error("게시글을 불러오는데 실패했습니다.");
       }
 
       const data = await response.json();
-      
-      if (!data || !data.postDTO) {
-        throw new Error('잘못된 데이터 형식입니다.');
-      }
-      
-      setPost(data.postDTO);
+      setPost(data);
     } catch (error) {
-      console.error("포스트를 불러오는 중 오류가 발생했습니다:", error);
-      setError(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      console.error("게시글 조회 실패:", error);
+      alert("게시글을 불러오는데 실패했습니다.");
     }
   };
 
   const increaseViewCount = async () => {
     try {
-      await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
+      const response = await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
+
+      if (response.status === 403) {
+        console.warn("조회수 증가 실패: 인증 필요");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("조회수 증가 실패");
+      }
     } catch (error) {
       console.error("조회수 증가 실패:", error);
     }
@@ -101,23 +109,39 @@ const PostDetail = () => {
     if (!commentContent.trim()) return;
 
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.userId) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       const response = await fetch(`http://localhost:8080/ourlog/reply/${id}`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify({
           content: commentContent,
           postDTO: {
-            postId: Number(id)
+            postId: Number(id),
           },
           userDTO: {
-            userId: 5,
-            nickname: "테스트유저"
-          }
-        })
+            userId: user.userId,
+            nickname: user.nickname || user.email || "익명",
+          },
+        }),
       });
 
+      if (response.status === 403) {
+        alert("댓글 등록 권한이 없습니다. 로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('댓글 등록에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '댓글 등록에 실패했습니다.');
       }
 
       setCommentContent("");
@@ -134,11 +158,20 @@ const PostDetail = () => {
     try {
       const response = await fetch(`http://localhost:8080/ourlog/reply/remove/${replyId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
+      if (response.status === 403) {
+        alert("댓글 삭제 권한이 없습니다. 로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('댓글 삭제에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '댓글 삭제에 실패했습니다.');
       }
 
       fetchPost();

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
@@ -7,13 +7,17 @@ interface ImageFile {
   file: File | null;
   preview: string;
   id: string; // 서버에 저장된 파일명
+  picId: string;
+  uuid: string;
+  picName: string;
+  path: string;
 }
 
 interface FormData {
   title: string;
   content: string;
   images: ImageFile[];
-  thumbnailId: string | null;
+  fileName: string | null;
   category: string;
 }
 
@@ -28,13 +32,14 @@ const PostRegister = () => {
     title: "",
     content: "",
     images: [],
-    thumbnailId: null,
+    fileName: null,
     category: initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>("");
+  const [countdown, setCountdown] = useState<string>("경매 정보 없음");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -96,7 +101,7 @@ const PostRegister = () => {
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
           if (error) throw new Error(error);
-      
+
           const uploaded = await uploadImage(file);
           return {
             file: null,
@@ -115,8 +120,8 @@ const PostRegister = () => {
       setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        fileName:
+          prev.fileName || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -133,12 +138,12 @@ const PostRegister = () => {
       return {
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId === id
+        fileName:
+          prev.fileName === id
             ? newImages.length > 0
               ? newImages[0].id
               : null
-            : prev.thumbnailId,
+            : prev.fileName,
       };
     });
   };
@@ -146,7 +151,7 @@ const PostRegister = () => {
   const handleThumbnailSelect = (id: string) => {
     setFormData((prev) => ({
       ...prev,
-      thumbnailId: id,
+      fileName: id,
     }));
   };
 
@@ -185,7 +190,7 @@ const PostRegister = () => {
       content: newContent,
     }));
   };
-  
+
   const getBoardNo = (category: string): number => {
     switch (category) {
       case "새소식":
@@ -235,32 +240,72 @@ const PostRegister = () => {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.userId) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
       const postDTO = {
         title: formData.title,
         content: formData.content,
         boardNo: getBoardNo(formData.category),
-        fileName: formData.thumbnailId,
-        images: formData.images.map((img) => img.id),
+        fileName: formData.fileName,
+        pictureDTOList: formData.images.map((img) => ({
+          picId: img.picId,
+          uuid: img.uuid,
+          picName: img.picName,
+          path: img.path,
+          picDescribe: null,
+          downloads: 0,
+          tag: null,
+          originImagePath: `${img.path}/${img.uuid}_${img.picName}`,
+          thumbnailImagePath: `${img.path}/s_${img.uuid}_${img.picName}`,
+          resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`
+        })),
         userDTO: {
-          "userId": 5,
-          "nickname": "테스트유저"
+          userId: user.userId,
+          nickname: user.nickname || user.email || "익명"
         },
-        tags,
+        tag: tags.join(','),
+        views: 0,
+        followers: 0,
+        downloads: 0,
+        replyCnt: 0
       };
+
+      console.log("전송할 데이터:", postDTO);
 
       const response = await fetch("http://localhost:8080/ourlog/post/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-         },
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(postDTO),
       });
 
-      if (!response.ok) throw new Error("게시물 등록에 실패했습니다.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "게시물 등록에 실패했습니다.");
+      }
+
+      const result = await response.json();
+      console.log("등록 결과:", result);
+
       alert("게시물이 성공적으로 등록되었습니다.");
       navigate("/post");
     } catch (error) {
-      alert("게시물 등록에 실패했습니다. 다시 시도해주세요.");
+      console.error("에러 발생:", error);
+      alert(error instanceof Error ? error.message : "게시물 등록에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -276,6 +321,50 @@ const PostRegister = () => {
     localStorage.setItem("draftPost", JSON.stringify(formData));
     alert("임시저장 되었습니다.");
   };
+
+  useEffect(() => {
+    if (post?.tradeDTO?.lastBidTime) {
+      const endTime = new Date(post.tradeDTO.lastBidTime).getTime();
+      const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = endTime - now;
+
+        if (distance < 0) {
+          clearInterval(timer);
+          setCountdown("경매 종료");
+          // ✅ Optionally refetch post detail here to update tradeStatus
+          // if (!post.tradeDTO.tradeStatus) {
+          //   fetchArtworkDetail(post.postId.toString());
+          // }
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          // ✅ Modified countdown logic
+          let countdownText = "";
+          if (days > 0) {
+            countdownText += `${days}일 `;
+          }
+          if (days > 0 || hours > 0) { // Display hours if days > 0 or hours > 0
+             countdownText += `${hours}시간 `;
+          }
+           if (days > 0 || hours > 0 || minutes > 0) { // Display minutes if days > 0, hours > 0, or minutes > 0
+             countdownText += `${minutes}분 `;
+           }
+          countdownText += `${seconds}초`; // Always display seconds when time is positive
+
+          setCountdown(countdownText.trim()); // Trim any leading/trailing space
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+       setCountdown("경매 정보 없음");
+    }
+
+  }, [post?.tradeDTO?.lastBidTime, post?.postId]); // Added post?.postId dependency for potential refetch
 
   return (
     <div className="post-register-wrapper">
@@ -338,13 +427,11 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${
-                              snapshot.isDragging ? "dragging" : ""
-                            } ${
-                              formData.thumbnailId === image.id
+                            className={`image-item ${snapshot.isDragging ? "dragging" : ""
+                              } ${formData.fileName === image.id
                                 ? "thumbnail-selected"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <img
                               src={image.preview}
@@ -361,7 +448,7 @@ const PostRegister = () => {
                               >
                                 ×
                               </button>
-                              {formData.thumbnailId === image.id ? (
+                              {formData.fileName === image.id ? (
                                 <span className="thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
@@ -410,9 +497,8 @@ const PostRegister = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${
-                            snapshot.isDragging ? "dragging" : ""
-                          }`}
+                          className={`content-image-wrapper ${snapshot.isDragging ? "dragging" : ""
+                            }`}
                         >
                           <img
                             src={image.preview}

@@ -35,14 +35,17 @@ const BidStatusList: React.FC = () => {
           startPrice: item.startPrice || 0,
           highestBid: item.highestBid || 0,
           nowBuy: item.nowBuy,
-          tradeStatus: item.tradeStatus
+          tradeStatus: item.tradeStatus,
         }));
         setBids(mappedData);
       })
       .catch(console.error);
   }, []);
 
-  const currentItems = bids.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentItems = bids.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   const totalPages = Math.ceil(bids.length / itemsPerPage);
 
   return (
@@ -54,15 +57,23 @@ const BidStatusList: React.FC = () => {
       <div className="bid-list">
         {currentItems.length > 0 ? (
           currentItems.map((item) => (
-            <div key={item.tradeId} className="bid-item" onClick={() => navigate(`/art/${item.postId}`)}>
+            <div
+              key={item.tradeId}
+              className="bid-item"
+              onClick={() => navigate(`/art/${item.postId}`)}
+            >
               <div className="bid-artwork">
                 <img src={item.thumbnailPath} alt={item.postTitle} />
               </div>
               <div className="bid-details">
                 <h3>{item.postTitle}</h3>
                 <p>시작가: {item.startPrice.toLocaleString()}원</p>
-                <p className="bid-amount">낙찰가: {item.highestBid.toLocaleString()}원</p>
-                {item.nowBuy && <p>즉시구매가: {item.nowBuy.toLocaleString()}원</p>}
+                <p className="bid-amount">
+                  낙찰가: {item.highestBid.toLocaleString()}원
+                </p>
+                {item.nowBuy && (
+                  <p>즉시구매가: {item.nowBuy.toLocaleString()}원</p>
+                )}
                 <p>상태: {item.tradeStatus ? "진행중" : "마감"}</p>
               </div>
               <div className="bid-actions">
@@ -79,7 +90,10 @@ const BidStatusList: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="bid-item" style={{ justifyContent: "center", padding: "30px" }}>
+          <div
+            className="bid-item"
+            style={{ justifyContent: "center", padding: "30px" }}
+          >
             <p>입찰 내역이 없습니다.</p>
           </div>
         )}
@@ -89,9 +103,9 @@ const BidStatusList: React.FC = () => {
         <div className="bid-history-footer">
           <div className="pagination">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button 
-                key={page} 
-                onClick={() => setCurrentPage(page)} 
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
                 className={page === currentPage ? "active" : ""}
               >
                 {page}

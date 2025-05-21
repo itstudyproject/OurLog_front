@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/PostList.css";
 import "../styles/ArtList.css";
@@ -12,6 +13,7 @@ interface ArtWork {
   likes: number;
   createdAt: string;
   imageSrc: string;
+  userId?: string;
 }
 
 interface Post {
@@ -24,97 +26,102 @@ interface Post {
   thumbnail?: string;
   category?: string;
   boardId?: number;
+  userId?: string;
 }
-
-const dummyArtworks: ArtWork[] = [
-  {
-    id: 1,
-    title: "작품 제목 1",
-    author: "작가1",
-    artistProfileImg: "/images/avatar.png",
-    contents: "파스타를 주제로 한 일러스트입니다.",
-    price: 30000,
-    likes: 128,
-    createdAt: "2023.05.15",
-    imageSrc: "/images/파스타.jpg",
-  },
-  {
-    id: 2,
-    title: "풍경화",
-    author: "작가2",
-    artistProfileImg: "/images/avatar.png",
-    contents: "자연 풍경을 담은 평화로운 그림입니다.",
-    price: 40000,
-    likes: 80,
-    createdAt: "2023.04.12",
-    imageSrc: "/images/풍경.jpg",
-  },
-];
-
-const dummyPosts: Post[] = [
-  {
-    id: 1,
-    title: "지금부터 마카오 환타지아 클라이맥스 썸머...",
-    author: "판타지스트",
-    artistProfileImg: "/images/avatar.png",
-    contents: "여름 시즌 이벤트 소식입니다.",
-    createdAt: "2023.03.26.14:22",
-    thumbnail: "/images/post1.jpg",
-    category: "자유게시판",
-    boardId: 2,
-  },
-  {
-    id: 2,
-    title: "파스타 맛집 추천",
-    author: "맛집러버",
-    artistProfileImg: "/images/avatar.png",
-    contents: "정말 맛있는 파스타 가게 추천합니다!",
-    createdAt: "2023.04.01.10:00",
-    thumbnail: "/images/post2.jpg",
-    category: "자유게시판",
-    boardId: 2,
-  },
-  {
-    id: 3,
-    title: "홍보게시판 파스타 이벤트",
-    author: "홍보왕",
-    artistProfileImg: "/images/avatar.png",
-    contents: "홍보용 파스타 이벤트 진행합니다.",
-    createdAt: "2023.04.02.09:30",
-    thumbnail: "/images/post3.jpg",
-    category: "홍보게시판",
-    boardId: 3,
-  },
-];
 
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // URL 쿼리나 location state에서 검색어를 가져옴
   const searchParam = new URLSearchParams(location.search).get("query");
   const stateParam = location.state?.q;
   const query = searchParam || stateParam || "";
   const lowerQuery = query.trim().toLowerCase();
 
-  const filteredArtworks =
-    lowerQuery === ""
-      ? []
-      : dummyArtworks.filter(
-          (art) =>
-            art.title.toLowerCase().includes(lowerQuery) ||
-            art.author.toLowerCase().includes(lowerQuery) ||
-            (art.contents?.toLowerCase().includes(lowerQuery) ?? false)
+  // 게시판 번호 (전체 게시글 가져올 땐 0 또는 undefined 등으로 처리)
+  const boardNo = 0; // 전체 게시판 대상이라 가정
+
+  // 상태 관리
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [artworks, setArtworks] = useState<ArtWork[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (lowerQuery === "") {
+      setPosts([]);
+      setArtworks([]);
+      return;
+    }
+
+    setLoading(true);
+
+    fetch(
+      `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&type=t&keyword=${encodeURIComponent(
+        lowerQuery
+      )}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const rawPosts = data.pageResultDTO?.dtoList || [];
+        const allPosts: Post[] = rawPosts.map((item) => ({
+          id: item.postId,
+          title: item.title,
+          author: item.userDTO?.nickname || "알수없음",
+          artistProfileImg: item.userProfileDTO?.thumbnailImagePath || "",
+          contents: item.content,
+          createdAt: item.regDate?.split("T")[0] || "",
+          thumbnail: item.userProfileDTO?.thumbnailImagePath || "",
+          category: item.tag,
+          boardId: item.boardNo,
+          userId: item.userDTO?.userId,
+        }));
+
+        // 프론트에서 추가 필터링하지 않음
+        const filteredPostsByQuery = allPosts;
+
+        // 커뮤니티 게시글(보드아이디 5가 아닌)
+        const communityPosts = filteredPostsByQuery.filter(
+          (post) => post.boardId !== 5
+        );
+        // 중복 제거
+        const uniqueCommunityPosts = Array.from(
+          new Map(communityPosts.map((post) => [post.id, post])).values()
         );
 
-  const filteredPosts =
-    lowerQuery === ""
-      ? []
-      : dummyPosts.filter(
-          (post) =>
-            post.title.toLowerCase().includes(lowerQuery) ||
-            post.author.toLowerCase().includes(lowerQuery) ||
-            (post.contents?.toLowerCase().includes(lowerQuery) ?? false)
+        // 아트 게시글(보드아이디 5인 것만)
+        const artworkPosts: ArtWork[] = filteredPostsByQuery
+          .filter((post) => post.boardId === 5)
+          .map((post) => ({
+            id: post.id,
+            title: post.title,
+            author: post.author,
+            artistProfileImg: post.artistProfileImg,
+            contents: post.contents,
+            price: 0,
+            likes: 0,
+            createdAt: post.createdAt,
+            imageSrc: post.thumbnail || "",
+            userId: post.userId,
+          }));
+        // 중복 제거
+        const uniqueArtworkPosts = Array.from(
+          new Map(artworkPosts.map((art) => [art.id, art])).values()
         );
+
+        setPosts(uniqueCommunityPosts);
+        setArtworks(uniqueArtworkPosts);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch data:", error);
+        setPosts([]);
+        setArtworks([]);
+      })
+      .finally(() => setLoading(false));
+  }, [lowerQuery, boardNo]);
+
+  const filteredPosts = posts;
+  const filteredArtworks = artworks;
 
   const uniqueAuthors = Array.from(
     new Set(filteredArtworks.map((art) => art.author))
@@ -124,8 +131,9 @@ const SearchPage = () => {
     <div className="container">
       <div className="section-title-search">
         <h2>"{query}"에 대한 검색 결과</h2>
-        <div className="line"></div>
       </div>
+
+      {loading && <p>로딩중...</p>}
 
       {query.trim() === "" ? (
         <p className="main-search">검색어를 입력해주세요.</p>
@@ -145,10 +153,23 @@ const SearchPage = () => {
                 );
                 const profileImg =
                   authorArt?.artistProfileImg || "/images/avatar.png";
+                const userId = authorArt?.userId;
 
                 return (
                   <div key={index}>
-                    <div className="artist-info">
+                    <div
+                      className="artist-info"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        if (authorArt?.userId) {
+                          navigate(`/worker/${userId}`, {
+                            state: { userId: authorArt.userId },
+                          });
+                        } else {
+                          alert("작가 정보가 없습니다.");
+                        }
+                      }}
+                    >
                       <div className="artist-avatar">
                         <img src={profileImg} alt={`${author} 프로필`} />
                       </div>
@@ -170,7 +191,12 @@ const SearchPage = () => {
           {filteredArtworks.length > 0 && (
             <div className="popular-artworks">
               {filteredArtworks.map((art) => (
-                <div key={art.id} className="artwork-card">
+                <div
+                  key={art.id}
+                  className="artwork-card"
+                  onClick={() => navigate(`/Art/${art.id}`)}
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="artwork-image">
                     <img src={art.imageSrc} alt={art.title} />
                     <div className="artwork-likes">❤️ {art.likes}</div>
@@ -207,6 +233,7 @@ const SearchPage = () => {
                     <tr
                       key={post.id}
                       onClick={() => navigate(`/post/${post.id}`)}
+                      style={{ cursor: "pointer" }}
                     >
                       <td>{index + 1}</td>
                       <td>{post.title}</td>

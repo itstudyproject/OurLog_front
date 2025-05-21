@@ -31,6 +31,7 @@
   font-weight: 500;
   transition: all 0.2s ease;
   color: #cccccc;
+  text-align: center;
 }
 
 .cc-nav-item:hover {
@@ -111,6 +112,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  color: #fff;
 }
 
 .cc-question-box:hover {
@@ -140,12 +142,12 @@
   padding: 16px 24px;
   max-height: 500px;
   opacity: 1;
+  color: #fff;
 }
 
 .cc-info-text {
   margin-top: 16px;
-  font-size: 15px;
-  color: #ccc;
+  color: #fff;
   line-height: 1.6;
   white-space: pre-line;
 }
@@ -156,7 +158,7 @@
   border-radius: 8px;
   padding: 16px;
   margin-top: 16px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   background-color: rgba(255, 107, 107, 0.1);
 }
@@ -180,13 +182,13 @@
   width: 10%;
 }
 .cc-th:nth-child(2) {
-  width: 40%;
+  width: 30%;
 }
 .cc-th:nth-child(3) {
-  width: 10%;
+  width: 15%;
 }
 .cc-th:nth-child(4) {
-  width: 20%;
+  width: 15%;
 }
 .cc-th:nth-child(5) {
   width: 20%;
@@ -199,6 +201,13 @@
   color: #ffffff;
   text-align: center;
   vertical-align: middle;
+}
+
+.cc-empty-row {
+  text-align: center;
+  padding: 1rem;
+  color: #ccc;
+  font-style: italic;
 }
 
 .cc-status-badge {
@@ -243,7 +252,7 @@
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #3b82f6;
   color: white;
   cursor: pointer;
   font-size: 14px;
@@ -251,23 +260,23 @@
 }
 
 .cc-action-button.cancel {
-  background-color: #666;
+  background-color: #fac67a;
   color: #fff;
 }
 .cc-action-button.cancel:hover {
-  background-color: #555;
+  background-color: #ff8c00;
 }
 
 .cc-action-button:hover {
-  background-color: #357abd;
+  background-color: #64748b;
 }
 
 .cc-action-button.delete {
-  background-color: #e74c3c;
+  background-color: #f67e82;
 }
 
 .cc-action-button.delete:hover {
-  background-color: #c0392b;
+  background-color: #d47412;
 }
 
 .cc-overlay {
@@ -354,6 +363,8 @@
   font-size: 16px;
 }
 
+.cc-search-input:hover,
+.cc-search-input:focus,
 .cc-form-group input:hover,
 .cc-form-group input:focus,
 .cc-form-group textarea:hover,
@@ -382,7 +393,7 @@
   padding: 12px 24px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #3b82f6;
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -404,7 +415,7 @@
   padding: 8px 24px;
   border: none;
   border-radius: 4px;
-  background-color: #4a90e2;
+  background-color: #357abd;
   color: white;
   cursor: pointer;
   font-size: 14px;
@@ -412,15 +423,15 @@
 }
 
 .cc-modal-button:hover {
-  background-color: #357abd;
+  background-color: #64748b;
 }
 
 .cc-modal-button.cancel {
-  background-color: #666;
+  background-color: #584f4f;
 }
 
 .cc-modal-button.cancel:hover {
-  background-color: #555;
+  background-color: #474242;
 }
 
 .cc-no-results {
@@ -436,6 +447,31 @@
 
 .cc-modal form .button {
   margin-top: 24px;
+}
+
+.cc-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 40px 0 20px;
+}
+
+.cc-pagination button {
+  margin: 0 5px;
+  padding: 8px 12px;
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.cc-pagination button.active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
 }
 
 .cc-admin-question-card {

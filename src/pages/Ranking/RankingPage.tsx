@@ -63,12 +63,11 @@ const RankingPage: React.FC = () => {
 
       const data = JSON.parse(raw);
       const mapped: Artwork[] = data.map((item: any) => {
-        const hasUser =
-          item.userProfileDTO && item.userProfileDTO.user.nickname;
+        const hasUser = item.userProfileDTO && item.userProfileDTO.nickname;
         return {
           id: item.postId,
           title: item.title,
-          author: hasUser ? item.userProfileDTO.user.nickname : "unknown",
+          author: hasUser ? item.userProfileDTO.nickname : "unknown",
           avatar:
             hasUser && item.userProfileDTO.profileImage
               ? `/avatar/${item.userProfileDTO.thumbnailImagePath}` // ✅ 경로 수정

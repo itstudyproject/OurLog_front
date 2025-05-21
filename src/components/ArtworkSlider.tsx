@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "../styles/ArtworkSlider.css";
+import { Link } from "react-router-dom";
 
 interface Artwork {
   imageUrl: string;
   title: string;
   artist: string;
-  price: string;
+  highestBid: string;
   link: string;
   isArtist?: boolean;
 }
@@ -19,34 +20,43 @@ const ArtworkSlider: React.FC = () => {
   const [artists, setArtists] = useState<Artwork[]>([]);
   const [artistIndexes, setArtistIndexes] = useState<number[]>([]);
 
+  // 랜덤 인덱스 생성 함수 (중복 제거 + 개수 제한)
+  const getRandomIndexes = (length: number, count: number): number[] => {
+    const indexes: number[] = [];
+    const maxCount = Math.min(count, length);
+    while (indexes.length < maxCount) {
+      const rand = Math.floor(Math.random() * length);
+      if (!indexes.includes(rand)) {
+        indexes.push(rand);
+      }
+    }
+    return indexes;
+  };
+
   useEffect(() => {
     const fetchArtworks = async () => {
       try {
         const res = await fetch(VIEWS_API_URL);
         const data = await res.json();
-
         const mapped = data.map((item: any) => ({
-          imageUrl: `/images/${item.fileName}`,
           title: item.title,
-          artist: item.userProfileDTO?.user?.nickname || "unknown",
-          price:
-            typeof item.price === "number" && item.price > 0
-              ? `₩${item.price.toLocaleString()}`
+          artist: item.nickname || "unknown",
+          highestBid:
+            item.tradeDTO &&
+            item.tradeDTO.highestBid &&
+            !isNaN(Number(item.tradeDTO.highestBid)) &&
+            Number(item.tradeDTO.highestBid) > 0
+              ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
               : "",
           link: `/Art/${item.postId}`,
           isArtist: false,
+          imageUrl: item.fileName
+            ? `http://localhost:8080/images/${item.fileName}`
+            : "/default-image.jpg",
         }));
 
         setArtworks(mapped);
-
-        const initialIndexes: number[] = [];
-        while (initialIndexes.length < 3 && mapped.length > 0) {
-          const rand = Math.floor(Math.random() * mapped.length);
-          if (!initialIndexes.includes(rand)) {
-            initialIndexes.push(rand);
-          }
-        }
-        setArtworkIndexes(initialIndexes);
+        setArtworkIndexes(getRandomIndexes(mapped.length, 3));
       } catch (e) {
         console.error("인기 작품 불러오기 실패", e);
       }
@@ -56,27 +66,25 @@ const ArtworkSlider: React.FC = () => {
       try {
         const res = await fetch(FOLLOWERS_API_URL);
         const data = await res.json();
-
         const mapped = data.map((item: any) => ({
-          imageUrl: `/images/${item.fileName}`,
           title: item.title || "대표작 없음",
-          artist: item.userProfileDTO?.user?.nickname || "unknown",
-          price: "",
-          link: `/worker/${item.userProfileDTO.user.id}`,
+          artist: item.nickname || "unknown",
+          highestBid:
+            item.tradeDTO &&
+            item.tradeDTO.highestBid &&
+            !isNaN(Number(item.tradeDTO.highestBid)) &&
+            Number(item.tradeDTO.highestBid) > 0
+              ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
+              : "",
+          link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
           isArtist: true,
+          imageUrl: item.fileName
+            ? `http://localhost:8080/images/${item.fileName}`
+            : "/default-image.jpg",
         }));
 
         setArtists(mapped);
-
-        // 초기 3개 랜덤 인덱스 생성
-        const initialIndexes: number[] = [];
-        while (initialIndexes.length < 3 && mapped.length > 0) {
-          const rand = Math.floor(Math.random() * mapped.length);
-          if (!initialIndexes.includes(rand)) {
-            initialIndexes.push(rand);
-          }
-        }
-        setArtistIndexes(initialIndexes);
+        setArtistIndexes(getRandomIndexes(mapped.length, 3));
       } catch (e) {
         console.error("주요 아티스트 불러오기 실패", e);
       }
@@ -90,23 +98,8 @@ const ArtworkSlider: React.FC = () => {
     if (artworks.length === 0 || artists.length === 0) return;
 
     const interval = setInterval(() => {
-      const newArtworkIndexes: number[] = [];
-      while (newArtworkIndexes.length < 3 && artworks.length > 0) {
-        const rand = Math.floor(Math.random() * artworks.length);
-        if (!newArtworkIndexes.includes(rand)) {
-          newArtworkIndexes.push(rand);
-        }
-      }
-      setArtworkIndexes(newArtworkIndexes);
-
-      const newArtistIndexes: number[] = [];
-      while (newArtistIndexes.length < 3 && artists.length > 0) {
-        const rand = Math.floor(Math.random() * artists.length);
-        if (!newArtistIndexes.includes(rand)) {
-          newArtistIndexes.push(rand);
-        }
-      }
-      setArtistIndexes(newArtistIndexes);
+      setArtworkIndexes(getRandomIndexes(artworks.length, 3));
+      setArtistIndexes(getRandomIndexes(artists.length, 3));
     }, 3000);
 
     return () => clearInterval(interval);
@@ -119,35 +112,45 @@ const ArtworkSlider: React.FC = () => {
     indexes: number[]
   ) => (
     <>
-      <h2 className="slider-title">{title}</h2>
+      <Link to="/ranking" className="slider-title-link">
+        <h2 className="slider-title">{title}</h2>
+      </Link>
       <p className="slider-subtitle">{subtitle}</p>
       <div className="slider-wrapper">
-        {indexes.map((index) => {
-          const item = data[index];
-          if (!item) return null;
-          return (
-            <a
-              key={index}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="artworkslider-card"
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="artworkslider-img"
-              />
-              <div className="artworkslider-overlay">
-                <div className="artworkslider-title">{item.title}</div>
-                <div className="artworkslider-artist">{item.artist}</div>
-                {item.price && (
-                  <div className="artworkslider-price">{item.price}</div>
-                )}
-              </div>
-            </a>
-          );
-        })}
+        {data.length === 0 ? (
+          <div className="artworkslider-empty">
+            {title === "인기 작품 추천"
+              ? "인기 작품이 없습니다."
+              : "주요 아티스트가 없습니다."}
+          </div>
+        ) : (
+          indexes.map((index) => {
+            const item = data[index];
+            if (!item) return null;
+            return (
+              <a
+                key={index}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="artworkslider-card"
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="artworkslider-img"
+                />
+                <div className="artworkslider-overlay">
+                  <div className="artworkslider-title">{item.title}</div>
+                  <div className="artworkslider-artist">{item.artist}</div>
+                  {item.highestBid && (
+                    <div className="artworkslider-price">{item.highestBid}</div>
+                  )}
+                </div>
+              </a>
+            );
+          })
+        )}
       </div>
     </>
   );

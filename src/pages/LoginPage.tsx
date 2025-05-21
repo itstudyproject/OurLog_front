@@ -88,6 +88,9 @@ const LoginPage: React.FC = () => {
           name: userInfo.name || "",
           originImagePath: "/images/mypage.png",
           thumbnailImagePath: "/images/mypage.png",
+          followCnt: 0,
+          followingCnt: 0,
+          isFollowing: false,
         };
         
         const newProfile = await createProfile(defaultProfile);
@@ -175,8 +178,8 @@ const LoginPage: React.FC = () => {
       
       // 4. 사용자 프로필 확인 및 없으면 생성
       let profileId: number | null = null;
-      if (userInfo.id) {
-        profileId = await checkAndCreateProfile(userInfo.id, userInfo);
+      if (userInfo.userId) {
+        profileId = await checkAndCreateProfile(userInfo.userId, userInfo);
       }
 
       // 5. 사용자 정보 저장 및 로그인 처리
@@ -219,7 +222,7 @@ const LoginPage: React.FC = () => {
               className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              
             />
           </div>
 
@@ -234,7 +237,7 @@ const LoginPage: React.FC = () => {
               className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              
             />
           </div>
 

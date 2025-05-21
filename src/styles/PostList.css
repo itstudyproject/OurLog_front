@@ -118,69 +118,37 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-  table-layout: fixed; /* 컬럼 고정 */
 }
 
-thead th,
+thead {
+  background-color: #2a2a2a;
+}
+
+thead th {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid #444;
+  color: #fff;
+}
+
+tbody tr {
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+  background-color: #2f2f2f;
+}
+
 tbody td {
+  padding: 12px 8px;
+  color: #ccc;
   text-align: center;
-  vertical-align: middle;
-}
-thead th:nth-child(1),
-tbody td:nth-child(1) {
-  width: 7%;
-  min-width: 50px;
-  max-width: 80px;
-}
-
-thead th:nth-child(2)
-{
-  width: 50%;
-  min-width: 200px;
-  text-align: center;
-  padding-left: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 tbody td:nth-child(2) {
-  width: 50%;
-  min-width: 200px;
   text-align: left;
-  padding-left: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-thead th:nth-child(3) {
-  width: 10%;
-  min-width: 60px;
-  max-width: 90px;
-}
-
-tbody td:nth-child(3) {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 80px;
-  padding: 0;
-}
-
-thead th:nth-child(4),
-tbody td:nth-child(4) {
-  width: 15%;
-  min-width: 80px;
-  max-width: 120px;
-}
-
-thead th:nth-child(5),
-tbody td:nth-child(5) {
-  width: 18%;
-  min-width: 100px;
-  max-width: 150px;
 }
 
 /* 썸네일 */
@@ -242,4 +210,146 @@ tbody td:nth-child(5) {
 
 .loading p {
   color: #ccc;
+}
+
+.post-list-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 40px 0 20px;
+}
+
+.post-list-page-btn {
+  margin: 0 5px;
+  padding: 8px 12px;
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.post-list-page-btn:hover:not(:disabled) {
+  background-color: #333;
+  color: #fff;
+}
+
+.post-list-page-btn.post-list-page-active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+.post-list-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.post-list-arrow-btn {
+  font-weight: bold;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .post-list-pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .post-list-page-btn {
+    margin: 0;
+  }
+  /* 테이블 셀 중앙 정렬 */
+.postlist-table th,
+.postlist-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 제목 셀 넓게, 중앙 정렬 */
+.postlist-table th.title,
+.postlist-table td.title {
+  width: 40%;
+  text-align: center;
+}
+
+/* 썸네일 셀 */
+.postlist-table th.thumbnail,
+.postlist-table td.thumbnail {
+  width: 100px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 썸네일 이미지 */
+.postlist-thumbnail-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 썸네일 없음 텍스트 */
+.postlist-thumbnail-none {
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  background: #222;
+  color: #bbb;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 작성일자 칸 */
+.postlist-table th.date,
+.postlist-table td.date {
+  width: 120px;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* 작성자 칸 */
+.postlist-table th.author,
+.postlist-table td.author {
+  width: 120px;
+  text-align: center;
+}
+}
+
+/* 제목 셀 가운데 정렬 */
+th.title, td.title {
+  text-align: center;
+}
+
+/* 썸네일 셀: 이미지와 '없음' div를 중앙 정렬 */
+td.thumbnail {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 썸네일 이미지와 '없음' div의 공통 스타일 */
+td.thumbnail img.thumbnail,
+td.thumbnail div.thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover; /* 이미지는 커버 유지 */
+  display: inline-block; /* 또는 block; margin: 0 auto; */
+  vertical-align: middle;
+  border-radius: 4px; /* 이미지/없음 박스 모서리 둥글게 */
+}
+
+/* '없음' div에만 적용될 스타일 */
+td.thumbnail div.thumbnail {
+  line-height: 48px; /* 세로 중앙 정렬 */
+  background-color: #2a2a2a; /* 배경색 */
+  border: 1px solid #555; /* 테두리 */
+  color: #777; /* 글씨색 */
+  font-size: 12px;
+  box-sizing: border-box; /* 테두리 포함 크기 계산 */
 }

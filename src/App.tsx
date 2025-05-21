@@ -12,7 +12,6 @@ import PostRegister from "./pages/Post/PostRegister";
 import TermsCondition from "./pages/TermsCondition";
 import CustomerCenter from "./pages/CustomerCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
-import DeleteAccountPage from "./pages/DeleteAccountPage";
 import RankingPage from "./pages/Ranking/RankingPage";
 import Payment from "./pages/Art/Payment";
 import PostModify from "./pages/Post/PostModify";
@@ -27,6 +26,9 @@ import SalePage from "./pages/SalePage/SalePage";
 import BookmarkPage from "./pages/BookmarkPage";
 import AccountEditPage from "./pages/AccountEdit";
 import ProfileEditPage from "./pages/ProfileEdit";
+import AccountEdit from "./pages/AccountEdit";
+import AccountDelete from "./pages/AccountDelete";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -42,10 +44,10 @@ function App() {
 
         <Route path="art">
           <Route index element={<ArtList />} />
-          <Route path=":id" element={<ArtDetail />} />
           <Route path="register" element={<ArtRegister />} />
-          <Route path="payment/:id" element={<Payment />} />
-          <Route path="bids" element={<BidHistory />} />
+          <Route path="payment" element={<Payment />} />
+          <Route path="bidhistory/:tradeId" element={<BidHistory />} />
+          <Route path=":id" element={<ArtDetail />} />
         </Route>
 
         <Route path="ranking" element={<RankingPage />} />
@@ -70,6 +72,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/board/:boardId" element={<PostList />} />
+      <Route path="/chat" element={<ChatPage />} />
 
       <Route path="post">
         <Route index element={<PostList />} />
@@ -77,18 +80,6 @@ function App() {
       </Route>
 
       <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/profile-edit"
-        element={
-          <ProfileEditPage
-            profile={null}
-            onBack={() => window.history.back()}
-            onSave={async () => {}}
-          />
-        }
-      />
-
-      <Route path="/delete-account" element={<DeleteAccountPage />} />
     </Routes>
   );
 }

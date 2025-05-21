@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserProfileDTO } from "../hooks/profileApi";
+import { UploadResultDTO, UserProfileDTO, uploadProfileImage } from "../hooks/profileApi";
 import "../styles/ProfileEdit.css";
 
 interface ProfileEditProps {
@@ -19,16 +19,16 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState({
-    username: profile?.nickname || "art_lover",
-    email: profile?.email || "user@example.com",
-    fullName: profile?.name || "김예술",
-    bio:
-      profile?.introduction ||
-      "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
-    location: profile?.location || "서울특별시",
-    website: profile?.website || "https://myartblog.com",
-    profilePicture: profile?.imagePath || "/images/Logo.png",
-  });
+    // name:         profile?.name || "",
+    // email:        profile?.email || "",
+    nickname:     profile?.nickname || "",
+    introduction: profile?.introduction || "",
+    originImagePath: profile?.originImagePath || "",
+    thumbnailImagePath:
+      profile?.thumbnailImagePath || "/images/Logo.png",
+      // "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
+      // profilePicture: profile?.thumbnailImagePath || "/images/Logo.png",
+    });
 
   // 입력 필드 변경 핸들러
   const handleInputChange = (
@@ -44,18 +44,31 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   };
 
   // 프로필 이미지 변경 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setProfileData((prev) => ({
-            ...prev,
-            profilePicture: event.target?.result as string,
-          }));
+      // 선택된 파일 로그
+      console.log("선택된 프로필 이미지 파일:", e.target.files[0]);
+      try {
+        // userId 가져오기
+        const userId = typeof profile?.userId === 'number' ? profile.userId : profile?.userId?.userId;
+        if (!userId) {
+          alert("유저 정보가 없습니다.");
+          return;
         }
-      };
-      reader.readAsDataURL(e.target.files[0]);
+        // uploadProfileImage는 이제 UploadResultDTO 객체를 반환합니다.
+        const uploadResult: UploadResultDTO = await uploadProfileImage(userId, e.target.files[0]);
+        // 업로드 성공 후 반환된 결과 로그
+        console.log("프로필 이미지 업로드 성공, 반환 결과:", uploadResult);
+
+        // 백엔드 응답 객체의 imageURL과 thumbnailURL을 사용하여 상태 업데이트
+        setProfileData((prev) => ({
+          ...prev,
+          originImagePath: uploadResult.imageURL, // originImagePath 업데이트
+          thumbnailImagePath: uploadResult.thumbnailURL, // thumbnailImagePath 업데이트
+        }));
+      } catch (err: any) {
+        alert("이미지 업로드 실패: " + (err.message || err));
+      }
     }
   };
 
@@ -63,16 +76,18 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 프로필 수정 요청 데이터 로그
+    console.log("프로필 수정 요청 데이터:", profileData);
+
     try {
       // 프로필 업데이트를 onSave prop 함수를 사용하여 처리
       await onSave({
-        nickname: profileData.username,
-        email: profileData.email,
-        name: profileData.fullName,
-        introduction: profileData.bio,
-        location: profileData.location,
-        website: profileData.website,
-        imagePath: profileData.profilePicture,
+        // name: profileData.name,
+        // email: profileData.email,
+        nickname:             profileData.nickname,
+        introduction:         profileData.introduction,
+        originImagePath:   profileData.originImagePath,
+        thumbnailImagePath:   profileData.thumbnailImagePath,
       });
 
       // 성공 알림 후 돌아가기
@@ -99,7 +114,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
         <div className="profile-sidebar">
           <div className="profile-photo-container">
             <img
-              src={profileData.profilePicture}
+              src={profileData.thumbnailImagePath}
               alt="프로필 사진"
               className="profile-photo"
             />
@@ -125,44 +140,30 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
         <div className="profile-main">
           <div className="form-section">
             <h2 className="section-title">기본 정보</h2>
-
+{/* 
             <div className="form-group">
               <label htmlFor="username" className="form-label">
                 사용자 이름
-              </label>
-              <input
+              </label> */}
+              {/* <input
                 type="text"
                 id="username"
                 name="username"
-                value={profileData.username}
+                value={profileData.name}
                 onChange={handleInputChange}
                 className="form-input"
               />
-            </div>
+            </div> */}
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                이메일
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={profileData.email}
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="fullName" className="form-label">
-                실명
+              <label htmlFor="nickName" className="form-label">
+                닉네임
               </label>
               <input
                 type="text"
-                id="fullName"
-                name="fullName"
-                value={profileData.fullName}
+                id="nickName"
+                name="nickName"
+                value={profileData.nickname}
                 onChange={handleInputChange}
                 className="form-input"
               />
@@ -173,44 +174,12 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
                 소개
               </label>
               <textarea
-                id="bio"
-                name="bio"
-                value={profileData.bio}
+                id="introduction"
+                name="introduction"
+                value={profileData.introduction}
                 onChange={handleInputChange}
                 className="form-input"
                 rows={4}
-              />
-            </div>
-          </div>
-
-          <div className="form-section">
-            <h2 className="section-title">추가 정보</h2>
-
-            <div className="form-group">
-              <label htmlFor="location" className="form-label">
-                위치
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={profileData.location}
-                onChange={handleInputChange}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="website" className="form-label">
-                웹사이트
-              </label>
-              <input
-                type="url"
-                id="website"
-                name="website"
-                value={profileData.website}
-                onChange={handleInputChange}
-                className="form-input"
               />
             </div>
           </div>
