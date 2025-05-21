@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 interface ImageFile {
   file: File | null;
@@ -41,40 +42,42 @@ const PostModify = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : '',
-            'Content-Type': 'application/json',
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:8080/ourlog/post/read/${id}`,
+          {
+            method: "GET",
+            headers: getAuthHeaders(),
           }
-        });
+        );
 
         if (!response.ok) {
-          throw new Error('게시글을 불러오는데 실패했습니다.');
+          throw new Error("게시글을 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
         if (!data || !data.postDTO) {
-          throw new Error('잘못된 데이터 형식입니다.');
+          throw new Error("잘못된 데이터 형식입니다.");
         }
 
         const postData = data.postDTO;
         setFormData({
           title: postData.title,
           content: postData.content,
-          images: postData.pictureDTOList?.map((pic: any) => ({
-            file: null,
-            preview: `/uploads/${pic.path}/${pic.uuid}_${pic.picName}`,
-            id: pic.uuid,
-            picId: pic.picId,
-            uuid: pic.uuid,
-            picName: pic.picName,
-            path: pic.path
-          })) || [],
+          images:
+            postData.pictureDTOList?.map((pic: any) => ({
+              file: null,
+              preview: `http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`,
+              id: pic.uuid,
+              picId: pic.picId,
+              uuid: pic.uuid,
+              picName: pic.picName,
+              path: pic.path,
+            })) || [],
           thumbnailId: postData.fileName || null,
-          category: getBoardCategory(postData.boardNo)
+          category: getBoardCategory(postData.boardNo),
         });
-        setTags(postData.tag ? postData.tag.split(',') : []);
+        setTags(postData.tag ? postData.tag.split(",") : []);
         setCharacterCount(postData.content.length);
       } catch (error) {
         console.error("게시글 불러오기 실패:", error);
@@ -122,13 +125,13 @@ const PostModify = () => {
   const uploadImage = async (file: File) => {
     const fd = new FormData();
     fd.append("files", file);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
       method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : ''
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: fd
+      body: fd,
     });
     if (!res.ok) throw new Error("이미지 업로드 실패");
     const data = await res.json();
@@ -165,7 +168,8 @@ const PostModify = () => {
       setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        thumbnailId:
+          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -179,23 +183,25 @@ const PostModify = () => {
   const handleRemoveImage = (id: string) => {
     setFormData((prev) => {
       const newImages = prev.images.filter((img) => img.id !== id);
+      const deletedImage = prev.images.find((img) => img.id === id);
+
       return {
         ...prev,
         images: newImages,
         thumbnailId:
-          prev.thumbnailId === id
+          deletedImage?.picName === prev.thumbnailId
             ? newImages.length > 0
-              ? newImages[0].id
+              ? newImages[0].picName
               : null
             : prev.thumbnailId,
       };
     });
   };
 
-  const handleThumbnailSelect = (id: string) => {
+  const handleThumbnailSelect = (picName: string) => {
     setFormData((prev) => ({
       ...prev,
-      thumbnailId: id,
+      thumbnailId: picName,
     }));
   };
 
@@ -281,19 +287,19 @@ const PostModify = () => {
         content: formData.content,
         boardNo: getBoardNo(formData.category),
         fileName: formData.thumbnailId,
-        pictureDTOList: formData.images.map(img => ({
+        pictureDTOList: formData.images.map((img) => ({
           uuid: img.uuid,
           picName: img.picName,
-          path: img.path
+          path: img.path,
         })),
-        tag: tags.join(','),
+        tag: tags.join(","),
       };
 
       const response = await fetch(`http://localhost:8080/ourlog/post/modify`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(postDTO),
       });
@@ -309,7 +315,11 @@ const PostModify = () => {
   };
 
   const handleCancel = () => {
-    if (window.confirm("수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
+    if (
+      window.confirm(
+        "수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
+      )
+    ) {
       navigate(`/post/detail/${id}`);
     }
   };
@@ -378,7 +388,7 @@ const PostModify = () => {
                             className={`image-item ${
                               snapshot.isDragging ? "dragging" : ""
                             } ${
-                              formData.thumbnailId === image.id
+                              formData.thumbnailId === image.picName
                                 ? "thumbnail-selected"
                                 : ""
                             }`}
@@ -387,7 +397,9 @@ const PostModify = () => {
                               src={image.preview}
                               alt="업로드 이미지"
                               className="preview-img"
-                              onClick={() => handleThumbnailSelect(image.id)}
+                              onClick={() =>
+                                handleThumbnailSelect(image.picName)
+                              }
                             />
                             <div className="image-overlay">
                               <button
@@ -398,12 +410,14 @@ const PostModify = () => {
                               >
                                 ×
                               </button>
-                              {formData.thumbnailId === image.id ? (
+                              {formData.thumbnailId === image.picName ? (
                                 <span className="thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => handleThumbnailSelect(image.id)}
+                                  onClick={() =>
+                                    handleThumbnailSelect(image.picName)
+                                  }
                                   className="thumbnail-button"
                                 >
                                   썸네일로 설정
