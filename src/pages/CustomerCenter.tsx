@@ -98,6 +98,14 @@ const CustomerCenter: React.FC = () => {
   );
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
 
+  // 공통적으로 쓰이는 상태들 페이지네이션
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // 관리자용 전용 페이지네이션
+  const [adminPage, setAdminPage] = useState(1);
+  const [adminTotalPages, setAdminTotalPages] = useState(1);
+
   // 사용자 권한 확인 함수 추가
   const checkAdminStatus = async () => {
     const token = getToken();
@@ -149,7 +157,7 @@ const CustomerCenter: React.FC = () => {
   }, [isAdmin]);
 
   // 관리자용 전체 질문 목록 가져오기
-  const fetchAllQuestions = async () => {
+  const fetchAllQuestions = async (page = 1) => {
     const token = getToken();
     if (!token) {
       console.error("토큰이 없습니다.");
@@ -172,6 +180,9 @@ const CustomerCenter: React.FC = () => {
         console.log("📦 전체 질문 목록 응답 데이터:", data);
         data.dtoList.forEach((q) => console.log(q));
         setAllQuestions(data.dtoList);
+        setAdminPage(data.page);
+        setAdminTotalPages(data.totalPages || 1);
+        console.log("adminTotalPages:", adminTotalPages);
       } else {
         console.error("전체 질문 목록 조회 실패:", response.status);
       }
@@ -638,6 +649,32 @@ const CustomerCenter: React.FC = () => {
                   </div>
                 ))
               )}
+              <div className="cc-pagination">
+                <button
+                  onClick={() => fetchAllQuestions(Math.max(1, adminPage - 1))}
+                  disabled={adminPage === 1}
+                >
+                  &lt;
+                </button>
+                {adminTotalPages > 0 &&
+                  Array.from({ length: adminTotalPages }, (_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => fetchAllQuestions(idx + 1)}
+                      className={adminPage === idx + 1 ? "active" : ""}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                <button
+                  onClick={() =>
+                    fetchAllQuestions(Math.min(adminTotalPages, adminPage + 1))
+                  }
+                  disabled={adminPage === adminTotalPages}
+                >
+                  &gt;
+                </button>
+              </div>
             </section>
           ) : (
             <>

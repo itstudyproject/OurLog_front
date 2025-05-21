@@ -449,6 +449,31 @@
   margin-top: 24px;
 }
 
+.cc-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 40px 0 20px;
+}
+
+.cc-pagination button {
+  margin: 0 5px;
+  padding: 8px 12px;
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.cc-pagination button.active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
 .cc-admin-question-card {
   background: #181818;
   border: 1px solid #333;
