@@ -117,6 +117,7 @@ const ChatPage: React.FC = () => {
 
   // 4. 채팅 모달 열기
   const handleOpenChatModal = (user: string) => {
+    console.log("handleOpenChatModal 실행");
     if (window.confirm(`${user}님과 채팅을 시작하시겠습니까?`)) {
       setCurrentUser(user);
       setIsListModalVisible(false);
@@ -275,7 +276,7 @@ const ChatPage: React.FC = () => {
         </div>
       )}
 
-      {isChatModalVisible && currentUser && (
+      {currentUser && (
         <div className="modal-overlay">
           <div className="chat-modal">
             <div className="chat-header">
