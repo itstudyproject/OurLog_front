@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../../styles/BidHistory.css';
-import { getAuthHeaders } from '../../utils/auth'; // 인증 헤더 가져오기 함수 임포트
+import { getAuthHeaders, hasToken } from '../../utils/auth'; // 인증 헤더 가져오기 함수 임포트
 
 // 백엔드에서 받아올 입찰 기록 항목에 대한 인터페이스 (백엔드 API 응답에 맞춰 수정 필요)
 // TradeServiceImpl.getPurchaseList의 반환 구조에 맞춰 수정
@@ -32,68 +32,19 @@ const BidHistory = () => {
 
   useEffect(() => {
     // TODO: 실제 로그인한 사용자 ID를 가져와야 합니다.
-    const currentUserId = 2; // 임시 사용자 ID (실제 구현 시 수정 필요)
+    // const currentUserId = 2; // 임시 사용자 ID (실제 구현 시 수정 필요) -> 제거
 
-    if (!currentUserId) {
-        alert("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.");
-        navigate('/login');
-        setLoading(false);
-        return;
-    }
+    // if (!currentUserId) { // 사용자 ID 체크 로직 제거
+    //     alert("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.");
+    //     navigate('/login');
+    //     setLoading(false);
+    //     return;
+    // }
 
-    const fetchUserTrades = async (userId: number) => {
-      setLoading(true);
-      try {
-        const headers = getAuthHeaders();
-        if (!headers) {
-          alert("로그인이 필요합니다.");
-          navigate('/login');
-          setLoading(false);
-          return;
-        }
+    // fetchUserTrades(currentUserId); // 사용자 ID로 목록 가져오기 -> 인자 제거
+    fetchUserTrades();
 
-        // 백엔드에서 해당 userId의 구매/입찰 목록을 가져오는 API 엔드포인트를 호출
-        // API 엔드포인트는 TradeController의 getPurchaseList에 연결된 엔드포인트입니다.
-        // 가정: GET /ourlog/trades/purchaseList?userId={userId}
-        const response = await fetch(`http://localhost:8080/ourlog/trades/purchaseList?userId=${userId}`, {
-          method: 'GET',
-          headers: headers,
-        });
-
-        if (!response.ok) {
-          console.error(`구매/입찰 목록 조회 실패: HTTP 상태 코드 ${response.status}`);
-          alert("구매 및 입찰 목록을 불러오는데 실패했습니다.");
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-
-        // API 응답 구조에 따라 데이터 파싱
-        // TradeServiceImpl.getPurchaseList의 반환 구조는 Map<String, List<TradeDTO>>
-        if (data.currentBids && data.wonTrades) {
-            setCurrentBids(data.currentBids);
-            setWonTrades(data.wonTrades);
-        } else {
-            console.error("Unexpected API response structure:", data);
-            alert("구매 및 입찰 목록 데이터 형식이 올바르지 않습니다.");
-             setCurrentBids([]);
-             setWonTrades([]);
-        }
-
-        setLoading(false);
-      } catch (error) {
-        console.error('구매/입찰 목록을 불러오는 중 오류가 발생했습니다:', error);
-        alert("구매 및 입찰 목록을 불러오는 중 오류가 발생했습니다.");
-        setLoading(false);
-         setCurrentBids([]);
-         setWonTrades([]);
-      }
-    };
-
-    fetchUserTrades(currentUserId); // 사용자 ID로 목록 가져오기
-
-  }, [navigate]); // navigate 변경 시 재실행 (사용자 ID 변경 시에도 재실행 필요)
+  }, [navigate]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -102,6 +53,76 @@ const BidHistory = () => {
   // 작품 상세 페이지로 이동 함수 (게시글 ID 사용)
   const handleArtworkClick = (postId: number) => {
     navigate(`/Art/${postId}`);
+  };
+
+  // fetchUserTrades 함수를 다시 정의하고 userId 인자를 제거합니다.
+  const fetchUserTrades = async () => {
+    setLoading(true);
+    // 사용자 로그인 상태 확인
+    if (!hasToken()) {
+      alert("로그인이 필요합니다.");
+      navigate('/login');
+      setLoading(false);
+      return;
+    }
+
+    // 로그인한 사용자 정보에서 userId 가져오기
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const currentUserId = user?.userId;
+
+    if (!currentUserId) {
+      alert("사용자 정보를 찾을 수 없습니다. 로그인이 필요합니다.");
+      navigate('/login');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const headers = getAuthHeaders();
+      // 헤더가 없는 경우는 hasToken()에서 걸러지지만, 안전을 위해 다시 체크
+      if (!headers) {
+          alert("로그인이 필요합니다.");
+          navigate('/login');
+          setLoading(false);
+          return;
+        }
+
+      // 백엔드 UserProfileController의 /profile/purchases/{userId} 엔드포인트 사용
+      const response = await fetch(`http://localhost:8080/ourlog/profile/purchases/${currentUserId}`, {
+        method: 'GET',
+        headers: headers,
+      });
+
+      if (!response.ok) {
+        console.error(`구매/입찰 목록 조회 실패: HTTP 상태 코드 ${response.status}`);
+        alert("구매 및 입찰 목록을 불러오는데 실패했습니다.");
+        setCurrentBids([]); // 실패 시 빈 배열로 설정
+        setWonTrades([]); // 실패 시 빈 배열로 설정
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+
+      // API 응답 구조에 따라 데이터 파싱
+      // TradeServiceImpl.getPurchaseList의 반환 구조는 Map<String, List<TradeDTO>>
+      if (data.currentBids && Array.isArray(data.currentBids) && data.wonTrades && Array.isArray(data.wonTrades)) {
+          setCurrentBids(data.currentBids);
+          setWonTrades(data.wonTrades);
+      } else {
+          console.error("Unexpected API response structure:", data);
+          alert("구매 및 입찰 목록 데이터 형식이 올바르지 않습니다.");
+           setCurrentBids([]); // 실패 시 빈 배열로 설정
+           setWonTrades([]); // 실패 시 빈 배열로 설정
+      }
+
+    } catch (error) {
+      console.error('구매/입찰 목록을 불러오는 중 오류가 발생했습니다:', error);
+      alert("구매 및 입찰 목록을 불러오는 중 오류가 발생했습니다.");
+      setCurrentBids([]); // 에러 발생 시 빈 배열로 설정
+      setWonTrades([]); // 에러 발생 시 빈 배열로 설정
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -141,7 +162,7 @@ const BidHistory = () => {
                      <div className="item-thumbnail">{item.postImage ? <img src={item.postImage} alt={item.postTitle || 'Artwork'} /> : <div className="no-image-placeholder-small">🖼️</div>}</div>
                     <div className="item-details">
                         <div className="item-title">{item.postTitle || '제목 없음'}</div>
-                        <div className="item-price">현재가: {item.highestBid.toLocaleString()}원</div>
+                        <div className="item-price">현재가: {item.highestBid != null ? item.highestBid.toLocaleString() : '가격 정보 없음'}원</div>
                          {/* TODO: 남은 시간 표시 로직 추가 */}
                         <div className="item-time">남은 시간: {item.lastBidTime ? new Date(item.lastBidTime).toLocaleString() : '시간 정보 없음'}</div>
                     </div>
@@ -166,7 +187,7 @@ const BidHistory = () => {
                      <div className="item-thumbnail">{item.postImage ? <img src={item.postImage} alt={item.postTitle || 'Artwork'} /> : <div className="no-image-placeholder-small">🖼️</div>}</div>
                      <div className="item-details">
                          <div className="item-title">{item.postTitle || '제목 없음'}</div>
-                         <div className="item-price">낙찰가: {item.highestBid.toLocaleString()}원</div>
+                         <div className="item-price">낙찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : '가격 정보 없음'}원</div>
                          <div className="item-time">낙찰 시간: {item.lastBidTime ? new Date(item.lastBidTime).toLocaleString() : '시간 정보 없음'}</div> {/* 낙찰 시간 또는 종료 시간 */}
                      </div>
                      <div className="item-status won">낙찰</div> {/* 상태 표시 */}
