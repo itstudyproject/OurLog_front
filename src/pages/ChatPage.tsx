@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import "../styles/ChatPage.css";
-import { getToken } from "../utils/auth";
+import { getAuthHeaders, getToken } from "../utils/auth";
 
 interface UserProfile {
   nickname: string;
@@ -12,8 +12,9 @@ interface UserProfile {
 
 interface ChatMessage {
   sender: string;
-  receiver?: string;
-  message: string;
+  receiver: string;
+  content: string;
+  timestamp?: string;
   paymentInfo?: {
     itemImage: string;
     itemName: string;
@@ -23,9 +24,6 @@ interface ChatMessage {
   hidden?: boolean;
   isPaymentComplete?: boolean;
 }
-
-const token = localStorage.getItem("token"); // 또는 다른 저장소
-const WEBSOCKET_URL = `http://localhost:8080/ourlog/ws-chat?token=${token}`;
 
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +40,7 @@ const ChatPage: React.FC = () => {
 
   const stompClient = useRef<any>(null);
 
-  // 글로벌 객체가 없으면 window를 할당 (브라우저 호환성)
+  // 브라우저 호환성: global 객체 설정
   useEffect(() => {
     if (typeof global === "undefined") {
       (window as any).global = window;
@@ -56,12 +54,10 @@ const ChatPage: React.FC = () => {
         if (!res.ok) {
           throw new Error("유저 목록 불러오기 실패");
         }
-        // 여기서 HTML이 오면 res.json()에서 에러 발생 가능
         return res.json();
       })
       .then((data: UserProfile[]) => setUserProfiles(data))
       .catch(console.error);
-    console.log("유저 목록:", userProfiles);
   }, []);
 
   // 2. 유저 목록이 비어 있으면 기본 유저와 채팅 시작
@@ -73,19 +69,31 @@ const ChatPage: React.FC = () => {
     }
   }, [userProfiles]);
 
-  // 3. currentUser가 변경될 때 WebSocket 연결 & 구독
+  // 3. currentUser 변경 시 WebSocket 연결 & 구독
   useEffect(() => {
     if (!currentUser) return;
 
-    const socket = new SockJS(WEBSOCKET_URL);
+    const token = getToken(); // ex: "Bearer eyJhbGci..."
+    const pureToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+
+    const url = `http://localhost:8080/ourlog/ws-chat?token=${encodeURIComponent(
+      pureToken
+    )}`;
+
+    const socket = new SockJS(url);
     const client = Stomp.over(socket);
     client.debug = null;
 
+    // Authorization 헤더 생략
     client.connect(
-      {},
+      {}, // 헤더를 빈 객체로 전달 (Authorization 헤더 없음)
       () => {
         client.subscribe(`/topic/messages/${currentUser}`, (message: any) => {
-          // 메시지 처리 로직
+          const body = JSON.parse(message.body) as ChatMessage;
+          setMessagesByUser((prev) => ({
+            ...prev,
+            [currentUser]: [...(prev[currentUser] || []), body],
+          }));
         });
       },
       (error) => {
@@ -105,8 +113,8 @@ const ChatPage: React.FC = () => {
     };
   }, [currentUser]);
 
+  // 4. 채팅 모달 열기
   const handleOpenChatModal = (user: string) => {
-    console.log("유저 선택:", user);
     if (window.confirm(`${user}님과 채팅을 시작하시겠습니까?`)) {
       setCurrentUser(user);
       setIsListModalVisible(false);
@@ -115,6 +123,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  // 5. 모달 닫기 등 UI 핸들러
   const handleCloseListModal = () => {
     setIsListModalVisible(false);
   };
@@ -126,13 +135,14 @@ const ChatPage: React.FC = () => {
     setCardNumber("");
   };
 
+  // 6. 메시지 전송
   const handleSendMessage = () => {
     if (newMessage.trim() === "" || !currentUser) return;
 
     const message: ChatMessage = {
       sender: "Me",
       receiver: currentUser,
-      message: newMessage,
+      content: newMessage,
     };
 
     // 클라이언트 화면 먼저 갱신
@@ -143,20 +153,13 @@ const ChatPage: React.FC = () => {
     setNewMessage("");
 
     if (stompClient.current && stompClient.current.connected) {
-      stompClient.current.send(
-        "/app/chat/send",
-        {},
-        JSON.stringify({
-          sender: "Me",
-          receiver: currentUser,
-          message: newMessage,
-        })
-      );
+      stompClient.current.send("/app/chat/send", {}, JSON.stringify(message));
     } else {
       alert("서버와 연결되어 있지 않습니다.");
     }
   };
 
+  // 7. Enter키로 메시지 전송
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -164,12 +167,13 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  // 8. 안전결제 요청 (예시)
   const handleSecurePaymentRequest = () => {
     if (!currentUser) return;
     const message: ChatMessage = {
       sender: currentUser,
       receiver: "Me",
-      message: "상대방이 안전결제를 요청했습니다.",
+      content: "상대방이 안전결제를 요청했습니다.",
       paymentInfo: {
         itemImage: "/images/파스타.jpg",
         itemName: "디지털 아트워크",
@@ -187,6 +191,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  // 9. 결제 폼 토글
   const togglePaymentForm = (index: number) => {
     if (!currentUser) return;
     setMessagesByUser((prev) => ({
@@ -199,6 +204,7 @@ const ChatPage: React.FC = () => {
     }));
   };
 
+  // 10. 결제 완료 처리
   const handlePaymentSubmit = (index: number) => {
     if (cardNumber.length !== 12) {
       alert("카드 번호는 12자리여야 합니다.");
@@ -211,7 +217,8 @@ const ChatPage: React.FC = () => {
 
     const paymentSuccessMessage: ChatMessage = {
       sender: "Me",
-      message: "결제가 완료되었습니다.",
+      receiver: currentUser,
+      content: "결제가 완료되었습니다.",
       hidden: false,
       isPaymentComplete: true,
     };
@@ -255,7 +262,7 @@ const ChatPage: React.FC = () => {
                       messagesByUser[user.nickname].length > 0
                         ? messagesByUser[user.nickname][
                             messagesByUser[user.nickname].length - 1
-                          ].message
+                          ].content
                         : "대화를 시작해보세요"}
                     </p>
                   </div>
@@ -310,7 +317,7 @@ const ChatPage: React.FC = () => {
                           msg.sender === "Me" ? "me-message" : "you-message"
                         }`}
                       >
-                        {msg.message.split("\n").map((line, i) => (
+                        {msg.content.split("\n").map((line, i) => (
                           <div key={i}>{line}</div>
                         ))}
 
@@ -337,27 +344,31 @@ const ChatPage: React.FC = () => {
 
                             {msg.isPaymentFormVisible && (
                               <form
+                                className="payment-form"
                                 onSubmit={(e) => {
                                   e.preventDefault();
                                   handlePaymentSubmit(index);
                                 }}
-                                className="payment-form"
                               >
                                 <input
                                   type="text"
-                                  placeholder="카드 번호 12자리"
+                                  placeholder="카드 번호 12자리 입력"
                                   value={cardNumber}
-                                  onChange={(e) =>
-                                    setCardNumber(e.target.value)
-                                  }
                                   maxLength={12}
+                                  onChange={(e) =>
+                                    setCardNumber(
+                                      e.target.value.replace(/[^0-9]/g, "")
+                                    )
+                                  }
                                 />
                                 <button type="submit">결제 완료</button>
                               </form>
                             )}
 
                             {msg.isPaymentComplete && (
-                              <p>결제가 완료되었습니다.</p>
+                              <p className="payment-complete-msg">
+                                결제가 완료되었습니다.
+                              </p>
                             )}
                           </div>
                         )}
@@ -369,15 +380,12 @@ const ChatPage: React.FC = () => {
 
             <div className="chat-input-area">
               <textarea
-                placeholder="메시지를 입력하세요..."
+                placeholder="메시지를 입력하세요"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <button onClick={handleSendMessage}>전송</button>
-              <button onClick={handleSecurePaymentRequest}>
-                안전결제 요청
-              </button>
             </div>
           </div>
         </div>
