@@ -136,6 +136,7 @@ const ChatPage: React.FC = () => {
     setCurrentUser(null);
     setIsListModalVisible(true);
     setCardNumber("");
+    navigate("/worker/{userId}");
   };
 
   // 6. 메시지 전송

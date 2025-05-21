@@ -172,7 +172,7 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleOpenChat = () => {
-    window.open("/chat", "_blank", "noopener,noreferrer");
+    navigate("/chat");
   };
 
   const navigate = useNavigate();
