@@ -16,9 +16,8 @@ interface UserProfile {
 
 interface ChatMessage {
   sender: string;
-  receiver: string;
-  content: string;
-  timestamp?: string;
+  receiver?: string;
+  message: string;
   paymentInfo?: {
     itemImage: string;
     itemName: string;
@@ -634,7 +633,6 @@ const ChatPage: React.FC = () => {
     }
 
     alert("결제가 완료되었습니다.");
-    setIsPaymentCompleted(true);
 
     if (!currentChannel || messageId === undefined || !sbInstance.current) return;
 
@@ -843,74 +841,26 @@ const ChatPage: React.FC = () => {
                               <p>결제가 완료되었습니다.</p>
                             )}
                           </div>
-
-                          {!msg.isPaymentFormVisible &&
-                            !msg.isPaymentComplete && (
-                              <button
-                                onClick={() => togglePaymentForm(index)}
-                                className="payment-btn"
-                                disabled={isPaymentCompleted}
-                              >
-                                결제하기
-                              </button>
-                            )}
-
-                          {msg.isPaymentFormVisible && (
-                            <form
-                              className="payment-form"
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                handlePaymentSubmit(index);
-                              }}
-                            >
-                              <input
-                                type="text"
-                                placeholder="카드 번호 12자리 입력"
-                                value={cardNumber}
-                                maxLength={12}
-                                onChange={(e) =>
-                                  setCardNumber(
-                                    e.target.value.replace(/[^0-9]/g, "")
-                                  )
-                                }
-                              />
-                              <button type="submit">결제 완료</button>
-                            </form>
-                          )}
-
-                          {msg.isPaymentComplete && (
-                            <p className="payment-complete-msg">
-                              결제가 완료되었습니다.
-                            </p>
-                          )}
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ) : null
+                  )
               )}
               {/* 메시지 목록이 비어 있을 경우 메시지 표시 */}
               {messagesByUser[currentChannel.url]?.length === 0 && <p>메시지가 없습니다.</p>} {/* currentChannel.url 안전하게 사용 */}
             </div>
 
-            <div className="chat-action-bar">
-              <button
-                onClick={handleSecurePaymentRequest}
-                className="secure-payment-btn"
-                disabled={isPaymentCompleted}
-              >
-                안전결제 요청
-              </button>
-            </div>
-
             <div className="chat-input-area">
               <textarea
-                placeholder="메시지를 입력하세요"
+                placeholder="메시지를 입력하세요..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <button onClick={handleSendMessage}>전송</button>
+              <button onClick={handleSecurePaymentRequest}>
+                안전결제 요청
+              </button>
             </div>
           </div>
         </div>
