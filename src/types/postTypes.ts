@@ -9,7 +9,8 @@ export interface PostDTO {
   views: number | null;
   tag: string; // 쉼표로 구분된 태그 문자열
   thumbnailImagePath: string | null; // 썸네일 이미지 경로 (null 가능)
-  originImagePath: string; // 원본 이미지 경로 (null 가능)
+  resizedImagePath?: string; // 중간 크기 이미지 경로 (null 가능)
+  originImagePath: string[]; // 원본 이미지 경로 (null 가능)
   followers: number | null;
   downloads: number | null;
   favoriteCnt: number | null; // 좋아요 수

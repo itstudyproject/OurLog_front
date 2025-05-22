@@ -67,14 +67,14 @@ const SearchPage = () => {
         const allPosts: Post[] = rawPosts.map((item) => ({
           id: item.postId,
           title: item.title,
-          author: item.userDTO?.nickname || "알수없음",
+          author: item.nickname || "알수없음",
           artistProfileImg: item.userProfileDTO?.thumbnailImagePath || "",
           contents: item.content,
           createdAt: item.regDate?.split("T")[0] || "",
           thumbnail: item.userProfileDTO?.thumbnailImagePath || "",
           category: item.tag,
           boardId: item.boardNo,
-          userId: item.userDTO?.userId,
+          userId: item.userId,
         }));
 
         // 프론트에서 추가 필터링하지 않음
