@@ -7,7 +7,7 @@ const PrivacyPolicy = () => {
 
       <section className="terms-container section ">
         <p className="terms-container p">
-          주식회사 포스타입(이하 ‘회사’)은 개인정보보호법에 따라 이용자의 권리를
+          주식회사 OurLog(이하 ‘회사’)은 개인정보보호법에 따라 이용자의 권리를
           보장하고 개인정보와 관련한 이용자의 고충을 원활하게 처리할 수 있도록
           다음과 같이 개인정보 처리방침을 수립·공개합니다.
         </p>
