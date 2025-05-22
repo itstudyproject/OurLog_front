@@ -328,6 +328,30 @@ const PostModify = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/remove/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("삭제 실패");
+
+      alert("게시글이 삭제되었습니다.");
+      navigate("/post", { replace: true });
+    } catch (error) {
+      console.error("삭제 오류:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleCancel = () => {
     if (
       window.confirm(
@@ -505,8 +529,9 @@ const PostModify = () => {
       <div className="button-group">
         <button onClick={handleCancel}>취소</button>
         <button onClick={handleSubmit} disabled={isSubmitting}>
-          수정하기
+          수정완료
         </button>
+        <button onClick={handleDelete}>삭제하기</button>
       </div>
     </div>
   );

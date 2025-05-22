@@ -141,13 +141,12 @@ body {
 }
 
 .button-group button:nth-child(3) {
-  background-color: #1d4ed8;
-  border-color: #1e40af;
+  background-color: #b00;
   color: white;
 }
 
 .button-group button:nth-child(3):hover {
-  background-color: #2563eb;
+  background-color: #f00;
 }
 
 .image-grid {
@@ -316,13 +315,9 @@ body {
   color: #c7d2fe;
   border-radius: 9999px;
   padding: 4px 14px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 500;
   transition: background 0.2s;
-}
-
-.tag-pill:hover {
-  background: #4338ca;
 }
 
 .tag-remove-btn {
