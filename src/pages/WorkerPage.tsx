@@ -204,16 +204,24 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleLikeToggle = async (index: number, postId: number) => {
-    console.log("🚀 좋아요 토글 시도: ", { loggedInUserId, postId }); // 여기 추가
-    if (isNaN(loggedInUserId)) {
-      console.warn("❌ 좋아요 실패: 로그인 사용자 정보 없음");
+    if (loggedInUserId === undefined) return;
+
+    if (postId === undefined) {
+      console.error("❌ postId가 undefined입니다!");
       return;
     }
+
+    console.log("👍 좋아요 토글 요청 데이터:", {
+      userId: loggedInUserId,
+      postId: postId,
+    });
 
     try {
       const response = await fetch(`${baseUrl}/favorites/toggle`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         body: JSON.stringify({
           userDTO: { userId: loggedInUserId },
@@ -224,9 +232,6 @@ const WorkerPage: React.FC = () => {
       if (!response.ok) throw new Error("좋아요 토글 실패");
 
       const result = await response.json();
-
-      // 여기 추가
-      console.log("좋아요 토글 응답:", result);
 
       setLikes((prevLikes) =>
         prevLikes.map((like, i) =>
@@ -283,6 +288,8 @@ const WorkerPage: React.FC = () => {
         {currentCards.map((card, index) => {
           const globalIndex = (currentPage - 1) * cardsPerPage + index;
           const like = likes[globalIndex] || { liked: false, count: 0 };
+
+          console.log("🧩 card 객체 확인:", card); // 이거 추가!
 
           return (
             <div
