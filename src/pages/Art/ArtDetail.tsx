@@ -22,6 +22,8 @@ const ArtDetail = () => {
 
   const [mainImagePicture, setMainImagePicture] = useState<PictureDTO | null>(null);
 
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
   const handleGoBack = () => {
     navigate("/Art");
   };
@@ -344,6 +346,41 @@ const ArtDetail = () => {
     }
   }, [showShareOptions]);
 
+  useEffect(() => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user && user.userId) {
+          setCurrentUserId(user.userId);
+      } else {
+          setCurrentUserId(null);
+      }
+  }, []);
+
+  const handleReregisterClick = () => {
+      if (!post) return;
+      navigate(`/art/register`, { state: { postData: post, isReregister: true } });
+  };
+
+  const handleDownloadOriginal = () => {
+      if (!post?.pictureDTOList || post.pictureDTOList.length === 0) {
+          alert("다운로드할 이미지가 없습니다.");
+          return;
+      }
+      const originalImagePath = post.pictureDTOList[0].originImagePath;
+      if (!originalImagePath) {
+           alert("원본 이미지 경로 정보를 찾을 수 없습니다.");
+           return;
+      }
+
+      const imageUrl = `http://localhost:8080/ourlog/picture/display/${originalImagePath}`;
+
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.setAttribute('download', `${post.title || post.postId}_original.jpg`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -360,6 +397,9 @@ const ArtDetail = () => {
       </div>
     );
   }
+
+  const isSeller = currentUserId !== null && post.userId === currentUserId;
+  const isSuccessfulBidder = currentUserId !== null && post.tradeDTO?.tradeStatus === true && post.tradeDTO?.bidderId === currentUserId;
 
   return (
     <div className="art-detail-container">
@@ -399,6 +439,11 @@ const ArtDetail = () => {
             <h3>작품 설명</h3>
             <div className="description-content">
               <p>{post.content || '설명 없음'}</p>
+              {post.tradeDTO?.tradeStatus === true && isSuccessfulBidder && (
+                  <button className="download-button" onClick={handleDownloadOriginal}>
+                      원본 이미지 다운로드
+                  </button>
+              )}
             </div>
           </div>
         </div>
@@ -547,7 +592,7 @@ const ArtDetail = () => {
             <div className="non-trade-info">
                <p>이 게시물은 경매 상품이 아닙니다.</p>
                <button className="chat-button" onClick={handleOpenChat}>
-                <span className="chat-icon">��</span> 작가와 1:1 채팅
+                <span className="chat-icon">💬</span> 작가와 1:1 채팅
                </button>
             </div>
           )}
@@ -558,6 +603,11 @@ const ArtDetail = () => {
         <button onClick={handleGoBack} className="back-button">
           목록으로
         </button>
+        {post?.tradeDTO?.tradeStatus === true && isSeller && (
+            <button type="button" className="reregister-button" onClick={handleReregisterClick}>
+                경매 재등록
+            </button>
+        )}
       </div>
     </div>
   );
