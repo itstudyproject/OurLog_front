@@ -24,7 +24,6 @@ interface PostDataState extends Omit<PostDTO, 'tradeDTO' | 'pictureDTOList' | 't
   replyCnt: number | null;
   regDate: string | null;
   modDate: string | null;
-  originImagePath: string | null;
 }
 
 const ArtRegister = () => {
@@ -56,7 +55,6 @@ const ArtRegister = () => {
     replyCnt: null,
     regDate: null,
     modDate: null,
-    originImagePath: null,
   });
 
   const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);

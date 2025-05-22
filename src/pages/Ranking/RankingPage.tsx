@@ -78,25 +78,16 @@ const RankingPage: React.FC = () => {
 
         let artworkImageSrc = "/default-image.jpg";
 
-        if (item.pictureDTOList && item.pictureDTOList.length > 0) {
-          const firstPic = item.pictureDTOList[0];
-          if (firstPic.thumbnailImagePath) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.thumbnailImagePath}`;
-          } else if (firstPic.resizedImagePath) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.resizedImagePath}`;
-          } else if (firstPic.originImagePath) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.originImagePath}`;
-          } else if (firstPic.fileName) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${firstPic.fileName}`;
-          }
-        }
+        const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
 
-        if (artworkImageSrc === "/default-image.jpg") {
-          if (item.thumbnailImagePath) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.thumbnailImagePath}`;
-          } else if (item.fileName) {
-            artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${item.fileName}`;
-          }
+        if (picData.resizedImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+        } else if (picData.thumbnailImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+        } else if (picData.originImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+        } else if (picData.fileName) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
         }
 
         return {
