@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 
-import { useNavigate, Routes, Route, useLocation } from "react-router-dom";
-import PurchaseBidPage from "./PurchaseBidPage/PurchaseBidPage";
+import { useNavigate } from "react-router-dom";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
 import RecentPostsCarousel from "./Post/RecentPostsCarousel";
 import "../styles/WorkerPage.css";
-import "../styles/BidHistory.css";
 import "../styles/PurchaseBidPage.css";
+import "../styles/MyPage.css";
+// BidHistory 컴포넌트 임포트
+import BidHistory from "./Art/BidHistory"; 
 
 import {
   fetchProfile,
@@ -43,11 +44,11 @@ const recentPosts = [
 
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const stored = localStorage.getItem("user");
   const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
+  const [activeTab, setActiveTab] = useState<'purchase-bid' | 'sale' | 'bookmark'>('purchase-bid');
 
   useEffect(() => {
     console.log("stored:" + stored)
@@ -59,67 +60,49 @@ const MyPage: React.FC = () => {
       .catch((err) => console.error(err));
   }, [userId]);
 
-
-
-  // 메뉴 선택 상태 관리
-  const getCurrentTab = () => {
-    const path = location.pathname;
-    if (path === "/mypage") return "recent";
-    if (path.includes("/purchase-bid")) return "purchase-bid";
-    if (path.includes("/sale")) return "sale";
-    if (path.includes("/bookmark")) return "bookmark";
-    return "recent";
-  };
-
-  // 편집 관련 페이지에서는 메뉴 숨김
   const hideMenu = [
     "/mypage/edit",
     "/mypage/account/edit",
     "/mypage/account/delete",
-   ].some(path => location.pathname.startsWith(path)); 
-
+   ].some(path => location.pathname.startsWith(path));
 
   return (
-    <div className="bid-history-container">
-      <div className="bid-history-title">
+    <div className="mp-container">
+      <div className="mp-page-title">
         <h2>마이페이지</h2>
       </div>
 
-      <div className="bid-item" style={{ padding: "20px" }}>
+      <div className="mp-profile-section">
         <div
-          className="bid-artwork"
-          style={{ width: "100px", height: "100px" }}
+          className="mp-profile-image"
         >
           <img
             src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
             alt="프로필"
           />
         </div>
-        <div className="bid-details">
+        <div className="mp-profile-details">
           <h3>{profile?.nickname || "로딩 중..."}</h3>
-          <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
+          <div className="mp-follow-stats">
             <p>팔로워: {profile?.followCnt ?? 0}</p>
             <p>팔로잉: {profile?.followingCnt ?? 0}</p>
           </div>
-          <div className="bid-actions" style={{ marginTop: "15px" }}>
+          <div className="mp-profile-actions">
             <button
-              className="detail-button"
+              className="mp-button primary"
               onClick={() => navigate("/mypage/edit")}
-              style={{ marginRight: "10px" }}
             >
               프로필수정
             </button>
             <button
-              className="detail-button"
+              className="mp-button primary"
               onClick={() => navigate("/mypage/account/edit")}
-              style={{ marginRight: "10px" }}
             >
               회원정보수정
             </button>
             <button
-              className="detail-button"
+              className="mp-button danger"
               onClick={() => navigate("/mypage/account/delete")}
-              style={{ backgroundColor: "#e74c3c" }}
             >
               회원탈퇴
             </button>
@@ -127,36 +110,28 @@ const MyPage: React.FC = () => {
         </div>
       </div>
 
-      
        {!hideMenu && (
         <>
-      <div className="bid-history-title" style={{ marginTop: "30px" }}>
+      <div className="mp-section-title">
         <h2>메뉴</h2>
       </div>
 
-      <div className="sub-tab-nav">
-        {/* <button
-
-          className={`sub-tab ${getCurrentTab() === 'recent' ? 'active' : ''}`}
-          onClick={() => navigate("/mypage")}
-        >
-          최근 본 게시물
-        </button> */}
+      <div className="mp-sub-tab-nav">
         <button
-          className={`sub-tab ${getCurrentTab() === 'purchase-bid' ? 'active' : ''}`}
-          onClick={() => navigate("/mypage/purchase-bid")}
+          className={`mp-sub-tab ${activeTab === 'purchase-bid' ? 'active' : ''}`}
+          onClick={() => setActiveTab('purchase-bid')}
         >
           구매/입찰목록
         </button>
         <button
-          className={`sub-tab ${getCurrentTab() === 'sale' ? 'active' : ''}`}
-          onClick={() => navigate("/mypage/sale")}
+          className={`mp-sub-tab ${activeTab === 'sale' ? 'active' : ''}`}
+          onClick={() => setActiveTab('sale')}
         >
           판매목록/현황
         </button>
         <button
-          className={`sub-tab ${getCurrentTab() === 'bookmark' ? 'active' : ''}`}
-          onClick={() => navigate("/mypage/bookmark")}
+          className={`mp-sub-tab ${activeTab === 'bookmark' ? 'active' : ''}`}
+          onClick={() => setActiveTab('bookmark')}
         >
           북마크
         </button>
@@ -164,82 +139,13 @@ const MyPage: React.FC = () => {
       </>
        )}
 
-<Routes>
-  {/* 최근 본 게시물 (기본) */}
-  {/* <Route
-    index
-    element={
-      <RecentPostsCarousel
-        posts={recentPosts.map(p => ({
-          id: p.id,
-          title: p.title,
-          price: Number(p.price.replace(/[^0-9]/g, "")),
-          thumbnailUrl: p.image,
-        }))}
-      />
-    }
-  /> */}
+<div className="mp-tab-content">
+  {activeTab === 'purchase-bid' && userId && <BidHistory userId={userId} />}
+  {activeTab === 'purchase-bid' && !userId && <p>로그인이 필요합니다.</p>}
 
-  {/* 프로필 수정 */}
-  <Route
-    path="edit"
-    element={
-      <ProfileEdit
-        profile={profile}
-        onBack={() => navigate(-1)}
-        onSave={async updated => {
-          if (!userId) return;
-          try {
-            const saved = await updateProfile(userId, updated);
-            setProfile(saved);
-            navigate(-1);
-          } catch (err: any) {
-            const msg = err instanceof Error ? err.message : String(err);
-            alert("저장에 실패했습니다: " + msg);
-          }
-        }}
-      />
-    }
-  />
-
-  {/* 회원정보 수정 */}
-  <Route
-    path="account/edit"
-    element={<AccountEdit />}
-  />
-
-  {/* 회원탈퇴 */}
-  <Route
-    path="account/delete"
-    element={<AccountDelete />}
-  />
-
-  {/* 구매/입찰목록 */}
-  <Route
-    path="purchase-bid"
-    element={
-      userId
-        ? <PurchaseBidPage userId={userId} />
-        : <p>로그인이 필요합니다.</p>
-    }
-  />
-
-  {/* 판매목록/현황 */}
-  <Route
-    path="sale"
-    element={
-      userId
-        ? <SalePage userId={userId} />
-        : <p>로그인이 필요합니다.</p>
-    }
-  />
-
-  {/* 북마크 */}
-  <Route
-    path="bookmark"
-    element={<BookmarkPage />}
-  />
-</Routes>
+  {activeTab === 'sale' && <p>판매목록/현황 내용 (추후 구현)</p>}
+  {activeTab === 'bookmark' && <p>북마크 내용 (추후 구현)</p>}
+</div>
 
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 interface ImageFile {
   file: File | null;
@@ -41,45 +42,47 @@ const PostModify = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : '',
-            'Content-Type': 'application/json',
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:8080/ourlog/post/read/${id}`,
+          {
+            method: "GET",
+            headers: getAuthHeaders(),
           }
-        });
+        );
 
         if (!response.ok) {
-          throw new Error('게시글을 불러오는데 실패했습니다.');
+          throw new Error("게시글을 불러오는데 실패했습니다.");
         }
 
         const data = await response.json();
         if (!data || !data.postDTO) {
-          throw new Error('잘못된 데이터 형식입니다.');
+          throw new Error("잘못된 데이터 형식입니다.");
         }
 
         const postData = data.postDTO;
         setFormData({
           title: postData.title,
           content: postData.content,
-          images: postData.pictureDTOList?.map((pic: any) => ({
-            file: null,
-            preview: `/uploads/${pic.path}/${pic.uuid}_${pic.picName}`,
-            id: pic.uuid,
-            picId: pic.picId,
-            uuid: pic.uuid,
-            picName: pic.picName,
-            path: pic.path
-          })) || [],
+          images:
+            postData.pictureDTOList?.map((pic: any) => ({
+              file: null,
+              preview: `http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`,
+              id: pic.uuid,
+              picId: pic.picId,
+              uuid: pic.uuid,
+              picName: pic.picName,
+              path: pic.path,
+            })) || [],
           thumbnailId: postData.fileName || null,
-          category: getBoardCategory(postData.boardNo)
+          category: getBoardCategory(postData.boardNo),
         });
-        setTags(postData.tag ? postData.tag.split(',') : []);
+        setTags(postData.tag ? postData.tag.split(",") : []);
         setCharacterCount(postData.content.length);
       } catch (error) {
         console.error("게시글 불러오기 실패:", error);
         alert("게시글을 불러오는데 실패했습니다.");
-        navigate("/post");
+        window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
       }
     };
 
@@ -122,13 +125,13 @@ const PostModify = () => {
   const uploadImage = async (file: File) => {
     const fd = new FormData();
     fd.append("files", file);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
       method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : ''
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: fd
+      body: fd,
     });
     if (!res.ok) throw new Error("이미지 업로드 실패");
     const data = await res.json();
@@ -151,7 +154,7 @@ const PostModify = () => {
           const uploaded = await uploadImage(file);
           return {
             file: null,
-            preview: `/uploads/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
+            preview: `http://localhost:8080/ourlog/picture/display/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
             id: uploaded.uuid,
             picId: uploaded.picId,
             uuid: uploaded.uuid,
@@ -165,7 +168,13 @@ const PostModify = () => {
       setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId: prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        thumbnailId:
+          prev.thumbnailId &&
+          newImages.some((img) => img.picName === prev.thumbnailId)
+            ? prev.thumbnailId // 기존 썸네일이 여전히 존재하면 유지
+            : newImages.length > 0
+            ? newImages[0].picName // ✅ 새로 업로드된 첫 이미지로 설정
+            : null,
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -179,24 +188,32 @@ const PostModify = () => {
   const handleRemoveImage = (id: string) => {
     setFormData((prev) => {
       const newImages = prev.images.filter((img) => img.id !== id);
+      const deletedImage = prev.images.find((img) => img.id === id);
+
       return {
         ...prev,
         images: newImages,
         thumbnailId:
-          prev.thumbnailId === id
+          deletedImage?.picName === prev.thumbnailId
             ? newImages.length > 0
-              ? newImages[0].id
+              ? newImages[0].picName
               : null
             : prev.thumbnailId,
       };
     });
   };
 
-  const handleThumbnailSelect = (id: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      thumbnailId: id,
-    }));
+  const handleThumbnailSelect = (picName: string) => {
+    setFormData((prev) => {
+      const selected = prev.images.find((img) => img.picName === picName);
+      const others = prev.images.filter((img) => img.picName !== picName);
+
+      return {
+        ...prev,
+        images: selected ? [selected, ...others] : prev.images,
+        thumbnailId: picName,
+      };
+    });
   };
 
   const handleDragEnd = (result: any) => {
@@ -275,32 +292,35 @@ const PostModify = () => {
     setIsSubmitting(true);
 
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
       const postDTO = {
         postId: id,
         title: formData.title,
         content: formData.content,
         boardNo: getBoardNo(formData.category),
         fileName: formData.thumbnailId,
-        pictureDTOList: formData.images.map(img => ({
+        pictureDTOList: formData.images.map((img) => ({
           uuid: img.uuid,
           picName: img.picName,
-          path: img.path
+          path: img.path,
         })),
-        tag: tags.join(','),
+        tag: tags.join(","),
+        userId: user.userId,
       };
 
       const response = await fetch(`http://localhost:8080/ourlog/post/modify`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(postDTO),
       });
 
       if (!response.ok) throw new Error("게시물 수정에 실패했습니다.");
       alert("게시물이 성공적으로 수정되었습니다.");
-      navigate(`/post/detail/${id}`);
+      window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
     } catch (error) {
       alert("게시물 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -308,9 +328,37 @@ const PostModify = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/remove/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("삭제 실패");
+
+      alert("게시글이 삭제되었습니다.");
+      navigate("/post", { replace: true });
+    } catch (error) {
+      console.error("삭제 오류:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleCancel = () => {
-    if (window.confirm("수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
-      navigate(`/post/detail/${id}`);
+    if (
+      window.confirm(
+        "수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
+      )
+    ) {
+      window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
     }
   };
 
@@ -378,7 +426,7 @@ const PostModify = () => {
                             className={`image-item ${
                               snapshot.isDragging ? "dragging" : ""
                             } ${
-                              formData.thumbnailId === image.id
+                              formData.thumbnailId === image.picName
                                 ? "thumbnail-selected"
                                 : ""
                             }`}
@@ -387,7 +435,9 @@ const PostModify = () => {
                               src={image.preview}
                               alt="업로드 이미지"
                               className="preview-img"
-                              onClick={() => handleThumbnailSelect(image.id)}
+                              onClick={() =>
+                                handleThumbnailSelect(image.picName)
+                              }
                             />
                             <div className="image-overlay">
                               <button
@@ -398,12 +448,14 @@ const PostModify = () => {
                               >
                                 ×
                               </button>
-                              {formData.thumbnailId === image.id ? (
+                              {formData.thumbnailId === image.picName ? (
                                 <span className="thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => handleThumbnailSelect(image.id)}
+                                  onClick={() =>
+                                    handleThumbnailSelect(image.picName)
+                                  }
                                   className="thumbnail-button"
                                 >
                                   썸네일로 설정
@@ -477,8 +529,9 @@ const PostModify = () => {
       <div className="button-group">
         <button onClick={handleCancel}>취소</button>
         <button onClick={handleSubmit} disabled={isSubmitting}>
-          수정하기
+          수정완료
         </button>
+        <button onClick={handleDelete}>삭제하기</button>
       </div>
     </div>
   );

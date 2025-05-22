@@ -33,7 +33,7 @@
 .chat-list-modal {
   background-color: var(--bg-secondary);
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
   border: 1px solid var(--border-color);
@@ -45,7 +45,23 @@
   align-items: center;
   margin-bottom: 16px;
   color: var(--highlight);
+  font-size: 20px;
   font-weight: bold;
+}
+
+.exit-btn {
+  background-color: transparent;
+  border: 1px solid var(--highlight);
+  color: var(--highlight);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.exit-btn:hover {
+  background-color: var(--highlight);
+  color: #000;
 }
 
 .chat-list {
@@ -73,11 +89,13 @@
   height: 42px;
   border-radius: 50%;
   margin-right: 12px;
+  object-fit: cover;
 }
 
 .chat-info strong {
   display: block;
   color: var(--text-color);
+  font-weight: 600;
 }
 
 .chat-info p {
@@ -88,10 +106,6 @@
 
 /* 채팅 모달 */
 .chat-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: var(--bg-secondary);
   color: var(--text-color);
   border: 2px solid var(--border-color);
@@ -99,33 +113,12 @@
   width: 90%;
   max-width: 500px;
   padding: 18px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
+  overflow: hidden;
 }
 
-.go-to-payment {
-  padding: 8px 16px;
-  background-color: var(--highlight) !important; /* 검정색으로 설정 */
-  color: #000 !important; /* 텍스트는 흰색 */
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: bold;
-}
-
-.go-to-payment:hover {
-  background-color: #e6b43e !important; /* hover시 어두운 회색 */
-}
-
-.go-to-payment:disabled {
-  background-color: #555; /* 비활성화된 버튼 색상 */
-  cursor: not-allowed;
-}
-
-/* 헤더 */
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -138,165 +131,195 @@
   align-items: center;
 }
 
-.chat-header img {
+.chat-header-left img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   margin-right: 10px;
 }
 
-/* 나가기 버튼 */
-.exit-btn {
-  background-color: transparent;
-  color: var(--text-sub);
-  border: 1px solid var(--border-color);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
+.chat-header-left span {
+  font-weight: bold;
+  color: var(--highlight);
 }
 
-.exit-btn:hover {
-  background-color: var(--highlight);
-  color: #111;
-}
-
-/* 메시지 영역 */
-.messages {
-  flex-grow: 1;
+.chat-messages {
+  flex: 1;
   overflow-y: auto;
   margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding-right: 4px;
 }
 
+/* 메시지 행 */
 .message-row {
   display: flex;
-  align-items: flex-end;
-}
-
-.message-row.you {
-  flex-direction: column;
-  align-items: flex-start;
+  margin-bottom: 10px;
 }
 
 .message-row.me {
   justify-content: flex-end;
 }
 
-.profile-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin-bottom: 4px;
+.message-row.you {
+  justify-content: flex-start;
 }
 
+.profile-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* 메시지 박스 */
 .message {
+  max-width: 70%;
   padding: 10px 14px;
   border-radius: 12px;
-  max-width: 70%;
+  font-size: 14px;
+  line-height: 1.5;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .me-message {
-  background-color: transparent;
-  border: 1px solid var(--highlight);
-  color: var(--highlight);
+  background-color: var(--highlight);
+  color: #000;
+  border-bottom-right-radius: 2px;
 }
 
 .you-message {
-  background-color: #333;
-  color: var(--text-color);
-}
-
-/* 입력창 */
-.chat-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.chat-footer textarea {
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
   background-color: #222;
-  color: white;
-  resize: none;
-  min-height: 50px;
+  color: var(--text-color);
+  border-bottom-left-radius: 2px;
 }
 
-.chat-footer button {
+/* 채팅 입력 */
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chat-input-area textarea {
+  flex: 1;
+  resize: none;
+  height: 50px;
   padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: #1a1a1a;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.chat-input-area button {
+  padding: 10px 16px;
   background-color: var(--highlight);
+  color: #000;
   border: none;
-  color: #111;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-input-area button:hover {
+  background-color: #ffd05e;
+}
+
+/* 결제 카드 */
+.payment-card {
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #1a1a1a;
+}
+
+.payment-card img {
+  width: 100%;
+  height: auto;
+  max-height: 160px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  object-fit: cover;
+}
+
+.payment-card p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.payment-btn {
+  margin-top: 8px;
+  background-color: var(--highlight);
+  color: #000;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.payment-btn:hover {
+  background-color: #ffd05e;
+}
+
+/* 결제 입력 폼 */
+.payment-form {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.payment-form input {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: #111;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.payment-form button {
+  padding: 8px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
 }
 
-.chat-footer button:hover {
-  background-color: #e6b43e;
-}
-
-/* 안전결제 안내 */
-.secure-payment-box {
-  margin-top: 12px;
-  padding: 12px;
-  border-top: 1px solid var(--border-color);
-  background-color: #1f1f1f;
-  border-radius: 6px;
-  text-align: center;
-  color: var(--text-sub);
-}
-
-.secure-payment-link {
+.payment-complete-msg {
+  margin-top: 8px;
   color: var(--highlight);
-  text-decoration: underline;
-  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.secure-payment-link:hover {
-  color: #ffd670;
-}
-
-/* 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* 결제 요청 메시지 */
-.payment-request-message {
-  text-align: center;
-  margin: 10px 0;
-}
-
-.payment-buttons {
+.chat-action-bar {
   display: flex;
-  justify-content: center;
-  gap: 10px;
+  justify-content: center; /* 가운데 정렬 */
+  padding: 8px 10px;
+  /* border: 2px solid #ccc; 테두리선 추가 */
+  border-radius: 4px; /* 테두리 둥글게 처리 */
+  background-color: transparent; /* 배경색 없애기 */
 }
 
-.payment-buttons button {
+.secure-payment-btn {
+  background-color: transparent; /* 배경색 없애기 */
+  color: gray;
+  border: 2px solid rgba(255, 203, 5, 0.5); /* 테두리선 색에 투명도 추가 */
   padding: 6px 12px;
-  background-color: var(--highlight);
-  color: #111;
-  border: none;
-  cursor: pointer;
   border-radius: 4px;
   font-weight: bold;
+  cursor: pointer;
 }
 
-.payment-buttons button:hover {
-  background-color: #e6b43e;
+.secure-payment-btn:hover {
+  background-color: #f0b800; /* 호버 시 배경색 추가 */
+  border-color: #f0b800; /* 호버 시 테두리 색상 변경 */
 }

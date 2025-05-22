@@ -13,7 +13,7 @@ const ArtList = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [totalPages, setTotalPages] = useState<number>(1);
-  const artworksPerPage = 10;
+  const artworksPerPage = 15;
 
   useEffect(() => {
     if (!hasToken()) {
@@ -158,24 +158,36 @@ const ArtList = () => {
   };
 
   // 경매 남은 시간 계산 함수 (최대 7일 제한)
-  function getTimeLeft(endTime: string | Date | null): string {
-    if (!endTime) return "마감 정보 없음";
+  function getTimeLeft(endTime: string | Date | null): { text: string, isEndingSoon: boolean, isEnded: boolean } {
+    if (!endTime) return { text: "마감 정보 없음", isEndingSoon: false, isEnded: false };
     const end = new Date(endTime).getTime();
     const now = Date.now();
     const diff = end - now;
-    if (isNaN(end) || diff <= 0) return "경매 종료";
-    const maxDiff = 7 * 24 * 60 * 60 * 1000;
-    if (diff > maxDiff) return "최대 7일 이상 남음";
+    const oneMinuteInMillis = 60 * 1000;
+    const oneHourInMillis = 60 * oneMinuteInMillis;
+    const oneDayInMillis = 24 * oneHourInMillis;
+
+    if (isNaN(end) || diff <= 0) return { text: "경매 종료", isEndingSoon: false, isEnded: true };
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    if (days > 0) return `${days}일 ${hours}시간 ${minutes}분 남음`;
-    if (hours > 0) return `${hours}시간 ${minutes}분 남음`;
-    if (minutes > 0) return `${minutes}분 ${seconds}초 남음`;
-    return `${seconds}초 남음`;
+    let text = "";
+    if (diff < oneMinuteInMillis) {
+      text = `${seconds}초 남음`;
+    } else if (diff < oneHourInMillis) {
+      text = `${minutes}분 남음`;
+    } else if (diff < oneDayInMillis) {
+      text = `${hours}시간 ${minutes}분 남음`;
+    } else {
+      text = `${days}일 ${hours}시간 ${minutes}분 남음`;
+    }
+
+    const isEndingSoon = diff > 0 && diff <= oneHourInMillis;
+
+    return { text, isEndingSoon, isEnded: false };
   }
 
   if (loading) {
@@ -250,6 +262,8 @@ const ArtList = () => {
 
           console.log("Artwork TradeDTO:", artwork.tradeDTO);
 
+          const timeInfo = getTimeLeft(artwork.tradeDTO?.lastBidTime || null);
+
           return (
             <div
               key={artwork.postId}
@@ -257,7 +271,7 @@ const ArtList = () => {
               onClick={() => handleArtworkClick(artwork.postId)}
             >
               <div className="art-list-item-image">
-                {imageUrl ? ( // 조정된 이미지 URL이 있을 경우 표시
+                {imageUrl ? (
                   <img
                     src={imageUrl} // 수정된 URL 사용
                     alt={artwork.title}
@@ -278,10 +292,23 @@ const ArtList = () => {
                     : "경매 정보 없음"}
                 </p>
                 {/* ✅ tradeDTO와 lastBidTime이 있을 때만 남은 시간 표시 */}
-                {artwork.tradeDTO && artwork.tradeDTO.lastBidTime && (
-                  <span className="auction-time-left">
-                    {getTimeLeft(artwork.tradeDTO.lastBidTime)}
-                  </span>
+                {artwork.tradeDTO ? (
+                  artwork.tradeDTO.tradeStatus ? ( // 경매 종료 시
+                    <span className="auction-time-left" style={{ color: 'red' }}>경매 종료</span>
+                  ) : ( // 경매 진행 중
+                    artwork.tradeDTO.lastBidTime && (
+                      <span
+                        className="auction-time-left"
+                        // ✅ 남은 시간에 따라 스타일 및 텍스트 변경
+                        style={{ color: timeInfo.isEndingSoon ? 'red' : 'inherit' }}
+                      >
+                        {timeInfo.text}
+                        {timeInfo.isEndingSoon && " (종료 임박)"}
+                      </span>
+                    )
+                  )
+                ) : ( // tradeDTO 없음
+                  <span className="auction-time-left">경매 정보 없음</span>
                 )}
               </div>
             </div>

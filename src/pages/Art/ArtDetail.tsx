@@ -5,6 +5,7 @@ import "../../styles/ArtDetail.css";
 
 // src/types에서 필요한 인터페이스를 임포트합니다.
 import { PostDTO } from "../../types/postTypes";
+import { PictureDTO } from "../../types/pictureTypes";
 
 const ArtDetail = () => {
   const { id } = useParams<{ id?: string }>();
@@ -18,6 +19,8 @@ const ArtDetail = () => {
   const popoverRef = useRef<HTMLDivElement>(null);
   
   const [countdown, setCountdown] = useState<string>("");
+
+  const [mainImagePicture, setMainImagePicture] = useState<PictureDTO | null>(null);
 
   const handleGoBack = () => {
     navigate("/Art");
@@ -36,6 +39,17 @@ const ArtDetail = () => {
     }
 
     const currentHighestBid = post.tradeDTO.highestBid ?? post.tradeDTO.startPrice;
+
+    if (post?.tradeDTO?.nowBuy !== null && bid === post.tradeDTO.nowBuy) {
+        const confirmNowBuy = window.confirm(
+            `현재 지정한 입찰 금액(${bid.toLocaleString()}원)은 즉시구매가와 동일합니다.\n즉시구매 페이지로 이동하시겠습니까?`
+        );
+        if (confirmNowBuy) {
+            handleBuyNow();
+        }
+        return;
+    }
+
     const minBidAmount = currentHighestBid + 1000;
     if (bid < minBidAmount) {
         alert(`입찰가는 현재 최고가(${currentHighestBid.toLocaleString()}원)보다 1000원 이상 높아야 합니다.`);
@@ -53,14 +67,11 @@ const ArtDetail = () => {
             return;
         }
 
-        const currentUserId = post.userId;
-        if (!currentUserId) {
-             alert("사용자 정보를 확인할 수 없습니다. 다시 로그인해주세요.");
-             navigate('/login');
-             return;
-        }
-
         const tradeId = post.tradeDTO.tradeId;
+        if (!tradeId) {
+            alert("경매 정보를 찾을 수 없습니다.");
+            return;
+        }
 
         const response = await fetch(`http://localhost:8080/ourlog/trades/${tradeId}/bid`, {
             method: 'POST',
@@ -69,20 +80,19 @@ const ArtDetail = () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                tradeId: tradeId,
                 bidAmount: bid,
             }),
         });
 
+        const responseText = await response.text();
+
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("입찰 실패 응답:", errorText);
-            // Attempt to parse error text as JSON if it looks like a JSON error response
+            console.error("입찰 실패 응답:", responseText);
             try {
-                const errorJson = JSON.parse(errorText);
-                alert(`입찰 실패: ${errorJson.message || errorText || '서버 오류'}`);
+                const errorJson = JSON.parse(responseText);
+                 alert(`입찰 실패: ${errorJson.message || responseText || '서버 오류'}`);
             } catch (e) {
-                 alert(`입찰 실패: ${errorText || '서버 오류'}`);
+                 alert(`입찰 실패: ${responseText || '서버 오류'}`);
             }
             if (post?.postId) {
                  fetchArtworkDetail(post.postId.toString());
@@ -90,16 +100,14 @@ const ArtDetail = () => {
             return;
         }
 
-        const successMessage = await response.text();
-        alert(`입찰 성공: ${successMessage}`);
-
+        alert(`입찰 성공: ${responseText}`);
         if (post?.postId) {
              fetchArtworkDetail(post.postId.toString());
         }
 
     } catch (error) {
         console.error("입찰 요청 중 오류 발생:", error);
-        alert("입찰 요청 중 오류가 발생했습니다.");
+        alert(`입찰 요청 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`);
          if (post?.postId) {
              fetchArtworkDetail(post.postId.toString());
          }
@@ -110,21 +118,23 @@ const ArtDetail = () => {
     const confirmBuy = window.confirm("정말 즉시 구매하시겠습니까?");
     if (!confirmBuy) return;
     if (post?.tradeDTO?.tradeId !== undefined && post.tradeDTO.tradeId !== null) {
+
       navigate(`/Art/payment`, { state: { post } });
     } else {
-      console.warn("Trade ID is null or undefined, cannot navigate to bid history.");
+      console.warn("Trade ID is null or undefined, cannot navigate to payment.");
       alert("결제를 진행할 수 없습니다. 경매 정보가 올바르지 않습니다.");
     }
-  }; 
-    const handleOpenChat = () => {
+  };
+
+  const handleOpenChat = () => {
     const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
     if (confirmChat) {
       window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
     }
-
   };  
   const handleBidHistory = () => {
-    alert("입찰 내역을 확인합니다.");
+    alert("입찰 내역을 확인합니다."); // TODO: 실제 입찰 내역 페이지/모달 구현 필요
+    // 경매 종료 작품의 경우, 낙찰자와 판매자만 입찰 내역 열람 가능하도록 백엔드 또는 여기서 권한 체크 필요
   };
 
   const handleShareToggle = () => {
@@ -155,6 +165,10 @@ const ArtDetail = () => {
     } else {
       console.warn("Artist nickname is null or undefined, cannot navigate to artist page.");
     }
+  };
+
+  const handleImageClick = (picture: PictureDTO) => {
+      setMainImagePicture(picture);
   };
 
   const fetchArtworkDetail = async (postId: string) => {
@@ -203,12 +217,75 @@ const ArtDetail = () => {
       setIsFollowing(false);
       setBidAmount(Number(data.postDTO?.tradeDTO?.highestBid || 0) + 1000);
       setLoading(false);
+
+      if (data.postDTO?.pictureDTOList && data.postDTO.pictureDTOList.length > 0) {
+          const thumbnail = data.postDTO.pictureDTOList.find(
+            (pic: PictureDTO) => pic.uuid === data.postDTO.fileName
+          );
+          if (thumbnail) {
+            setMainImagePicture(thumbnail);
+          } else {
+            setMainImagePicture(data.postDTO.pictureDTOList[0]);
+          }
+      } else {
+          setMainImagePicture(null);
+      }
+
+      // 경매 정보가 있고 종료 시간이 지났으면 상태 업데이트 요청
+      if (data.postDTO?.tradeDTO && data.postDTO.tradeDTO.lastBidTime) {
+          const endTime = new Date(data.postDTO.tradeDTO.lastBidTime).getTime();
+          const now = Date.now();
+          // tradeStatus가 0(진행 중)이고, 종료 시간이 현재 시간보다 이전이면
+          if ((data.postDTO.tradeDTO.tradeStatus === 0 || data.postDTO.tradeDTO.tradeStatus === null) && now >= endTime) {
+              console.log(`경매 종료 시간(${new Date(endTime).toLocaleString()})이 지났습니다. 상태 업데이트를 시도합니다.`);
+              updateAuctionStatus(data.postDTO.tradeDTO.tradeId, 1);
+          }
+      }
+
     } catch (error) {
       console.error("작품 조회 중 오류 발생:", error);
       alert("작품을 불러오는 중 오류가 발생했습니다.");
       setPost(null);
       setLoading(false);
     }
+  };
+
+  // 경매 상태 업데이트 (tradeStatus)
+  const updateAuctionStatus = async (tradeId: number, status: number) => {
+      try {
+          const headers = getAuthHeaders();
+          if (!headers) {
+              console.error("인증 헤더가 없습니다.");
+              return;
+          }
+
+          console.log("경매 상태 업데이트 요청 헤더:", headers); // 헤더 로깅 추가
+
+          // TODO: 경매 상태를 업데이트하는 백엔드 API 엔드포인트 확인 또는 구현 필요
+          // 임시 API 경로: /ourlog/trades/{tradeId}/close
+          const response = await fetch(`http://localhost:8080/ourlog/trades/${tradeId}/close`, {
+              method: 'PUT', // 또는 PATCH 등 적절한 HTTP 메소드 사용
+              headers: {
+                  ...headers,
+                  // 'Content-Type': 'application/json', // 즉시 구매와 달리 /close 엔드포인트는 본문이 필요 없음
+              },
+              // body: JSON.stringify({ tradeStatus: status }), // 즉시 구매와 달리 /close 엔드포인트는 본문이 필요 없음
+          });
+
+          if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`경매 상태 업데이트 실패 (${response.status}):`, errorText);
+              // 실패 시 사용자에게 알림 또는 재시도 로직 추가 가능
+          } else {
+              console.log(`경매 ID ${tradeId} 상태가 ${status}로 업데이트되었습니다.`);
+              // 상태 업데이트 성공 시 UI 갱신 (예: 다시 fetchArtworkDetail 호출 또는 post 상태 직접 업데이트)
+               if (post?.postId) {
+                   fetchArtworkDetail(post.postId.toString()); // 상태 갱신을 위해 다시 불러옴
+               }
+          }
+      } catch (error) {
+          console.error("경매 상태 업데이트 요청 중 오류 발생:", error);
+      }
   };
 
   useEffect(() => {
@@ -288,15 +365,34 @@ const ArtDetail = () => {
     <div className="art-detail-container">
       <div className="art-detail-content">
         <div className="left-content">
-          <div className="art-image-container">
-            {post.fileName ? (
-              <img
-                src={post.fileName}
-                alt={post.title || 'Artwork image'}
-                className="art-main-image"
-              />
+          <div className="art-image-grid-container">
+            {post?.pictureDTOList && post.pictureDTOList.length > 0 ? (
+                post.pictureDTOList.map((picture, index) => {
+                  const imageUrl = picture.originImagePath
+                    ? `http://localhost:8080/ourlog/picture/display/${picture.originImagePath}`
+                    : null;
+
+                  if (!imageUrl) return null;
+
+                  const isMain = picture.uuid === mainImagePicture?.uuid;
+
+                  return (
+                    <div
+                      key={picture.uuid || index}
+                      className={isMain ? "art-grid-item-main" : "art-grid-item-thumbnail"}
+                      onClick={() => handleImageClick(picture)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`${post?.title || (isMain ? 'Main image' : 'Thumbnail image')} ${index + 1}`}
+                        className={isMain ? "art-grid-img-main" : "art-grid-img-thumbnail"}
+                      />
+                    </div>
+                  );
+                })
             ) : (
-              <div className="no-image-placeholder">이미지 없음</div>
+               <div className="no-image-placeholder">이미지 없음</div>
             )}
           </div>
           <div className="artwork-description">

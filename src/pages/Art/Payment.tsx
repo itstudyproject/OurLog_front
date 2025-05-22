@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/ArtPayment.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 // src/types에서 필요한 인터페이스를 임포트합니다.
 import { PostDTO } from "../../types/postTypes";
@@ -12,7 +13,8 @@ interface PaymentInfo {
   title: string; // 게시글 제목
   price: number; // 즉시 구매가 (nowBuy)
   author: string; // 작가 닉네임 (nickname)
-  imageSrc?: string; // 게시글 대표 이미지 (fileName)
+  // imageSrc는 resizedImagePath, thumbnailImagePath, fileName 등을 사용할 수 있습니다.
+  imageSrc?: string; 
 }
 
 const ArtPayment = () => {
@@ -29,6 +31,8 @@ const ArtPayment = () => {
     // location.state에서 post 객체를 가져옵니다.
     if (location.state && (location.state as any).post) {
       const receivedPost: PostDTO = (location.state as any).post;
+      // 받은 post 데이터 콘솔 출력
+      console.log("Received post data in Payment page:", receivedPost); 
       setPostData(receivedPost);
 
       // 전달받은 post 객체로부터 PaymentInfo를 구성합니다.
@@ -38,7 +42,8 @@ const ArtPayment = () => {
               title: receivedPost.title || '제목 없음',
               price: receivedPost.tradeDTO.nowBuy ?? 0, // 즉시 구매가 사용
               author: receivedPost.nickname || '알 수 없는 작가',
-              imageSrc: receivedPost.fileName // 대표 이미지 사용
+              // resizedImagePath를 우선 사용하고, 없으면 thumbnailImagePath, 없으면 fileName 사용
+              imageSrc: receivedPost.resizedImagePath || receivedPost.thumbnailImagePath || receivedPost.fileName // 이미지 경로 사용
           });
           setLoading(false);
       } else {
@@ -67,36 +72,102 @@ const ArtPayment = () => {
     setSelectedMethod(method);
   };
 
+  // 실제 결제 처리 및 API 호출 함수
+  const processPayment = async () => {
+      if (!postData?.tradeDTO?.tradeId) {
+          alert("결제 정보를 찾을 수 없습니다. 거래 ID가 누락되었습니다.");
+          return;
+      }
+
+      setLoading(true); // 로딩 상태 활성화
+
+      try {
+          const headers = getAuthHeaders();
+          if (!headers) {
+              alert("로그인이 필요합니다.");
+              navigate('/login');
+              return;
+          }
+
+          console.log("즉시 구매 요청 헤더:", headers); // 헤더 로깅 추가
+
+          const tradeId = postData.tradeDTO.tradeId;
+
+          // 백엔드 즉시 구매 API 호출
+          // 엔드포인트: PUT /ourlog/trades/{tradeId}/nowBuy -> POST /ourlog/trades/{tradeId}/nowBuy 로 변경
+          // (User 정보는 헤더의 토큰으로 백엔드에서 파악할 것으로 가정)
+          const response = await fetch(`http://localhost:8080/ourlog/trades/${tradeId}/nowBuy`, {
+              method: 'POST', // 백엔드 컨트롤러 명세에 따라 POST 사용
+              headers: headers,
+              // 즉시 구매 API는 보통 요청 본문에 추가 정보가 필요 없습니다. (백엔드 nowBuy 메소드 시그니처 확인 완료)
+          });
+
+          if (!response.ok) {
+              const errorText = await response.text();
+              console.error(`즉시 구매 실패 (${response.status}):`, errorText);
+              try {
+                 const errorJson = JSON.parse(errorText);
+                 alert(`즉시 구매 실패: ${errorJson.message || errorText || '서버 오류'}`);
+              } catch (e) {
+                 alert(`즉시 구매 실패: ${errorText || '서버 오류'}`);
+              }
+               setLoading(false);
+              return; // 실패 시 여기서 중단
+          }
+
+          // 즉시 구매 성공
+          const successMessage = await response.text(); // 백엔드 nowBuy는 String 반환
+          console.log("즉시 구매 성공 응답:", successMessage);
+
+          alert("결제가 완료되었습니다!");
+          // 결제 완료 후 입찰 기록 페이지로 이동
+          navigate(`/Art/bidhistory`);
+
+      } catch (error) {
+          console.error("즉시 구매 요청 중 오류 발생:", error);
+          alert(`결제 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+          setLoading(false); // 로딩 상태 비활성화
+      }
+  };
+
   const handlePaymentSubmit = () => {
     if (!agreement) {
       alert("구매 조건 및 결제진행에 동의해주세요.");
       return;
     }
 
-    // TODO: 실제 결제 처리 로직 구현 (API 호출 등)
-    console.log("결제 진행:", paymentInfo, "선택된 방법:", selectedMethod);
+    // 최종 확인창 표시
+    const isConfirmed = window.confirm("결제하시겠습니까?");
 
-    // 결제 완료 메시지 표시 후 입찰 기록 페이지로 이동
-    const isPaymentSuccessful = true; // TODO: 실제 결제 결과에 따라 변경
-
-    if (isPaymentSuccessful) {
-        const confirmComplete = window.confirm("결제가 완료되었습니다!");
-        if (confirmComplete) {
-            // tradeId를 가져와 입찰 기록 페이지로 이동
-            // tradeId는 더 이상 URL 파라미터로 전달하지 않음
-            // const tradeId = postData?.tradeDTO?.tradeId;
-            // if (tradeId) {
-                // BidHistory 경로를 /Art/bidhistory로 수정
-                navigate(`/Art/bidhistory`);
-            // } else {
-            //     console.error("Trade ID is missing for navigation.");
-        } else {
-            // 사용자가 확인을 누르지 않으면 현재 페이지에 머무릅니다.
-        }
+    if (isConfirmed) {
+        // 확인 시 실제 결제 처리 함수 호출
+        processPayment();
     } else {
-        // TODO: 결제 실패 처리
-        alert("결제에 실패했습니다.");
+        // 취소 시 아무것도 하지 않음
+        console.log("결제 취소");
     }
+
+    // TODO: 실제 결제 처리 로직 구현 (API 호출 등) -> processPayment 함수로 분리됨
+
+    // 결제 완료 메시지 표시 후 입찰 기록 페이지로 이동 -> processPayment 함수로 이동
+    // const isPaymentSuccessful = true; // TODO: 실제 결제 결과에 따라 변경
+
+    // if (isPaymentSuccessful) {
+    //     const confirmComplete = window.confirm("결제가 완료되었습니다!"); // 이 확인창을 위로 이동
+    //     if (confirmComplete) {
+    //         // tradeId는 더 이상 URL 파라미터로 전달하지 않음
+    //         // const tradeId = postData?.tradeDTO?.tradeId;
+    //         // if (tradeId) {
+    //             // BidHistory 경로를 /Art/bidhistory로 수정
+    //             navigate(`/Art/bidhistory`);
+    //         // } else {
+    //         //     console.error("Trade ID is missing for navigation.");
+    //     }
+    // } else {
+    //     // TODO: 결제 실패 처리
+    //     alert("결제에 실패했습니다.");
+    // }
   };
 
   if (loading || !postData || !paymentInfo) {
@@ -124,7 +195,11 @@ const ArtPayment = () => {
             <div className="artwork-thumbnail">
               {/* paymentInfo.imageSrc가 있을 때만 이미지 표시 */}
               {paymentInfo.imageSrc ? (
-                <img src={paymentInfo.imageSrc} alt={paymentInfo.title} />
+                <img 
+                  // src 속성을 수정하여 전체 URL 구성 (백엔드에서 이미 경로를 제공한다고 가정)
+                  src={`http://localhost:8080${paymentInfo.imageSrc}`}
+                  alt={paymentInfo.title}
+                 />
               ) : (
                 <div className="no-image-placeholder">이미지 없음</div>
               )}

@@ -38,7 +38,7 @@ function App() {
           <Route index element={<ArtList />} />
           <Route path="register" element={<ArtRegister />} />
           <Route path="payment" element={<Payment />} />
-          <Route path="bidhistory/:tradeId" element={<BidHistory />} />
+          <Route path="bidhistory" element={<BidHistory />} />
           <Route path=":id" element={<ArtDetail />} />
         </Route>
 
@@ -56,7 +56,7 @@ function App() {
           <Route path="request" element={<PostList />} />
           <Route path=":id" element={<PostDetail />} />
           <Route path="Register" element={<PostRegister />} />
-          <Route path="postModify/:id" element={<PostModify />} />
+          <Route path="modify/:id" element={<PostModify />} />
         </Route>
       </Route>
 

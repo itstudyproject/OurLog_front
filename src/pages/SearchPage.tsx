@@ -8,8 +8,9 @@ interface ArtWork {
   title: string;
   author: string;
   artistProfileImg: string;
+  thumbnail?: string;
   contents?: string;
-  price: number;
+  highestBid: number;
   likes: number;
   createdAt: string;
   imageSrc: string;
@@ -33,19 +34,47 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // URL 쿼리나 location state에서 검색어를 가져옴
   const searchParam = new URLSearchParams(location.search).get("query");
   const stateParam = location.state?.q;
   const query = searchParam || stateParam || "";
   const lowerQuery = query.trim().toLowerCase();
 
-  // 게시판 번호 (전체 게시글 가져올 땐 0 또는 undefined 등으로 처리)
-  const boardNo = 0; // 전체 게시판 대상이라 가정
+  const boardNo = 0;
 
-  // 상태 관리
   const [posts, setPosts] = useState<Post[]>([]);
   const [artworks, setArtworks] = useState<ArtWork[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // 이미지 URL 생성 함수
+  const getImageSrcFromItem = (item: any) => {
+    let artworkImageSrc = "/default-image.jpg";
+    const picData =
+      item.pictureDTOList && item.pictureDTOList.length > 0
+        ? item.pictureDTOList[0]
+        : item;
+
+    if (picData.resizedImagePath) {
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+    } else if (picData.thumbnailImagePath) {
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+    } else if (picData.originImagePath) {
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+    } else if (picData.fileName) {
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
+    }
+
+    return artworkImageSrc;
+  };
+
+  // 프로필이미지
+  const getProfileImageUrl = (imgPath: string) => {
+    if (!imgPath) return "/images/avatar.png"; // 기본 아바타 이미지
+    if (imgPath.startsWith("http") || imgPath.startsWith("https")) {
+      return imgPath; // 절대경로는 그대로 반환
+    }
+    // 상대경로일 경우 서버 주소 붙여서 반환
+    return `http://localhost:8080/ourlog/picture/display/${imgPath}`;
+  };
 
   useEffect(() => {
     if (lowerQuery === "") {
@@ -64,47 +93,55 @@ const SearchPage = () => {
       .then((res) => res.json())
       .then((data) => {
         const rawPosts = data.pageResultDTO?.dtoList || [];
+        console.log("rawPosts:", rawPosts);
+
+        // 전체 게시글
         const allPosts: Post[] = rawPosts.map((item) => ({
           id: item.postId,
           title: item.title,
-          author: item.userDTO?.nickname || "알수없음",
+          author: item.nickname || "알수없음",
           artistProfileImg: item.userProfileDTO?.thumbnailImagePath || "",
           contents: item.content,
+          highestBid:
+            item.tradeDTO &&
+            item.tradeDTO.highestBid &&
+            !isNaN(Number(item.tradeDTO.highestBid)) &&
+            Number(item.tradeDTO.highestBid) > 0
+              ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
+              : "",
           createdAt: item.regDate?.split("T")[0] || "",
-          thumbnail: item.userProfileDTO?.thumbnailImagePath || "",
+          thumbnail: item.thumbnailImagePath || "",
           category: item.tag,
           boardId: item.boardNo,
-          userId: item.userDTO?.userId,
+          userId: item.userId,
         }));
 
-        // 프론트에서 추가 필터링하지 않음
-        const filteredPostsByQuery = allPosts;
-
-        // 커뮤니티 게시글(보드아이디 5가 아닌)
-        const communityPosts = filteredPostsByQuery.filter(
-          (post) => post.boardId !== 5
-        );
-        // 중복 제거
+        // 중복 제거 및 필터링
+        const communityPosts = allPosts.filter((post) => post.boardId !== 5);
         const uniqueCommunityPosts = Array.from(
           new Map(communityPosts.map((post) => [post.id, post])).values()
         );
 
-        // 아트 게시글(보드아이디 5인 것만)
-        const artworkPosts: ArtWork[] = filteredPostsByQuery
+        // 아트 게시글 (boardId === 5)
+        const artworkPosts: ArtWork[] = allPosts
           .filter((post) => post.boardId === 5)
-          .map((post) => ({
-            id: post.id,
-            title: post.title,
-            author: post.author,
-            artistProfileImg: post.artistProfileImg,
-            contents: post.contents,
-            price: 0,
-            likes: 0,
-            createdAt: post.createdAt,
-            imageSrc: post.thumbnail || "",
-            userId: post.userId,
-          }));
-        // 중복 제거
+          .map((post) => {
+            const item = rawPosts.find((p) => p.postId === post.id);
+
+            return {
+              id: post.id,
+              title: post.title,
+              author: post.author,
+              artistProfileImg: post.artistProfileImg,
+              contents: post.contents,
+              highestBid: item?.tradeDTO?.highestBid || 0,
+              likes: item?.favoriteCnt || 0,
+              createdAt: post.createdAt,
+              imageSrc: item ? getImageSrcFromItem(item) : post.thumbnail || "",
+              userId: post.userId,
+            };
+          });
+
         const uniqueArtworkPosts = Array.from(
           new Map(artworkPosts.map((art) => [art.id, art])).values()
         );
@@ -151,8 +188,9 @@ const SearchPage = () => {
                 const authorArt = filteredArtworks.find(
                   (art) => art.author === author
                 );
-                const profileImg =
-                  authorArt?.artistProfileImg || "/images/avatar.png";
+                const profileImg = getProfileImageUrl(
+                  authorArt?.artistProfileImg || ""
+                );
                 const userId = authorArt?.userId;
 
                 return (
@@ -161,10 +199,8 @@ const SearchPage = () => {
                       className="artist-info"
                       style={{ cursor: "pointer" }}
                       onClick={() => {
-                        if (authorArt?.userId) {
-                          navigate(`/worker/${userId}`, {
-                            state: { userId: authorArt.userId },
-                          });
+                        if (userId) {
+                          navigate(`/worker/${userId}`, { state: { userId } });
                         } else {
                           alert("작가 정보가 없습니다.");
                         }
@@ -175,7 +211,6 @@ const SearchPage = () => {
                       </div>
                       <div className="artist-detail">
                         <h3>{author}</h3>
-                        <p>일러스트레이터</p>
                       </div>
                     </div>
                   </div>
@@ -198,14 +233,16 @@ const SearchPage = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <div className="artwork-image">
-                    <img src={art.imageSrc} alt={art.title} />
-                    <div className="artwork-likes">❤️ {art.likes}</div>
+                    {art.imageSrc && art.imageSrc.trim() !== "" && (
+                      <img src={art.imageSrc} alt={art.title} />
+                    )}
+                    <div className="artwork-likes">🤍 {art.likes}</div>
                   </div>
                   <div className="artwork-info">
                     <h3>{art.title}</h3>
                     <p className="artwork-author">작가: {art.author}</p>
                     <p className="artwork-price">
-                      {art.price.toLocaleString()}원
+                      {art.highestBid.toLocaleString()}원
                     </p>
                   </div>
                 </div>

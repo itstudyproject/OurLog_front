@@ -125,7 +125,9 @@ const BulletinBoard: React.FC = () => {
           const typedKey = key as CategoryKey;
           return (
             <div key={typedKey}>
-              <h3 className="category-header">{categoryLabels[typedKey]}</h3>
+              <Link to={`/post/${typedKey}`} className="category-header-link">
+                <h3 className="category-header">{categoryLabels[typedKey]}</h3>
+              </Link>
               <ul className="category-list">
                 {items.length === 0 ? (
                   <li className="no-post">게시글이 없습니다.</li>
