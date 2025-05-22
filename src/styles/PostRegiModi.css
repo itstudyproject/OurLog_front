@@ -312,9 +312,7 @@ body {
 }
 
 .tag-pill {
-  display: flex;
   align-items: center;
-  background: #312e81;
   color: #c7d2fe;
   border-radius: 9999px;
   padding: 4px 14px;

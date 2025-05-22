@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuthHeaders, hasToken, removeToken } from "../../utils/auth";
 import "../../styles/PostDetail.css";
+import { PictureDTO } from "../../types/pictureTypes";
 
 interface Comment {
   replyId: number;
@@ -29,6 +30,7 @@ interface Post {
   uuid?: string; // ✅ 추가
   path?: string;
   replyDTOList: Comment[];
+  pictureDTOList?: PictureDTO[];
   views: number;
   tag?: string;
 }
@@ -255,12 +257,50 @@ const PostDetail = () => {
             />
           </div>
         )}
+        {post.pictureDTOList && post.pictureDTOList.length > 0 && (
+          <div className="post-image-gallery">
+            {post.pictureDTOList
+              .filter((pic) => pic.picName !== post.fileName)
+              .map((pic, index) => (
+                <img
+                  key={index}
+                  src={`http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`}
+                  alt={`이미지 ${index + 1}`}
+                  className="post-image"
+                  style={{ maxWidth: "100%", marginBottom: "1rem" }}
+                />
+              ))}
+          </div>
+        )}
 
         <div className="post-content">
           {post.content.split("\n").map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
         </div>
+
+        {post.tag && (
+          <div className="post-tags">
+            {post.tag.split(",").map((tag) => (
+              <span
+                key={tag}
+                className="tag-pill"
+                style={{
+                  marginRight: "8px",
+                  cursor: "pointer",
+                  color: "#007bff",
+                }}
+                onClick={() =>
+                  navigate(
+                    `/post?type=t&keyword=${encodeURIComponent(tag.trim())}`
+                  )
+                }
+              >
+                #{tag.trim()}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="post-actions">
           <button onClick={handleGoBack} className="back-button">

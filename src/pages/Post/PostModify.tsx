@@ -82,7 +82,7 @@ const PostModify = () => {
       } catch (error) {
         console.error("게시글 불러오기 실패:", error);
         alert("게시글을 불러오는데 실패했습니다.");
-        navigate("/post");
+        window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
       }
     };
 
@@ -154,7 +154,7 @@ const PostModify = () => {
           const uploaded = await uploadImage(file);
           return {
             file: null,
-            preview: `/uploads/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
+            preview: `http://localhost:8080/ourlog/picture/display/${uploaded.path}/${uploaded.uuid}_${uploaded.picName}`,
             id: uploaded.uuid,
             picId: uploaded.picId,
             uuid: uploaded.uuid,
@@ -169,7 +169,12 @@ const PostModify = () => {
         ...prev,
         images: newImages,
         thumbnailId:
-          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+          prev.thumbnailId &&
+          newImages.some((img) => img.picName === prev.thumbnailId)
+            ? prev.thumbnailId // 기존 썸네일이 여전히 존재하면 유지
+            : newImages.length > 0
+            ? newImages[0].picName // ✅ 새로 업로드된 첫 이미지로 설정
+            : null,
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -199,10 +204,16 @@ const PostModify = () => {
   };
 
   const handleThumbnailSelect = (picName: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      thumbnailId: picName,
-    }));
+    setFormData((prev) => {
+      const selected = prev.images.find((img) => img.picName === picName);
+      const others = prev.images.filter((img) => img.picName !== picName);
+
+      return {
+        ...prev,
+        images: selected ? [selected, ...others] : prev.images,
+        thumbnailId: picName,
+      };
+    });
   };
 
   const handleDragEnd = (result: any) => {
@@ -309,7 +320,7 @@ const PostModify = () => {
 
       if (!response.ok) throw new Error("게시물 수정에 실패했습니다.");
       alert("게시물이 성공적으로 수정되었습니다.");
-      navigate(`/post/${id}`);
+      window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
     } catch (error) {
       alert("게시물 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -323,7 +334,7 @@ const PostModify = () => {
         "수정 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
       )
     ) {
-      navigate(`/post/${id}`);
+      window.location.href = `/post/${id}`; // ✅ 브라우저 새로고침 포함한 이동
     }
   };
 
