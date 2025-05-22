@@ -159,8 +159,14 @@ tbody td:nth-child(2) {
   border-radius: 4px;
 }
 
+.search-select {
+  margin-right: 20px;
+  font-size: 20px;
+}
+
 /* 썸네일 텍스트 fallback */
 .thumbnail:empty {
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,68 +268,69 @@ tbody td:nth-child(2) {
     margin: 0;
   }
   /* 테이블 셀 중앙 정렬 */
-.postlist-table th,
-.postlist-table td {
-  text-align: center;
-  vertical-align: middle;
-}
+  .postlist-table th,
+  .postlist-table td {
+    text-align: center;
+    vertical-align: middle;
+  }
 
-/* 제목 셀 넓게, 중앙 정렬 */
-.postlist-table th.title,
-.postlist-table td.title {
-  width: 40%;
-  text-align: center;
-}
+  /* 제목 셀 넓게, 중앙 정렬 */
+  .postlist-table th.title,
+  .postlist-table td.title {
+    width: 40%;
+    text-align: center;
+  }
 
-/* 썸네일 셀 */
-.postlist-table th.thumbnail,
-.postlist-table td.thumbnail {
-  width: 100px;
-  text-align: center;
-  vertical-align: middle;
-}
+  /* 썸네일 셀 */
+  .postlist-table th.thumbnail,
+  .postlist-table td.thumbnail {
+    width: 100px;
+    text-align: center;
+    vertical-align: middle;
+  }
 
-/* 썸네일 이미지 */
-.postlist-thumbnail-img {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  display: inline-block;
-  vertical-align: middle;
-}
+  /* 썸네일 이미지 */
+  .postlist-thumbnail-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    display: inline-block;
+    vertical-align: middle;
+  }
 
-/* 썸네일 없음 텍스트 */
-.postlist-thumbnail-none {
-  width: 48px;
-  height: 48px;
-  line-height: 48px;
-  display: inline-block;
-  text-align: center;
-  vertical-align: middle;
-  background: #222;
-  color: #bbb;
-  border-radius: 4px;
-  font-size: 14px;
-}
+  /* 썸네일 없음 텍스트 */
+  .postlist-thumbnail-none {
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    background: #222;
+    color: #bbb;
+    border-radius: 4px;
+    font-size: 14px;
+  }
 
-/* 작성일자 칸 */
-.postlist-table th.date,
-.postlist-table td.date {
-  width: 120px;
-  min-width: 100px;
-  text-align: center;
-}
+  /* 작성일자 칸 */
+  .postlist-table th.date,
+  .postlist-table td.date {
+    width: 120px;
+    min-width: 100px;
+    text-align: center;
+  }
 
-/* 작성자 칸 */
-.postlist-table th.author,
-.postlist-table td.author {
-  width: 120px;
-  text-align: center;
-}
+  /* 작성자 칸 */
+  .postlist-table th.author,
+  .postlist-table td.author {
+    width: 120px;
+    text-align: center;
+  }
 }
 
 /* 제목 셀 가운데 정렬 */
-th.title, td.title {
+th.title,
+td.title {
   text-align: center;
 }
 

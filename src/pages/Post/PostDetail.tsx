@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuthHeaders, hasToken, removeToken } from "../../utils/auth";
 import "../../styles/PostDetail.css";
+import { PictureDTO } from "../../types/pictureTypes";
 
 interface Comment {
   replyId: number;
@@ -26,7 +27,10 @@ interface Post {
   regDate: string;
   modDate: string;
   fileName?: string;
+  uuid?: string; // ✅ 추가
+  path?: string;
   replyDTOList: Comment[];
+  pictureDTOList?: PictureDTO[];
   views: number;
   tag?: string;
 }
@@ -45,16 +49,19 @@ const PostDetail = () => {
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/ourlog/post/read/${id}`, {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders(),
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/read/${id}`,
+        {
+          method: "GET",
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
 
       if (response.status === 403) {
         alert("로그인이 필요합니다.");
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
@@ -63,21 +70,26 @@ const PostDetail = () => {
       }
 
       const data = await response.json();
-      setPost(data);
+      setPost(data.postDTO);
     } catch (error) {
       console.error("게시글 조회 실패:", error);
       alert("게시글을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false); // ✅ 무조건 로딩 상태 해제!
     }
   };
 
   const increaseViewCount = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/ourlog/post/increaseViews/${id}`, {
-        method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/increaseViews/${id}`,
+        {
+          method: "POST",
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
 
       if (response.status === 403) {
         console.warn("조회수 증가 실패: 인증 필요");
@@ -93,10 +105,18 @@ const PostDetail = () => {
   };
 
   useEffect(() => {
+    const loadPost = async () => {
+      try {
+        await increaseViewCount(); // 조회수 실패해도 넘어감
+      } catch (e) {
+        console.warn("조회수 증가 실패:", e);
+      } finally {
+        fetchPost(); // 무조건 게시글 불러오기 실행
+      }
+    };
+
     if (id) {
-      // 컴포넌트 마운트 시 한 번만 조회수 증가
-      increaseViewCount();
-      fetchPost();
+      loadPost(); // 반드시 실행
     }
   }, [id]);
 
@@ -117,7 +137,7 @@ const PostDetail = () => {
       }
 
       const response = await fetch(`http://localhost:8080/ourlog/reply/${id}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...getAuthHeaders(),
         },
@@ -141,27 +161,30 @@ const PostDetail = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '댓글 등록에 실패했습니다.');
+        throw new Error(errorData.message || "댓글 등록에 실패했습니다.");
       }
 
       setCommentContent("");
       fetchPost();
     } catch (error) {
-      console.error('댓글 등록 실패:', error);
-      alert('댓글 등록에 실패했습니다. 다시 시도해주세요.');
+      console.error("댓글 등록 실패:", error);
+      alert("댓글 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
   const handleDeleteComment = async (replyId: number) => {
-    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+    if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/ourlog/reply/remove/${replyId}`, {
-        method: 'DELETE',
-        headers: {
-          ...getAuthHeaders(),
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/ourlog/reply/remove/${replyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
 
       if (response.status === 403) {
         alert("댓글 삭제 권한이 없습니다. 로그인이 필요합니다.");
@@ -171,13 +194,13 @@ const PostDetail = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '댓글 삭제에 실패했습니다.');
+        throw new Error(errorData.message || "댓글 삭제에 실패했습니다.");
       }
 
       fetchPost();
     } catch (error) {
-      console.error('댓글 삭제 실패:', error);
-      alert('댓글 삭제에 실패했습니다. 다시 시도해주세요.');
+      console.error("댓글 삭제 실패:", error);
+      alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -226,32 +249,81 @@ const PostDetail = () => {
           </div>
         </div>
 
-        {post.fileName && (
+        {post.fileName && post.uuid && post.path && (
           <div className="post-thumbnail">
-            <img src={`/uploads/${post.fileName}`} alt={post.title} />
+            <img
+              src={`http://localhost:8080/ourlog/picture/display/${post.path}/${post.uuid}_${post.fileName}`}
+              alt={post.title}
+            />
+          </div>
+        )}
+        {post.pictureDTOList && post.pictureDTOList.length > 0 && (
+          <div className="post-image-gallery">
+            {post.pictureDTOList
+              .filter((pic) => pic.picName !== post.fileName)
+              .map((pic, index) => (
+                <img
+                  key={index}
+                  src={`http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`}
+                  alt={`이미지 ${index + 1}`}
+                  className="post-image"
+                  style={{ maxWidth: "100%", marginBottom: "1rem" }}
+                />
+              ))}
           </div>
         )}
 
         <div className="post-content">
-          {post.content.split('\n').map((paragraph, index) => (
+          {post.content.split("\n").map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
         </div>
 
+        {post.tag && (
+          <div className="post-tags">
+            {post.tag.split(",").map((tag) => (
+              <span
+                key={tag}
+                className="tag-pill"
+                style={{
+                  marginRight: "8px",
+                  cursor: "pointer",
+                  color: "#007bff",
+                }}
+                onClick={() =>
+                  navigate(
+                    `/post?type=t&keyword=${encodeURIComponent(tag.trim())}`
+                  )
+                }
+              >
+                #{tag.trim()}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="post-actions">
-          <button onClick={handleGoBack} className="back-button">목록으로</button>
-          <button onClick={handleModify} className="modify-button">수정</button>
+          <button onClick={handleGoBack} className="back-button">
+            목록으로
+          </button>
+          <button onClick={handleModify} className="modify-button">
+            수정
+          </button>
         </div>
 
         <div className="comments-section">
           <h3>댓글 ({post.replyDTOList?.length || 0})</h3>
-          
+
           <div className="comments-list">
             {post.replyDTOList?.map((comment) => (
               <div key={comment.replyId} className="comment">
                 <div className="comment-header">
-                  <span className="comment-author">{comment.userDTO?.nickname}</span>
-                  <span className="comment-date">{new Date(comment.regDate).toLocaleString()}</span>
+                  <span className="comment-author">
+                    {comment.userDTO?.nickname}
+                  </span>
+                  <span className="comment-date">
+                    {new Date(comment.regDate).toLocaleString()}
+                  </span>
                   {comment.userDTO?.userId === 5 && ( // 임시로 현재 사용자 ID와 비교
                     <button
                       onClick={() => handleDeleteComment(comment.replyId)}
@@ -273,7 +345,9 @@ const PostDetail = () => {
               placeholder="댓글을 입력하세요"
               rows={4}
             ></textarea>
-            <button type="submit" className="submit-button">댓글 등록</button>
+            <button type="submit" className="submit-button">
+              댓글 등록
+            </button>
           </form>
         </div>
       </div>

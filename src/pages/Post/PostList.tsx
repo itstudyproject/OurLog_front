@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import "../../styles/PostList.css";
 
@@ -23,101 +23,124 @@ const boardIdMap = {
 const PostList = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchType, setSearchType] = useState<string>("t");
+
   const [selectedBoardId, setSelectedBoardId] = useState<number>(
     boardIdMap[location.pathname as keyof typeof boardIdMap] || 1
   );
   const [totalPages, setTotalPages] = useState<number>(1);
-
   const postsPerPage = 10;
 
+  // ✅ 토큰 확인용 (필요 시 삭제 가능)
   useEffect(() => {
     if (!hasToken()) {
       console.warn("토큰이 없습니다. 로그인이 필요할 수 있습니다.");
     }
   }, []);
 
+  // ✅ pathname이 바뀌면 boardId 재설정
   useEffect(() => {
     const currentBoardId =
       boardIdMap[location.pathname as keyof typeof boardIdMap] || 1;
     setSelectedBoardId(currentBoardId);
   }, [location.pathname]);
 
-  const fetchPosts = () => {
-    setLoading(true);
-    const pageNumber = Math.max(1, currentPage);
-    
-    const params = new URLSearchParams({
-      page: String(pageNumber),
-      size: String(postsPerPage),
-      boardNo: String(selectedBoardId),
-      type: "t",
-      keyword: searchTerm
-    });
-    
-    fetch(`http://localhost:8080/ourlog/post/list?${params.toString()}`, {
-      method: 'GET',
-      headers: getAuthHeaders()
-    })
-    .then(async (res) => {
-      if (res.status === 403) {
-        removeToken();
-        navigate('/login');
-        throw new Error("인증이 필요합니다.");
-      }
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("서버 에러 응답:", text);
-        throw new Error(text || "서버 오류");
-      }
-      return res.json();
-    })
-    .then((data) => {
-      if (!data.pageResultDTO) {
-        throw new Error("잘못된 응답 형식");
-      }
-      const { pageResultDTO } = data;
-      
-      // 중복 제거를 위한 Map 사용
-      const postMap = new Map();
-      
-      (pageResultDTO.dtoList || []).forEach((item: any) => {
-        const postId = item.postId || item.id;
-        // 이미 존재하는 postId가 있다면 건너뛰기
-        if (!postMap.has(postId)) {
-          postMap.set(postId, {
-            id: postId,
-            title: item.title,
-            author: item.userName || item.author || item.writer || '',
-            createdAt: item.regDate || item.createdAt || '',
-            thumbnail: item.fileName || item.thumbnail || '',
-            boardId: item.boardNo || item.boardId,
-          });
-        }
-      });
-      
-      // Map의 값들을 배열로 변환
-      const uniquePosts = Array.from(postMap.values());
-      setPosts(uniquePosts);
-      setTotalPages(pageResultDTO.totalPage || 1);
-    })
-    .catch((err) => {
-      console.error("게시글 불러오기 실패:", err);
-      setPosts([]);
-      setTotalPages(1);
-    })
-    .finally(() => setLoading(false));
-  };
-
+  // ✅ URL에서 검색 파라미터 추출 (ex. ?keyword=고양이)
   useEffect(() => {
+    const keywordFromUrl = searchParams.get("keyword");
+    if (keywordFromUrl) {
+      setSearchInput(keywordFromUrl);
+      setSearchTerm(keywordFromUrl);
+      setCurrentPage(1);
+    }
+  }, [location.search]);
+
+  // ✅ 게시글 목록 불러오기
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const pageNumber = Math.max(1, currentPage);
+
+      const params = new URLSearchParams({
+        page: String(pageNumber),
+        size: String(postsPerPage),
+        boardNo: String(selectedBoardId),
+        type: "all",
+        keyword: searchTerm,
+      });
+
+      try {
+        const res = await fetch(
+          `http://localhost:8080/ourlog/post/list?${params.toString()}`,
+          {
+            method: "GET",
+            headers: getAuthHeaders(),
+          }
+        );
+
+        if (res.status === 403) {
+          removeToken();
+          navigate("/login");
+          return;
+        }
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "서버 오류");
+        }
+
+        const data = await res.json();
+        const dtoList = data.pageResultDTO?.dtoList || [];
+
+        const postMap = new Map();
+        dtoList.forEach((item: any) => {
+          const postId = item.postId || item.id;
+          if (!postMap.has(postId)) {
+            postMap.set(postId, {
+              id: postId,
+              title: item.title,
+              author: item.userDTO?.nickname || "",
+              createdAt: item.regDate || item.createdAt || "",
+              thumbnail:
+                item.fileName && item.uuid && item.path
+                  ? `http://localhost:8080/ourlog/picture/display/${
+                      item.path
+                    }/s_${item.uuid}_${item.fileName}?t=${Date.now()}`
+                  : "",
+              boardId: item.boardNo || item.boardId,
+            });
+          }
+        });
+
+        setPosts(Array.from(postMap.values()));
+        setTotalPages(data.pageResultDTO?.totalPage || 1);
+      } catch (error) {
+        console.error("게시글 불러오기 실패:", error);
+        setPosts([]);
+        setTotalPages(1);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPosts();
   }, [selectedBoardId, currentPage, searchTerm]);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchTerm(searchInput);
+    setCurrentPage(1);
+  };
+
   const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
+
   const handleRegisterClick = () => {
     let category = "";
     switch (selectedBoardId) {
@@ -138,55 +161,43 @@ const PostList = () => {
     }
     navigate(`/Post/Register?category=${encodeURIComponent(category)}`);
   };
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchTerm(searchInput);
-    setCurrentPage(1);
-  };
 
   const handleTabClick = (boardId: number) => {
     setSelectedBoardId(boardId);
     setCurrentPage(1);
-    switch (boardId) {
-      case 1:
-        navigate("/post/news");
-        break;
-      case 2:
-        navigate("/post/free");
-        break;
-      case 3:
-        navigate("/post/promotion");
-        break;
-      case 4:
-        navigate("/post/request");
-        break;
-      default:
-        navigate("/post");
-    }
+    const route = {
+      1: "/post/news",
+      2: "/post/free",
+      3: "/post/promotion",
+      4: "/post/request",
+    }[boardId];
+    navigate(route || "/post");
   };
-
-  // 페이지네이션 그룹 계산
-  const pageGroup = Math.floor((currentPage - 1) / 10);
-  const startPage = pageGroup * 10 + 1;
-  const endPage = Math.min(startPage + 9, totalPages);
-  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 날짜 포맷 함수 추가
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
     const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
   };
+
+  // 페이지네이션 계산
+  const pageGroup = Math.floor((currentPage - 1) / 10);
+  const startPage = pageGroup * 10 + 1;
+  const endPage = Math.min(startPage + 9, totalPages);
+  const pageNumbers = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i
+  );
 
   if (loading) {
     return (
@@ -199,30 +210,17 @@ const PostList = () => {
   return (
     <div className="w-full max-w-screen-xl px-4 mx-auto">
       <div className="tab-menu">
-        <div
-          className={selectedBoardId === 1 ? "active" : ""}
-          onClick={() => handleTabClick(1)}
-        >
-          새소식
-        </div>
-        <div
-          className={selectedBoardId === 2 ? "active" : ""}
-          onClick={() => handleTabClick(2)}
-        >
-          자유게시판
-        </div>
-        <div
-          className={selectedBoardId === 3 ? "active" : ""}
-          onClick={() => handleTabClick(3)}
-        >
-          홍보게시판
-        </div>
-        <div
-          className={selectedBoardId === 4 ? "active" : ""}
-          onClick={() => handleTabClick(4)}
-        >
-          요청게시판
-        </div>
+        {["새소식", "자유게시판", "홍보게시판", "요청게시판"].map(
+          (label, i) => (
+            <div
+              key={i}
+              className={selectedBoardId === i + 1 ? "active" : ""}
+              onClick={() => handleTabClick(i + 1)}
+            >
+              {label}
+            </div>
+          )
+        )}
       </div>
 
       <div className="board-header">
@@ -239,6 +237,9 @@ const PostList = () => {
 
         <div className="search-bar">
           <form onSubmit={handleSearch}>
+            
+
+            {/* 기존 검색 input */}
             <input
               type="text"
               value={searchInput}
@@ -261,34 +262,36 @@ const PostList = () => {
 
       <table>
         <colgroup>
-          <col style={{ width: '60px' }} />
-          <col style={{ width: '40%' }} />
-          <col style={{ width: '100px' }} />
-          <col style={{ width: '120px' }} />
-          <col style={{ width: '120px' }} />
+          <col style={{ width: "60px" }} />
+          <col style={{ width: "40%" }} />
+          <col style={{ width: "100px" }} />
+          <col style={{ width: "120px" }} />
+          <col style={{ width: "120px" }} />
         </colgroup>
         <thead>
           <tr>
             <th>No.</th>
-            <th style={{ textAlign: 'left' }}>제목</th>
+            <th style={{ textAlign: "left" }}>제목</th>
             <th>썸네일</th>
             <th>작성자</th>
-            <th style={{ minWidth: '100px' }}>작성일자</th>
+            <th style={{ minWidth: "100px" }}>작성일자</th>
           </tr>
         </thead>
         <tbody>
           {posts.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ textAlign: "center" }}>게시글이 없습니다.</td>
+              <td colSpan={5} style={{ textAlign: "center" }}>
+                게시글이 없습니다.
+              </td>
             </tr>
           ) : (
             posts.map((post, index) => (
-              <tr 
-                key={`${post.id}-${post.boardId}-${index}`} 
+              <tr
+                key={`${post.id}-${post.boardId}-${index}`}
                 onClick={() => handlePostClick(post.id)}
               >
                 <td>{post.id}</td>
-                <td style={{ textAlign: 'left' }}>{post.title}</td>
+                <td style={{ textAlign: "left" }}>{post.title}</td>
                 <td>
                   {post.thumbnail ? (
                     <img
@@ -320,7 +323,9 @@ const PostList = () => {
           <button
             key={number}
             onClick={() => handlePageClick(number)}
-            className={`post-list-page-btn${currentPage === number ? ' post-list-page-active' : ''}`}
+            className={`post-list-page-btn${
+              currentPage === number ? " post-list-page-active" : ""
+            }`}
           >
             {number}
           </button>
