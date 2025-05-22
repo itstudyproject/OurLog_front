@@ -4,9 +4,23 @@ import "../styles/WorkerPage.css";
 import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
 interface Post {
-  id: number;
+  Id: number; // 🔧 이 줄 추가!
+  imageUrl: string;
   title: string;
-  image: string;
+  artist: string;
+  highestBid: string;
+  link: string;
+  isArtist?: boolean;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 }
 
 interface LikeStatus {
@@ -92,7 +106,7 @@ const WorkerPage: React.FC = () => {
           posts.map(async (post) => {
             try {
               const likedRes = await fetch(
-                `${baseUrl}/favorites/${loggedInUserId}/${post.id}`,
+                `${baseUrl}/favorites/${loggedInUserId}/${post.Id}`,
                 {
                   method: "GET",
                   headers: { "Content-Type": "application/json" },
@@ -102,7 +116,7 @@ const WorkerPage: React.FC = () => {
               const liked = JSON.parse(await likedRes.text());
 
               const countRes = await fetch(
-                `${baseUrl}/ourlog/favorites/count/${post.id}`,
+                `${baseUrl}/ourlog/favorites/count/${post.Id}`,
                 {
                   method: "GET",
                   headers: { "Content-Type": "application/json" },
@@ -113,7 +127,7 @@ const WorkerPage: React.FC = () => {
 
               return { liked, count };
             } catch (err) {
-              console.error(`❌ Like data fetch 실패: post ${post.id}`, err);
+              console.error(`❌ Like data fetch 실패: post ${post.Id}`, err);
               return { liked: false, count: 0 };
             }
           })
@@ -187,7 +201,7 @@ const WorkerPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${baseUrl}/ourlog/favorites/toggle`, {
+      const response = await fetch(`${baseUrl}/favorites/toggle`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -257,22 +271,22 @@ const WorkerPage: React.FC = () => {
 
           return (
             <div
-              key={card.id}
+              key={card.Id}
               className="worker-card"
-              onClick={() => handleCardClick(card.id)}
+              onClick={() => handleCardClick(card.Id)}
               style={{ cursor: "pointer", position: "relative" }}
             >
               <figure className="card-image-wrapper">
                 <img
-                  src={card.image || "/default-image.png"}
-                  alt={`작품 ${card.id}`}
+                  src={card.imageUrl || "/default-image.png"}
+                  alt={`작품 ${card.Id}`}
                   className="card-image"
                 />
                 <button
                   className="like-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleLikeToggle(globalIndex, card.id);
+                    handleLikeToggle(globalIndex, card.Id);
                   }}
                 >
                   ♥ {like.count}

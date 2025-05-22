@@ -62,7 +62,10 @@ const ArtworkSlider: React.FC = () => {
           isArtist: false,
           imageUrl: (() => {
             let artworkImageSrc = "/default-image.jpg";
-            const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
+            const picData =
+              item.pictureDTOList && item.pictureDTOList.length > 0
+                ? item.pictureDTOList[0]
+                : item;
 
             if (picData.resizedImagePath) {
               artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
@@ -104,11 +107,14 @@ const ArtworkSlider: React.FC = () => {
             Number(item.tradeDTO.highestBid) > 0
               ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
               : "",
-          link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
+          link: item.userId ? `/worker/${item.userId}` : "/worker/unknown",
           isArtist: true,
           imageUrl: (() => {
             let artworkImageSrc = "/default-image.jpg";
-            const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
+            const picData =
+              item.pictureDTOList && item.pictureDTOList.length > 0
+                ? item.pictureDTOList[0]
+                : item;
 
             if (picData.resizedImagePath) {
               artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
