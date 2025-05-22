@@ -237,8 +237,6 @@ const PostList = () => {
 
         <div className="search-bar">
           <form onSubmit={handleSearch}>
-            
-
             {/* 기존 검색 input */}
             <input
               type="text"
@@ -291,7 +289,7 @@ const PostList = () => {
                 onClick={() => handlePostClick(post.id)}
               >
                 <td>{post.id}</td>
-                <td style={{ textAlign: "left" }}>{post.title}</td>
+                <td>{post.title}</td>
                 <td>
                   {post.thumbnail ? (
                     <img
@@ -300,7 +298,9 @@ const PostList = () => {
                       className="thumbnail"
                     />
                   ) : (
-                    <div className="thumbnail">없음</div>
+                    <div className="thumbnail" style={{ fontSize: 0 }}>
+                      없음
+                    </div>
                   )}
                 </td>
                 <td>{post.author}</td>
