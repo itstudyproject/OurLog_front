@@ -211,7 +211,6 @@ const SearchPage = () => {
                       </div>
                       <div className="artist-detail">
                         <h3>{author}</h3>
-                        <p>일러스트레이터</p>
                       </div>
                     </div>
                   </div>
