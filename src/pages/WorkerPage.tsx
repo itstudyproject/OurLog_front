@@ -77,16 +77,24 @@ const WorkerPage: React.FC = () => {
     // Fetch profile
     fetchProfile(userId)
       .then((data) => {
-        console.log("📦 fetchProfile 응답:", data);
-        setProfile(data);
-        if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
-        if (typeof data.followingCnt === "number")
-          setFollowingCnt(data.followingCnt);
-        if (typeof data.isFollowing === "boolean")
-          setIsFollowing(data.isFollowing);
+        if ("nickname" in data) {
+          // 정상 응답인 경우
+          setProfile(data);
+          if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
+          if (typeof data.followingCnt === "number")
+            setFollowingCnt(data.followingCnt);
+          if (typeof data.isFollowing === "boolean")
+            setIsFollowing(data.isFollowing);
+        } else {
+          // 에러 객체가 들어온 경우
+          console.error("프로필 데이터 에러:", data);
+          setProfile(null); // 또는 기본값 처리
+        }
       })
-      .catch((err) => console.error("❌ fetchProfile 실패:", err));
-
+      .catch((err) => {
+        console.error("fetchProfile 실패:", err);
+        setProfile(null);
+      });
     // Fetch posts and likes
     const fetchPostsAndLikes = async () => {
       try {
@@ -100,6 +108,7 @@ const WorkerPage: React.FC = () => {
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
         const posts: Post[] = await res.json();
+        console.log("🔥 서버에서 받은 posts:", posts);
         setCardData(posts);
 
         const likeResults = await Promise.all(
@@ -195,6 +204,7 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleLikeToggle = async (index: number, postId: number) => {
+    console.log("🚀 좋아요 토글 시도: ", { loggedInUserId, postId }); // 여기 추가
     if (isNaN(loggedInUserId)) {
       console.warn("❌ 좋아요 실패: 로그인 사용자 정보 없음");
       return;
@@ -214,6 +224,9 @@ const WorkerPage: React.FC = () => {
       if (!response.ok) throw new Error("좋아요 토글 실패");
 
       const result = await response.json();
+
+      // 여기 추가
+      console.log("좋아요 토글 응답:", result);
 
       setLikes((prevLikes) =>
         prevLikes.map((like, i) =>
@@ -238,7 +251,9 @@ const WorkerPage: React.FC = () => {
         <div className="worker-info">
           <div className="worker-meta-row">
             <div className="worker-name">
-              {profile?.nickname || "닉네임 없음"}
+              {typeof profile?.nickname === "string"
+                ? profile.nickname
+                : "닉네임 없음"}
             </div>
             <div className="worker-stats">
               <div className="stat">
@@ -289,7 +304,11 @@ const WorkerPage: React.FC = () => {
                     handleLikeToggle(globalIndex, card.Id);
                   }}
                 >
-                  ♥ {like.count}
+                  ♥{" "}
+                  <span>
+                    {" "}
+                    {typeof like.count === "number" ? like.count : 0}{" "}
+                  </span>
                 </button>
               </figure>
               <div className="card-body">
