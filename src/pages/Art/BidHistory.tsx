@@ -147,6 +147,22 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
     }
   };
 
+  const handleDownloadOriginal = (e: React.MouseEvent, item: PurchaseOrBidEntry) => {
+    e.stopPropagation(); // 클릭 이벤트 전파 방지
+    if (!item.postImage) {
+      alert("다운로드할 이미지가 없습니다.");
+      return;
+    }
+
+    const imageUrl = `http://localhost:8080/ourlog/picture/display/${item.postImage}`;
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.setAttribute('download', `${item.postTitle || item.postId}_original.jpg`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -315,8 +331,16 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
                         : "시간 정보 없음"}
                     </div>
                   </div>
-                  <div className="bh-item-status won">낙찰</div>{" "}
-                  {/* 상태 표시 */}
+                  <div className="bh-item-status-container">
+                    <div className="bh-item-status won">낙찰</div>
+                    <button
+                      className="bh-download-button"
+                      onClick={(e) => handleDownloadOriginal(e, item)}
+                      title="원본 이미지 다운로드"
+                    >
+                      ⬇️
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (

@@ -7,7 +7,7 @@ import "../../styles/ArtRegister.css";
 import { PostDTO } from "../../types/postTypes";
 import { PictureDTO } from "../../types/pictureTypes";
 import { TradeDTO } from "../../types/tradeTypes";
-import { getAuthHeaders, getToken, hasToken } from "../../utils/auth";
+import { getAuthHeaders, getToken, hasToken, removeToken } from "../../utils/auth";
 
 interface ImageFile {
   file: File;
@@ -167,6 +167,7 @@ const ArtRegister = () => {
         if (!userResponse.ok) {
           if (userResponse.status === 403) {
             alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+            removeToken();
             navigate("/login");
             return;
           }

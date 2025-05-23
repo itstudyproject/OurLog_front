@@ -61,7 +61,6 @@ const MyPage: React.FC = () => {
   }, [userId]);
 
   const hideMenu = [
-    "/mypage/edit",
     "/mypage/account/edit",
     "/mypage/account/delete",
    ].some(path => location.pathname.startsWith(path));

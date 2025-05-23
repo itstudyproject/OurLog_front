@@ -259,3 +259,31 @@ body {
   color: #ccc;
   font-size: 18px;
 }
+
+.bh-item-status-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.bh-download-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1em;
+  transition: transform 0.2s;
+  color: #f8c147;
+  display: flex;
+  align-items: center;
+}
+
+.bh-download-button:hover {
+  transform: scale(1.1);
+  color: #ffd700;
+}
+
+.bh-download-button:active {
+  transform: scale(0.95);
+}
