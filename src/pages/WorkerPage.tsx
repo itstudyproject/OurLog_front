@@ -107,28 +107,101 @@ const WorkerPage: React.FC = () => {
         });
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
-        const posts: Post[] = await res.json();
+        const posts: any[] = await res.json();
         console.log("🔥 서버에서 받은 posts:", posts);
-        setCardData(posts);
+        // 첫 번째 게시글의 전체 구조 로깅
+        if (posts.length > 0) {
+          console.log("🔍 첫 번째 게시글 전체 구조:", JSON.stringify(posts[0], null, 2));
+        }
 
+        // boardNo가 5인 아트 게시글만 필터링 및 매핑
+        const artPosts: Post[] = posts
+          .filter(item => {
+            console.log("📋 게시글 필터링:", {
+              postId: item.postId,
+              boardNo: item.boardNo,
+              hasPictureDTOList: !!item.pictureDTOList,
+              pictureDTOListLength: item.pictureDTOList?.length,
+              imagePath: item.imagePath,
+              resizedImagePath: item.resizedImagePath,
+              thumbnailImagePath: item.thumbnailImagePath
+            });
+            return item.boardNo === 5;
+          })
+          .map(item => {
+            // 대표 이미지 URL 결정 로직
+            let imageUrl = "/default-image.png";
+            
+            // 1. pictureDTOList에서 이미지 찾기
+            if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+              const firstImage = item.pictureDTOList[0];
+              if (firstImage.resizedImagePath) {
+                imageUrl = `${baseUrl}/picture/display/${firstImage.resizedImagePath}`;
+              } else if (firstImage.originImagePath) {
+                imageUrl = `${baseUrl}/picture/display/${firstImage.originImagePath}`;
+              }
+            }
+            // 2. 게시글 자체의 이미지 필드 확인
+            else if (item.resizedImagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.resizedImagePath}`;
+            } else if (item.imagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.imagePath}`;
+            } else if (item.thumbnailImagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.thumbnailImagePath}`;
+            }
+
+            console.log("📸 최종 이미지 URL:", {
+              postId: item.postId,
+              imageUrl: imageUrl,
+              hasPictureDTOList: !!item.pictureDTOList,
+              pictureDTOListLength: item.pictureDTOList?.length,
+              imagePath: item.imagePath,
+              resizedImagePath: item.resizedImagePath,
+              thumbnailImagePath: item.thumbnailImagePath
+            });
+
+            return {
+              postId: item.postId,
+              imageUrl: imageUrl,
+              title: item.title,
+              artist: item.nickname,
+              highestBid: item.tradeDTO?.highestBid?.toLocaleString() || '정보 없음',
+              link: `/Art/${item.postId}`,
+              isArtist: true,
+              favoriteCnt: item.favoriteCnt,
+              pictureDTOList: item.pictureDTOList,
+            };
+          });
+
+        setCardData(artPosts); // 필터링 및 매핑된 아트 게시글 목록으로 상태 업데이트
+
+        // 좋아요 상태 및 개수 가져오는 로직 (artPosts 기준으로 다시 매핑)
         const likeResults = await Promise.all(
-          posts.map(async (post) => {
+          artPosts.map(async (post) => { // artPosts를 사용하여 반복
             try {
+              // 좋아요 상태 확인 API 호출
               const likedRes = await fetch(
                 `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
                 {
                   method: "GET",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                  },
                   credentials: "include",
                 }
               );
               const liked = JSON.parse(await likedRes.text());
 
+              // 좋아요 개수 확인 API 호출
               const countRes = await fetch(
-                `${baseUrl}/ourlog/favorites/count/${post.postId}`,
+                `${baseUrl}/favorites/count/${post.postId}`, // ✨ /ourlog 중복 제거
                 {
                   method: "GET",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                  },
                   credentials: "include",
                 }
               );

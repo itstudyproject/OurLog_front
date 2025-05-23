@@ -10,6 +10,7 @@ interface PostItem {
   description: string;
   date: string;
   category: CategoryKey;
+  thumbnail?: string;
 }
 
 const categoryLabels: Record<CategoryKey, string> = {
@@ -41,14 +42,20 @@ const BulletinBoard: React.FC = () => {
   };
 
   const renderPostItem = (item: PostItem) => (
-    <li key={`${item.category}-${item.id}`} className="category-item">
-      <div className="category-thumbnail" />
-      <div className="category-text">
-        <Link to={`/post/${item.id}`} className="category-title-link">
-          <p className="category-title">{item.title}</p>
+    <li key={`${item.category}-${item.id}`} className="bb-category-item">
+      <div className="bb-category-thumbnail">
+        {item.thumbnail ? (
+          <img src={item.thumbnail} alt={item.title} />
+        ) : (
+          <div className="bb-no-thumbnail-placeholder"></div>
+        )}
+      </div>
+      <div className="bb-category-text">
+        <Link to={`/post/${item.id}`} className="bb-category-title-link">
+          <p className="bb-category-title">{item.title}</p>
         </Link>
-        <p className="category-description">{item.description}</p>
-        <p className="category-date">{item.date}</p>
+        <p className="bb-category-description">{item.description}</p>
+        <p className="bb-category-date">{item.date}</p>
       </div>
     </li>
   );
@@ -72,6 +79,11 @@ const BulletinBoard: React.FC = () => {
                 description: item.content || "설명 없음",
                 date: formatDate(item),
                 category,
+                thumbnail: item.pictureDTOList?.find(
+                  (pic: any) => pic.picName === item.fileName
+                )
+                  ? `http://localhost:8080/ourlog/picture/display/${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).path}/s_${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).uuid}_${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).picName}`
+                  : "",
               })
             );
             return { category, posts };
@@ -111,26 +123,26 @@ const BulletinBoard: React.FC = () => {
   }, []);
 
   return (
-    <section className="bulletin-board-section">
-      <div className="bulletin-left">
+    <section className="bb-bulletin-board-section">
+      <div className="bb-bulletin-left">
         <img
           src="/images/bulletinboard.png"
           alt="카테고리 관련 썸네일 이미지"
-          className="bulletin-thumbnail"
+          className="bb-bulletin-thumbnail"
         />
       </div>
 
-      <div className="category-container">
+      <div className="bb-category-container">
         {Object.entries(categories).map(([key, items]) => {
           const typedKey = key as CategoryKey;
           return (
             <div key={typedKey}>
-              <Link to={`/post/${typedKey}`} className="category-header-link">
-                <h3 className="category-header">{categoryLabels[typedKey]}</h3>
+              <Link to={`/post/${typedKey}`} className="bb-category-header-link">
+                <h3 className="bb-category-header">{categoryLabels[typedKey]}</h3>
               </Link>
-              <ul className="category-list">
+              <ul className="bb-category-list">
                 {items.length === 0 ? (
-                  <li className="no-post">게시글이 없습니다.</li>
+                  <li className="bb-no-post">게시글이 없습니다.</li>
                 ) : (
                   items.map(renderPostItem)
                 )}
