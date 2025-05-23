@@ -92,6 +92,7 @@ export async function uploadProfileImage(
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        'X-Request-ID': crypto.randomUUID(),
         // Content-Type 는 FormData 쓰면 자동 설정됩니다
       },
       body: formData,

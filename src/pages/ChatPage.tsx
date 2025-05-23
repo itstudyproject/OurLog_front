@@ -46,6 +46,7 @@ const APP_ID = 'C13DF699-49C2-474D-A2B4-341FBEB354EE';
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
 
+  const [isSendbirdInitialized, setIsSendbirdInitialized] = useState(false); // Sendbird 초기화 상태 추가
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -70,6 +71,7 @@ const ChatPage: React.FC = () => {
 
   // 백엔드에서 Sendbird Access Token과 User ID를 가져오는 비동기 함수
   const fetchSendbirdAuthInfo = async () => {
+    console.log("fetchSendbirdAuthInfo called...");
     const tokenWithPrefix = getToken(); // "Bearer [토큰]" 형식으로 반환될 것으로 예상
 
     if (!tokenWithPrefix) {
@@ -91,6 +93,7 @@ const ChatPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`, // 순수한 토큰 문자열 사용
+          'X-Request-ID': crypto.randomUUID(), // 고유 요청 ID 추가
         },
       });
 
@@ -157,42 +160,38 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     const initializeAndConnectSendbird = async () => {
+      // 이미 초기화되었다면 다시 실행하지 않음
+      if (isSendbirdInitialized) {
+        console.log("Sendbird already initialized. Skipping.");
+        setLoading(false); // 이미 로딩 완료 상태일 수 있음
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
-      const userInfo = await fetchSendbirdAuthInfo(); // 백엔드에서 사용자 정보 비동기로 가져오기
+      const userInfo = await fetchSendbirdAuthInfo();
 
-      // fetchSendbirdAuthInfo 함수 내에서 이미 에러 발생 시 null을 반환하고 에러 상태를 설정하므로,
-      // 여기서 추가적인 오류 메시지 출력 대신 로딩 상태만 해제합니다.
       if (!userInfo || !userInfo.userId || !userInfo.sendbirdAccessToken) {
-        // console.error("Sendbird connection failed: User info, userId, or accessToken not available after fetching."); // 이 로그는 이제 불필요
         setLoading(false);
         return;
       }
 
       try {
         console.log('Initializing Sendbird SDK (v4)');
-        // useRef의 current 속성에 할당
         const sendbirdChatInstance = await SendbirdChat.init({
           appId: APP_ID,
-          // 필요한 모듈을 modules 배열에 추가합니다.
-          modules: [new GroupChannelModule(), new OpenChannelModule()], // GroupChannelModule 추가
-          // logger: { console: console, level: SendbirdChat.Logger.LogLevel.INFO } // 필요 시 로깅 활성화
+          modules: [new GroupChannelModule(), new OpenChannelModule()],
         });
-        sbInstance.current = sendbirdChatInstance; // 초기화 결과 할당
+        sbInstance.current = sendbirdChatInstance;
 
-        console.log('Sendbird SDK initialized:', sbInstance.current);
-        // 초기화된 인스턴스가 올바른 타입인지 확인하는 로그 추가 (객체 내용을 더 자세히)
-        console.log('sbInstance.current details:', typeof sbInstance.current, sbInstance.current);
-
-
-        console.log(`Connecting to Sendbird as user ${userInfo.userId} with token...`);
-        // Connect to Sendbird
-        // connect 메소드는 SendbirdChat 인스턴스에 직접 있습니다.
-        // sbInstance.current가 null이 아님을 보장하고 connect 호출
-        const user = await sbInstance.current!.connect(userInfo.userId, userInfo.sendbirdAccessToken);
+        console.log('Sendbird SDK initialized successfully. Connecting...');
+        const user = await sbInstance.current.connect(userInfo.userId, userInfo.sendbirdAccessToken);
         console.log('Sendbird connection successful:', user);
-        setCurrentUser(user.userId); // Sendbird User ID를 상태에 저장
+        setCurrentUser(user.userId);
+
+        // Sendbird 초기화 및 연결 성공 상태로 업데이트
+        setIsSendbirdInitialized(true);
 
         // 채널 목록 가져오기 (GroupChannelModule이 초기화되었으므로 groupChannel 접근 가능)
         console.log('Fetching channel list');
@@ -307,11 +306,12 @@ const ChatPage: React.FC = () => {
         }
 
 
-      } catch (error: any) { // 에러 타입을 any로 캐스팅
+      } catch (error: any) {
         console.error('Sendbird initialization or connection failed:', error);
         setError(`채팅 시스템 초기화 실패: ${error.message || '알 수 없는 오류 발생'}`);
+        // 초기화 실패 시 상태 업데이트는 필요 없음 (isSendbirdInitialized는 false 유지)
       } finally {
-        setLoading(false); // 로딩 완료
+        setLoading(false);
       }
     };
 
