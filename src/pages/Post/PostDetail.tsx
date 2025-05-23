@@ -252,24 +252,22 @@ const PostDetail = () => {
         {post.fileName && post.uuid && post.path && (
           <div className="post-thumbnail">
             <img
-              src={`http://localhost:8080/ourlog/picture/display/${post.path}/${post.uuid}_${post.fileName}`}
+              src={`http://localhost:8080/ourlog/picture/display/${post.path}/s_${post.uuid}_${post.fileName}`}
               alt={post.title}
             />
           </div>
         )}
         {post.pictureDTOList && post.pictureDTOList.length > 0 && (
           <div className="post-image-gallery">
-            {post.pictureDTOList
-              .filter((pic) => pic.picName !== post.fileName)
-              .map((pic, index) => (
-                <img
-                  key={index}
-                  src={`http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`}
-                  alt={`이미지 ${index + 1}`}
-                  className="post-image"
-                  style={{ maxWidth: "100%", marginBottom: "1rem" }}
-                />
-              ))}
+            {post.pictureDTOList.map((pic, index) => (
+              <img
+                key={index}
+                src={`http://localhost:8080/ourlog/picture/display/${pic.path}/${pic.uuid}_${pic.picName}`}
+                alt={`이미지 ${index + 1}`}
+                className="post-image"
+                style={{ maxWidth: "100%", marginBottom: "1rem" }}
+              />
+            ))}
           </div>
         )}
 
