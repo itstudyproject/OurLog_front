@@ -291,18 +291,50 @@ const ArtDetail = () => {
       }
   };
 
+  // 조회수 증가 함수 추가
+  const increaseArtworkViewCount = async (postId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/increaseViews/${postId}`,
+        {
+          method: "POST",
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (response.status === 403) {
+        console.warn("작품 조회수 증가 실패: 인증 필요");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("작품 조회수 증가 실패");
+      }
+      console.log("작품 조회수 증가 성공");
+    } catch (error) {
+      console.error("작품 조회수 증가 실패:", error);
+    }
+  };
+
   useEffect(() => {
     if (id && !isNaN(Number(id))) {
-      fetchArtworkDetail(id);
-    } else {
+      const postId = id; // id를 postId로 사용
+      // 조회수 증가 API 호출
+      increaseArtworkViewCount(postId);
+      // 작품 상세 정보 불러오기
+      fetchArtworkDetail(postId);
+    } else if (id !== 'payment') {
       console.warn("Post ID is missing or not a valid number in URL parameters:", id);
-      if (id !== 'payment') {
-           alert("잘못된 접근입니다. 작품 정보를 불러올 수 없습니다.");
-           setPost(null);
-      }
-       setLoading(false);
+      alert("잘못된 접근입니다. 작품 정보를 불러올 수 없습니다.");
+      setPost(null);
+      setLoading(false);
+    } else {
+      // 'payment' 경로인 경우 로딩 상태 해제만
+      setLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate]); // id가 변경될 때마다 useEffect 실행
 
   useEffect(() => {
     if (post?.tradeDTO?.lastBidTime) {
