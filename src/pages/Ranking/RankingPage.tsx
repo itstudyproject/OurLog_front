@@ -73,9 +73,6 @@ const RankingPage: React.FC = () => {
 
       const data = JSON.parse(raw);
       const mapped: Artwork[] = data.map((item: any) => {
-        const hasUser =
-          item.userProfileDTO && item.userProfileDTO.user.nickname;
-
         let artworkImageSrc = "/default-image.jpg";
 
         const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
@@ -93,9 +90,9 @@ const RankingPage: React.FC = () => {
         return {
           id: item.postId,
           title: item.title,
-          author: hasUser ? item.userProfileDTO.nickname : "unknown",
-          avatar: hasUser && item.userProfileDTO?.profileImage
-              ? `http://localhost:8080/ourlog/picture/display/${item.userProfileDTO.profileImage}`
+          author: item.nickname || "익명",
+          avatar: item.profileImage
+              ? `http://localhost:8080/ourlog/picture/display/${item.profileImage}`
               : "/images/default-avatar.png",
           imageSrc: artworkImageSrc,
           views: item.views,

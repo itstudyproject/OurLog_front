@@ -136,6 +136,7 @@
   width: 100%;
   justify-content: space-between;
   padding: 0 20px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
 }
 .ranking-author-info.large {
   bottom: 22px;
@@ -143,12 +144,12 @@
   font-size: 20px;
   justify-content: space-between;
   padding: 0 30px;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
 }
-.ranking-list-meta {
+.ranking-list-author {
   color: #fff;
-  font-size: 14px;
   margin-left: 10px;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 /* 4등 이하 리스트 */
