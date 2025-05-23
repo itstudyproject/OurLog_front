@@ -47,6 +47,8 @@ body {
 }
 
 .post-header {
+  justify-content: space-between;
+  display: flex;
   border-bottom: 1px solid #333;
   padding-bottom: 15px;
   margin-bottom: 20px;

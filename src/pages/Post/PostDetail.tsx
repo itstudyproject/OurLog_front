@@ -7,12 +7,12 @@ import { PictureDTO } from "../../types/pictureTypes";
 interface Comment {
   replyId: number;
   content: string;
-  userDTO: {
-    userId: number;
-    nickname: string;
-  };
+
+  userDTO: { userId: number; nickname: string };
   regDate: string;
   modDate: string;
+  isEditing?: boolean;
+  editedContent?: string;
 }
 
 interface Post {
@@ -20,10 +20,9 @@ interface Post {
   boardNo: number;
   title: string;
   content: string;
-  userDTO: {
-    userId: number;
-    nickname: string;
-  };
+  userId: number;
+  nickname: string;
+
   regDate: string;
   modDate: string;
   fileName?: string;
@@ -70,7 +69,14 @@ const PostDetail = () => {
       }
 
       const data = await response.json();
-      setPost(data.postDTO);
+      setPost({
+        ...data.postDTO,
+        replyDTOList: data.postDTO.replyDTOList.map((comment: Comment) => ({
+          ...comment,
+          isEditing: false,
+          editedContent: comment.content,
+        })),
+      });
     } catch (error) {
       console.error("게시글 조회 실패:", error);
       alert("게시글을 불러오는데 실패했습니다.");
@@ -172,6 +178,20 @@ const PostDetail = () => {
     }
   };
 
+  const handleModifyComment = (replyId: number) => {
+    setPost((prevPost) => {
+      if (!prevPost) return null;
+      return {
+        ...prevPost,
+        replyDTOList: prevPost.replyDTOList.map((comment) =>
+          comment.replyId === replyId
+            ? { ...comment, isEditing: !comment.isEditing }
+            : comment
+        ),
+      };
+    });
+  };
+
   const handleDeleteComment = async (replyId: number) => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
@@ -202,6 +222,63 @@ const PostDetail = () => {
       console.error("댓글 삭제 실패:", error);
       alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
     }
+  };
+
+  // Handler to save the edited comment
+  const handleSaveComment = async (replyId: number, content: string) => {
+    try {
+      // Assuming PUT request to http://localhost:8080/ourlog/reply/update/:replyId
+      const response = await fetch(
+        `http://localhost:8080/ourlog/reply/update/${replyId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            replyId: replyId,
+            content: content,
+          }),
+        }
+      );
+
+      if (response.status === 403) {
+        alert("댓글 수정 권한이 없습니다. 로그인이 필요합니다.");
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "댓글 수정에 실패했습니다.");
+      }
+
+      // Assuming successful update, refetch post to refresh comments list
+      alert("댓글이 수정되었습니다.");
+      fetchPost();
+    } catch (error) {
+      console.error("댓글 수정 실패:", error);
+      alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+      // Optionally revert to original content or stay in editing mode on error
+      handleCancelEdit(replyId); // Revert content and exit editing on save error
+    }
+  };
+
+  // Handler to cancel comment editing
+  const handleCancelEdit = (replyId: number) => {
+    // Revert edited content and exit editing mode
+    setPost((prevPost) => {
+      if (!prevPost) return null;
+      return {
+        ...prevPost,
+        replyDTOList: prevPost.replyDTOList.map((comment) =>
+          comment.replyId === replyId
+            ? { ...comment, isEditing: false, editedContent: comment.content }
+            : comment
+        ),
+      };
+    });
   };
 
   if (loading) {
@@ -241,11 +318,19 @@ const PostDetail = () => {
 
       <div className="post-detail">
         <div className="post-header">
-          <h2>{post.title}</h2>
-          <div className="post-info">
-            <span>작성자: {post.userDTO?.nickname}</span>
-            <span>작성일: {new Date(post.regDate).toLocaleString()}</span>
-            <span>조회수: {post.views}</span>
+          <div>
+            <h2>{post.title}</h2>
+            <span>작성자: {post.nickname}</span>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div>
+              <div>
+                <span>작성일: {new Date(post.regDate).toLocaleString()}</span>
+              </div>
+              <div style={{ marginTop: "10px" }}>
+                <span>조회수: {post.views}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -319,19 +404,109 @@ const PostDetail = () => {
                   <span className="comment-author">
                     {comment.userDTO?.nickname}
                   </span>
-                  <span className="comment-date">
-                    {new Date(comment.regDate).toLocaleString()}
-                  </span>
-                  {comment.userDTO?.userId === 5 && ( // 임시로 현재 사용자 ID와 비교
-                    <button
-                      onClick={() => handleDeleteComment(comment.replyId)}
-                      className="delete-comment-btn"
-                    >
-                      삭제
-                    </button>
-                  )}
+                  <div
+                    className="comment-meta-actions"
+                    style={{ textAlign: "right" }}
+                  >
+                    <div>
+                      <span className="comment-date">
+                        {new Date(comment.regDate).toLocaleString()}
+                      </span>
+                    </div>
+                    {hasToken() &&
+                      JSON.parse(localStorage.getItem("user") || "{}")
+                        .userId === comment.userDTO?.userId && (
+                        <div>
+                          {!comment.isEditing ? (
+                            <>
+                              <span
+                                onClick={() =>
+                                  handleModifyComment(comment.replyId)
+                                }
+                                style={{
+                                  cursor: "pointer",
+                                  color: "white",
+                                  textDecoration: "underline",
+                                  marginRight: "5px",
+                                }}
+                              >
+                                수정
+                              </span>
+                              |
+                              <span
+                                onClick={() =>
+                                  handleDeleteComment(comment.replyId)
+                                }
+                                style={{
+                                  cursor: "pointer",
+                                  color: "white",
+                                  textDecoration: "underline",
+                                  marginLeft: "5px",
+                                }}
+                              >
+                                삭제
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span
+                                onClick={() =>
+                                  handleSaveComment(
+                                    comment.replyId,
+                                    comment.editedContent || ""
+                                  )
+                                }
+                                style={{
+                                  cursor: "pointer",
+                                  color: "white",
+                                  textDecoration: "underline",
+                                  marginRight: "5px",
+                                }}
+                              >
+                                저장
+                              </span>
+                              |
+                              <span
+                                onClick={() =>
+                                  handleCancelEdit(comment.replyId)
+                                }
+                                style={{
+                                  cursor: "pointer",
+                                  color: "white",
+                                  textDecoration: "underline",
+                                  marginLeft: "5px",
+                                }}
+                              >
+                                취소
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                  </div>
                 </div>
-                <div className="comment-content">{comment.content}</div>
+                {comment.isEditing ? (
+                  <textarea
+                    value={comment.editedContent}
+                    onChange={(e) => {
+                      setPost((prevPost) => {
+                        if (!prevPost) return null;
+                        return {
+                          ...prevPost,
+                          replyDTOList: prevPost.replyDTOList.map((c) =>
+                            c.replyId === comment.replyId
+                              ? { ...c, editedContent: e.target.value }
+                              : c
+                          ),
+                        };
+                      });
+                    }}
+                    className="edit-comment-textarea"
+                    rows={3}
+                  />
+                ) : (
+                  <div className="comment-content">{comment.content}</div>
+                )}
               </div>
             ))}
           </div>
