@@ -163,7 +163,7 @@ const ArtDetail = () => {
 
   const handleArtistClick = () => {
     if (post?.nickname) {
-      navigate(`/worker/${post.nickname}`);  // 작가의 페이지로 이동
+      navigate(`/worker/${post.userId}`);  // 작가의 페이지로 이동
     } else {
       console.warn("Artist nickname is null or undefined, cannot navigate to artist page.");
     }
