@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SalePage from "./SalePage/SalePage";
 import BookmarkPage from "./BookmarkPage";
 import RecentPostsCarousel from "./Post/RecentPostsCarousel";
@@ -44,6 +44,7 @@ const recentPosts = [
 
 const MyPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const stored = localStorage.getItem("user");
   const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
@@ -63,7 +64,29 @@ const MyPage: React.FC = () => {
   const hideMenu = [
     "/mypage/account/edit",
     "/mypage/account/delete",
-   ].some(path => location.pathname.startsWith(path));
+  ].some((path) => location.pathname.startsWith(path));
+
+  const isProfileEditRoute = location.pathname === '/mypage/edit';
+
+  const handleBackFromEdit = () => {
+    navigate('/mypage');
+  };
+
+  const handleSaveProfile = async (updatedData: Partial<UserProfileDTO>) => {
+    if (!userId) {
+      alert("유저 정보가 없습니다.");
+      return Promise.reject("유저 정보 없음");
+    }
+    try {
+      await updateProfile(userId, updatedData);
+      await fetchProfile(userId).then(setProfile);
+      console.log("프로필 업데이트 성공");
+    } catch (error) {
+      console.error("프로필 업데이트 실패:", error);
+      alert("프로필 저장에 실패했습니다. 다시 시도해주세요.");
+      return Promise.reject(error);
+    }
+  };
 
   return (
     <div className="mp-container">
@@ -109,7 +132,7 @@ const MyPage: React.FC = () => {
         </div>
       </div>
 
-       {!hideMenu && (
+       {!hideMenu && !isProfileEditRoute && (
         <>
       <div className="mp-section-title">
         <h2>메뉴</h2>
@@ -139,11 +162,27 @@ const MyPage: React.FC = () => {
        )}
 
 <div className="mp-tab-content">
-  {activeTab === 'purchase-bid' && userId && <BidHistory userId={userId} />}
-  {activeTab === 'purchase-bid' && !userId && <p>로그인이 필요합니다.</p>}
+  {isProfileEditRoute && (
+    <ProfileEdit
+      profile={profile}
+      onBack={handleBackFromEdit}
+      onSave={handleSaveProfile}
+    />
+  )}
 
-  {activeTab === 'sale' && <p>판매목록/현황 내용 (추후 구현)</p>}
-  {activeTab === 'bookmark' && <p>북마크 내용 (추후 구현)</p>}
+  {location.pathname === '/mypage/account/edit' && <AccountEdit userId={userId} />}
+
+  {location.pathname === '/mypage/account/delete' && <AccountDelete userId={userId} />}
+
+  {!hideMenu && !isProfileEditRoute && (
+    <>
+      {activeTab === 'purchase-bid' && userId && <BidHistory userId={userId} />}
+      {activeTab === 'purchase-bid' && !userId && <p>로그인이 필요합니다.</p>}
+
+      {activeTab === 'sale' && <p>판매목록/현황 내용 (추후 구현)</p>}
+      {activeTab === 'bookmark' && <p>북마크 내용 (추후 구현)</p>}
+    </>
+  )}
 </div>
 
     </div>

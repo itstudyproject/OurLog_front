@@ -86,7 +86,7 @@ const SearchPage = () => {
     setLoading(true);
 
     fetch(
-      `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&type=t&keyword=${encodeURIComponent(
+      `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&type=all&keyword=${encodeURIComponent(
         lowerQuery
       )}`
     )

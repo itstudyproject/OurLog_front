@@ -4,7 +4,7 @@ import "../styles/WorkerPage.css";
 import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
 interface Post {
-  Id: number; // 🔧 이 줄 추가!
+  postId: number; // 🔧 이 줄 추가!
   imageUrl: string;
   title: string;
   artist: string;
@@ -115,7 +115,7 @@ const WorkerPage: React.FC = () => {
           posts.map(async (post) => {
             try {
               const likedRes = await fetch(
-                `${baseUrl}/favorites/${loggedInUserId}/${post.Id}`,
+                `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
                 {
                   method: "GET",
                   headers: { "Content-Type": "application/json" },
@@ -125,7 +125,7 @@ const WorkerPage: React.FC = () => {
               const liked = JSON.parse(await likedRes.text());
 
               const countRes = await fetch(
-                `${baseUrl}/ourlog/favorites/count/${post.Id}`,
+                `${baseUrl}/ourlog/favorites/count/${post.postId}`,
                 {
                   method: "GET",
                   headers: { "Content-Type": "application/json" },
@@ -136,7 +136,10 @@ const WorkerPage: React.FC = () => {
 
               return { liked, count };
             } catch (err) {
-              console.error(`❌ Like data fetch 실패: post ${post.Id}`, err);
+              console.error(
+                `❌ Like data fetch 실패: post ${post.postId}`,
+                err
+              );
               return { liked: false, count: 0 };
             }
           })
@@ -205,22 +208,37 @@ const WorkerPage: React.FC = () => {
 
   const handleLikeToggle = async (index: number, postId: number) => {
     if (loggedInUserId === undefined) return;
-
     if (postId === undefined) {
       console.error("❌ postId가 undefined입니다!");
       return;
     }
 
-    console.log("👍 좋아요 토글 요청 데이터:", {
-      userId: loggedInUserId,
-      postId: postId,
-    });
+    const token = localStorage.getItem("token");
+    console.log("토큰 값:", token);
+    if (!token) {
+      console.warn("❗️ 토큰이 없습니다. 로그인 필요");
+      return;
+    }
+
+    const currentLike = likes[index] || { liked: false, count: 0 };
+    const newLiked = !currentLike.liked;
+    const newCount = newLiked
+      ? currentLike.count + 1
+      : Math.max(0, currentLike.count - 1);
+
+    setLikes((prevLikes) =>
+      prevLikes.map((like, i) =>
+        i === index ? { liked: newLiked, count: newCount } : like
+      )
+    );
 
     try {
       const response = await fetch(`${baseUrl}/favorites/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+
+          Authorization: `Bearer ${token}`, // 헤더 추가
         },
         credentials: "include",
         body: JSON.stringify({
@@ -242,6 +260,9 @@ const WorkerPage: React.FC = () => {
       );
     } catch (err) {
       console.error("❌ 좋아요 토글 실패:", err);
+      setLikes((prevLikes) =>
+        prevLikes.map((like, i) => (i === index ? currentLike : like))
+      );
     }
   };
 
@@ -286,29 +307,38 @@ const WorkerPage: React.FC = () => {
 
       <section className="worker-gallery">
         {currentCards.map((card, index) => {
+          console.log("🃏 카드 데이터:", card); // 이 줄 추가!
           const globalIndex = (currentPage - 1) * cardsPerPage + index;
           const like = likes[globalIndex] || { liked: false, count: 0 };
 
-          console.log("🧩 card 객체 확인:", card); // 이거 추가!
+          console.log("🔍 like 상태", {
+            index,
+            globalIndex,
+            like: likes[globalIndex],
+          }); // 이 위치!
 
           return (
             <div
-              key={card.Id}
+              key={card.postId}
               className="worker-card"
-              onClick={() => handleCardClick(card.Id)}
+              onClick={() => handleCardClick(card.postId)}
               style={{ cursor: "pointer", position: "relative" }}
             >
               <figure className="card-image-wrapper">
                 <img
                   src={card.imageUrl || "/default-image.png"}
-                  alt={`작품 ${card.Id}`}
+                  alt={`작품 ${card.postId}`}
                   className="card-image"
                 />
                 <button
                   className="like-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleLikeToggle(globalIndex, card.Id);
+                    console.log("👍 좋아요 버튼 클릭됨", {
+                      globalIndex,
+                      postId: card.postId,
+                    });
+                    handleLikeToggle(globalIndex, card.postId);
                   }}
                 >
                   ♥{" "}
