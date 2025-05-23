@@ -3,11 +3,22 @@ import { useNavigate } from "react-router-dom";
 import "../styles/ChatPage.css";
 import { getToken } from "../utils/auth";
 import SendbirdChat from '@sendbird/chat';
-import { GroupChannelHandler, GroupChannelModule, GroupChannel } from '@sendbird/chat/groupChannel';
-import { UserMessage, BaseMessage } from '@sendbird/chat/message';
-import { UserMessageCreateParams } from '@sendbird/chat/message';
+import { GroupChannelHandler, GroupChannelModule, GroupChannel, GroupChannelListQuery } from '@sendbird/chat/groupChannel';
+import { UserMessage, BaseMessage, MessageListParams, UserMessageCreateParams, UserMessageUpdateParams } from '@sendbird/chat/message';
 import { OpenChannelModule } from '@sendbird/chat/openChannel';
 import { BaseChannel } from '@sendbird/chat';
+import { User } from '@sendbird/chat';
+
+// Sendbird SDK v4 인스턴스 타입을 정확히 선언합니다.
+// 초기화 시 사용된 모듈 타입을 포함하여 선언합니다.
+// SendbirdChat.init의 반환 타입은 초기화 시 전달된 모듈에 따라 동적으로 결정됩니다.
+// 명시적인 타입 정의를 통해 타입 안전성을 확보합니다.
+// SendbirdChat 인스턴스 자체에 createApplicationUserListQuery가 있습니다.
+type SendbirdChatInstanceType = SendbirdChat & {
+  groupChannel: GroupChannelModule;
+  openChannel: OpenChannelModule;
+  createApplicationUserListQuery: (params?: any) => any; // UserListQuery 대신 any 사용
+};
 
 interface UserProfile {
   nickname: string;
@@ -26,30 +37,22 @@ interface ChatMessage {
   isPaymentFormVisible?: boolean;
   hidden?: boolean;
   isPaymentComplete?: boolean;
-  messageId?: number;
+  messageId?: number; // Sendbird messageId는 number 또는 string일 수 있습니다.
   createdAt?: number;
   messageType?: string;
   customType?: string;
   data?: string;
 }
 
-// 이 변수는 사용되지 않으므로 제거하거나 주석 처리할 수 있습니다.
-// const token = localStorage.getItem("token");
-
-// 여기에 실제 Sendbird App ID를 입력하세요.
 const APP_ID = 'C13DF699-49C2-474D-A2B4-341FBEB354EE';
-
-// Sendbird SDK 인스턴스를 컴포넌트 외부가 아닌 내부에서 관리하는 것이 좋습니다.
-// 여기서는 일단 useEffect 내에서 초기화하고, 필요에 따라 상태 관리 방식을 적용합니다.
-// let sbInstance: SendbirdChat | null = null; // useRef로 관리하므로 제거
 
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const [isSendbirdInitialized, setIsSendbirdInitialized] = useState(false); // Sendbird 초기화 상태 추가
+  const [isSendbirdInitialized, setIsSendbirdInitialized] = useState(false);
   const [isListModalVisible, setIsListModalVisible] = useState(true);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [messagesByUser, setMessagesByUser] = useState<{
     [key: string]: ChatMessage[];
   }>({});
@@ -60,19 +63,26 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [searchedUserId, setSearchedUserId] = useState<string>("");
+  const [foundUser, setFoundUser] = useState<User | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const channelHandlerId = useRef<string>(`CHANNEL_HANDLER_ID_${Date.now()}`).current;
 
-  // 글로벌 객체가 없으면 window를 할당 (브라우저 호환성)
-  useEffect(() => {
-    if (typeof global === "undefined") {
-      (window as any).global = window;
-    }
-  }, []);
+  const sbInstance = useRef<SendbirdChatInstanceType | null>(null);
 
-  // 백엔드에서 Sendbird Access Token과 User ID를 가져오는 비동기 함수
+  // MessageCollection 인스턴스를 관리할 useRef 추가 (채널별로 관리할 수도 있습니다)
+  // 여기서는 현재 채널의 MessageCollection을 저장하도록 합니다.
+  const messageCollectionRef = useRef<any | null>(null); // Change type to any for now
+
+  if (typeof global === "undefined") {
+    (window as any).global = window;
+  }
+
   const fetchSendbirdAuthInfo = async () => {
     console.log("fetchSendbirdAuthInfo called...");
-    const tokenWithPrefix = getToken(); // "Bearer [토큰]" 형식으로 반환될 것으로 예상
+    const tokenWithPrefix = getToken();
 
     if (!tokenWithPrefix) {
       console.error("JWT token not found. Cannot fetch Sendbird auth info.");
@@ -80,31 +90,26 @@ const ChatPage: React.FC = () => {
       return null;
     }
 
-    // "Bearer " 접두사 제거하고 순수한 토큰만 추출
     const token = tokenWithPrefix.startsWith('Bearer ') ? tokenWithPrefix.substring(7) : tokenWithPrefix;
     console.log("Extracted token for backend:", token);
 
-
     try {
       console.log("Fetching Sendbird auth info from backend...");
-      // 백엔드 엔드포인트 URL 확인: /ourlog/chat/token (Controller에 @RequestMapping("/chat"), SecurityConfig에 /ourlog/** 매핑 가정)
       const response = await fetch('http://localhost:8080/ourlog/chat/token', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // 순수한 토큰 문자열 사용
-          'X-Request-ID': crypto.randomUUID(), // 고유 요청 ID 추가
+          'Authorization': `Bearer ${token}`,
+          'X-Request-ID': crypto.randomUUID(),
         },
       });
 
       if (!response.ok) {
-        // 오류 응답 본문에서 상세 정보 파싱 시도
         const errorData = response.headers.get('Content-Type')?.includes('application/json')
           ? await response.json()
-          : { message: await response.text(), error: response.statusText }; // JSON이 아니면 텍스트로 처리
+          : { message: await response.text(), error: response.statusText };
 
         console.error("Failed to fetch Sendbird auth info:", response.status, errorData);
-        // 백엔드 응답에 'message'나 'error' 필드가 없을 경우를 대비
         const errorMessage = errorData.message || errorData.error || response.statusText || `HTTP error! status: ${response.status}`;
         throw new Error(`Failed to fetch Sendbird auth info: ${errorMessage}`);
       }
@@ -112,21 +117,15 @@ const ChatPage: React.FC = () => {
       const data = await response.json();
       console.log("Received Sendbird auth info:", data);
 
-       // 여기서 data.token 대신 data.accessToken을 확인하도록 수정합니다.
        if (!data.accessToken) {
          throw new Error("Sendbird accessToken not received from backend.");
        }
 
-       // TODO: 백엔드 응답 형태에 따라 userId 추출 로직 수정
-       // 현재 백엔드 코드는 accessToken만 반환하므로 userId는 다른 곳(예: JWT 디코딩)에서 가져오거나
-       // 백엔드 /chat/token 엔드포인트를 수정하여 userId도 함께 반환해야 합니다.
-       // 임시로 JWT에서 userId를 가져오는 예시 (실제 JWT 디코딩 라이브러리 사용 권장)
-       const userString = localStorage.getItem("user"); // 로그인 페이지에서 저장한 user 정보 (임시)
+       const userString = localStorage.getItem("user");
        let backendUserId: string | null = null;
        if (userString) {
            try {
                const user = JSON.parse(userString);
-               // 서비스의 User ID (Sendbird User ID는 string 타입 사용 권장)
                backendUserId = String(user.userId);
            } catch (e) {
                console.error("Failed to parse user info from localStorage for userId", e);
@@ -134,36 +133,27 @@ const ChatPage: React.FC = () => {
        }
 
        if (!backendUserId) {
-           throw new Error("Could not determine Sendbird User ID (backend userId). Please ensure user info is stored or fetched correctly.");
+           throw new Error("Could not determine Sendbird User ID (backend userId).");
        }
 
-
       return {
-        userId: backendUserId, // Sendbird User ID로 사용할 백엔드 사용자 ID
-        // 여기서 data.token 대신 data.accessToken을 사용하도록 수정합니다.
-        sendbirdAccessToken: data.accessToken, // 백엔드에서 받아온 Access Token
+        userId: backendUserId,
+        sendbirdAccessToken: data.accessToken,
       };
 
     } catch (e: any) {
       console.error("Error fetching Sendbird auth info:", e);
-      // 사용자 친화적인 오류 메시지 설정
       setError(`채팅 시스템 초기화 실패: ${e.message || '알 수 없는 오류 발생'}`);
       setLoading(false);
       return null;
     }
   };
 
-
-  // Sendbird SDK 인스턴스 및 연결 관리 (v4 비동기 방식)
-  // SendbirdChatInstanceType 타입으로 선언하여 타입 안정성 확보
-  const sbInstance = useRef<SendbirdChat | null>(null); // useRef 사용
-
   useEffect(() => {
     const initializeAndConnectSendbird = async () => {
-      // 이미 초기화되었다면 다시 실행하지 않음
       if (isSendbirdInitialized) {
         console.log("Sendbird already initialized. Skipping.");
-        setLoading(false); // 이미 로딩 완료 상태일 수 있음
+        setLoading(false);
         return;
       }
 
@@ -183,133 +173,155 @@ const ChatPage: React.FC = () => {
           appId: APP_ID,
           modules: [new GroupChannelModule(), new OpenChannelModule()],
         });
-        sbInstance.current = sendbirdChatInstance;
+        sbInstance.current = sendbirdChatInstance as SendbirdChatInstanceType;
 
         console.log('Sendbird SDK initialized successfully. Connecting...');
         const user = await sbInstance.current.connect(userInfo.userId, userInfo.sendbirdAccessToken);
         console.log('Sendbird connection successful:', user);
-        setCurrentUser(user.userId);
+        setCurrentUser(user);
 
-        // Sendbird 초기화 및 연결 성공 상태로 업데이트
         setIsSendbirdInitialized(true);
 
-        // 채널 목록 가져오기 (GroupChannelModule이 초기화되었으므로 groupChannel 접근 가능)
         console.log('Fetching channel list');
-        // GroupChannelModule의 기능은 SendbirdChat 인스턴스에 직접 노출됩니다.
-        // sbInstance.current가 null이 아님을 보장하고 groupChannel에 접근
-        const channelListQuery = sbInstance.current!.groupChannel.createMyGroupChannelListQuery({
-          limit: 10, // 가져올 채널 수 제한
-          // includeEmpty: true, // 비어 있는 채널 포함 여부
-          // order: 'latest_last_message', // 정렬 순서
+        const channelListQuery: GroupChannelListQuery = sbInstance.current.groupChannel.createMyGroupChannelListQuery({
+          limit: 100,
         });
 
         const channels = await channelListQuery.next();
         console.log('Fetched channels:', channels);
-        setChannels(channels); // 채널 목록 상태 업데이트
+        setChannels(channels);
 
-        // Sendbird 이벤트 핸들러 등록
         console.log('Adding Sendbird channel handler');
-        const channelHandler = new GroupChannelHandler();
+        const channelHandler = new GroupChannelHandler({
+            onMessageReceived: (channel: BaseChannel, message: BaseMessage) => {
+                console.log('Message received:', channel, message);
+                // @ts-ignore
+                if (channel.isGroupChannel) {
+                  const groupChannel = channel as GroupChannel;
+                  if (message.messageType === 'user') {
+                    const userMessage = message as UserMessage;
 
-        // message 타입을 BaseMessage로 명시하여 추론 오류 방지
-        // channel 타입을 BaseChannel로 명시하여 린터 오류 해결
-        channelHandler.onMessageReceived = (channel: BaseChannel, message: BaseMessage) => {
-          console.log('Message received:', channel, message);
+                    const formattedMessage: ChatMessage = {
+                      sender: userMessage.sender?.userId || 'Unknown',
+                      message: userMessage.message,
+                      messageId: userMessage.messageId,
+                      createdAt: userMessage.createdAt,
+                      messageType: userMessage.messageType,
+                      customType: userMessage.customType,
+                      data: userMessage.data,
+                    };
 
-          // 메시지가 사용자 메시지(user message) 타입인지 확인합니다.
-          if (message.messageType === 'user') {
-            const userMessage = message as UserMessage; // UserMessage로 타입 캐스팅
+                    try {
+                      if (userMessage.customType === 'payment_request' && userMessage.data) {
+                        const customData = JSON.parse(userMessage.data);
+                         if (customData.paymentInfo) {
+                          formattedMessage.paymentInfo = customData.paymentInfo;
+                         }
+                         if (customData.isPaymentComplete !== undefined) {
+                            formattedMessage.isPaymentComplete = customData.isPaymentComplete;
+                         }
+                         if (customData.isPaymentFormVisible !== undefined) {
+                            formattedMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
+                         }
+                      }
+                    } catch (e) {
+                      console.error("Failed to parse message data:", e);
+                    }
 
-            // Sendbird 메시지 객체의 구조를 확인하여 ChatMessage 인터페이스와 매핑
-            const formattedMessage: ChatMessage = {
-              sender: userMessage.sender?.userId || 'Unknown', // UserMessage에서 sender 접근
-              message: userMessage.message, // UserMessage에서 message 접근
-              messageId: userMessage.messageId,
-              createdAt: userMessage.createdAt,
-              messageType: userMessage.messageType,
-              customType: userMessage.customType,
-              data: userMessage.data,
-              // TODO: customType 및 data 기반으로 paymentInfo 등 처리 로직 추가 필요
-              // isPaymentComplete 등은 UI 상태이므로 Sendbird 메시지 자체에 저장하기보다는
-              // 수신된 메시지 data를 바탕으로 UI 상태를 결정하는 것이 일반적입니다.
-            };
+                    setMessagesByUser(prev => ({
+                      ...prev,
+                      [groupChannel.url]: [...(prev[groupChannel.url] || []), formattedMessage]
+                    }));
+                  } else {
+                     console.log(`Received non-user message of type: ${message.messageType}`);
+                     const formattedMessage: ChatMessage = {
+                       sender: 'System',
+                       message: message.message || `[${message.messageType}] System message`,
+                       messageId: message.messageId,
+                       createdAt: message.createdAt,
+                       messageType: message.messageType,
+                       customType: message.customType,
+                       data: message.data,
+                     };
+                      setMessagesByUser(prev => ({
+                        ...prev,
+                        [groupChannel.url]: [...(prev[groupChannel.url] || []), formattedMessage]
+                      }));
+                   }
+                } else {
+                  console.warn("Received message from a non-group channel:", channel);
+                }
+              },
+              onChannelChanged: (channel: BaseChannel) => {
+                console.log('Channel changed:', channel);
+                // @ts-ignore
+                if (channel.isGroupChannel) {
+                     setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? channel as GroupChannel : ch));
+                }
+              },
+              onChannelDeleted: (channelUrl: string, channelType: string) => {
+                console.log(`Channel deleted: ${channelUrl} (${channelType})`);
+                setChannels(prevChannels => prevChannels.filter(ch => ch.url !== channelUrl));
+                if (currentChannel?.url === channelUrl) {
+                    setCurrentChannel(null);
+                    setIsChatModalVisible(false);
+                    setIsListModalVisible(true);
+                }
+              },
+               onMessageUpdated: (channel: BaseChannel, message: BaseMessage) => {
+                   console.log('Message updated:', channel, message);
+                    // @ts-ignore
+                   if (channel.isGroupChannel) {
+                     const groupChannel = channel as GroupChannel;
+                     if (message.messageType === 'user') {
+                       const userMessage = message as UserMessage;
 
-             // 안전결제 메시지 데이터 파싱
-            try {
-              if (userMessage.customType === 'payment_request' && userMessage.data) {
-                const customData = JSON.parse(userMessage.data);
-                 if (customData.paymentInfo) {
-                  formattedMessage.paymentInfo = customData.paymentInfo;
-                 }
-                 // isPaymentComplete 등은 UI 상태이므로 메시지 data에 있다면 활용
-                 if (customData.isPaymentComplete !== undefined) {
-                    formattedMessage.isPaymentComplete = customData.isPaymentComplete;
-                 }
-                 if (customData.isPaymentFormVisible !== undefined) {
-                    formattedMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                 } else {
-                   formattedMessage.isPaymentFormVisible = false; // 기본값 설정
-                 }
-              }
-            } catch (e) {
-              console.error("Failed to parse message data:", e);
-            }
+                       const formattedUpdatedMsg: ChatMessage = {
+                          sender: userMessage.sender?.userId || 'Unknown',
+                          message: userMessage.message,
+                          messageId: userMessage.messageId,
+                          createdAt: userMessage.createdAt,
+                          messageType: userMessage.messageType,
+                          customType: userMessage.customType,
+                          data: userMessage.data,
+                       };
 
-            // 채널 URL이 GroupChannel 객체에 있는지 확인
-            // isGroupChannel 속성이 함수인지 확인하고 호출하도록 수정 (린터 오류 해결)
-            // Sendbird v4 문서에 따르면 isGroupChannel은 Boolean 속성이지만,
-            // 린터가 함수로 인식하는 경우를 대비하여 이전처럼 함수 호출 및 any 캐스팅 사용
-             if ('url' in channel && (channel as any).isGroupChannel && (channel as any).isGroupChannel()) {
-              setMessagesByUser(prev => ({
-                ...prev,
-                [channel.url]: [...(prev[channel.url] || []), formattedMessage]
-              }));
-            } else {
-              console.warn("Received message from a non-group channel or channel without URL:", channel);
-              // 또는 오류 처리 로직 추가
-            }
+                        try {
+                          if (userMessage.customType === 'payment_request' && userMessage.data) {
+                            const customData = JSON.parse(userMessage.data);
+                             if (customData.paymentInfo) {
+                              formattedUpdatedMsg.paymentInfo = customData.paymentInfo;
+                             }
+                             if (customData.isPaymentComplete !== undefined) {
+                                formattedUpdatedMsg.isPaymentComplete = customData.isPaymentComplete;
+                             }
+                             if (customData.isPaymentFormVisible !== undefined) {
+                                formattedUpdatedMsg.isPaymentFormVisible = customData.isPaymentFormVisible;
+                             }
+                          }
+                        } catch (e) {
+                           console.error("Failed to parse updated message data in handler:", e);
+                        }
 
+                        setMessagesByUser(prev => ({
+                          ...prev,
+                          [groupChannel.url]: prev[groupChannel.url].map(msg =>
+                             msg.messageId === formattedUpdatedMsg.messageId ? formattedUpdatedMsg : msg
+                          )
+                        }));
+                     }
+                   }
+               }
+        });
 
-          } else {
-            // 사용자 메시지가 아닌 다른 타입의 메시지 (예: 관리자 메시지) 처리 로직
-            console.log(`Received non-user message of type: ${message.messageType}`);
-            // 필요에 따라 다른 메시지 타입에 대한 처리 추가 (예: UI에 시스템 메시지 표시)
-             const formattedMessage: ChatMessage = {
-               sender: 'System', // 또는 다른 표시
-               message: `[${message.messageType}] ${message.message || 'System message'}`,
-               messageId: message.messageId,
-               createdAt: message.createdAt,
-               messageType: message.messageType,
-               customType: message.customType,
-               data: message.data,
-             };
-              // 채널 URL이 GroupChannel 객체에 있는지 확인
-            if ('url' in channel) {
-              setMessagesByUser(prev => ({
-                ...prev,
-                [channel.url]: [...(prev[channel.url] || []), formattedMessage]
-              }));
-            } else {
-               console.warn("Received message from a channel without a URL property:", channel);
-              // 또는 오류 처리 로직 추가
-            }
-          }
-        };
-
-        // sbInstance.current가 SendbirdChat 타입이므로 addChannelHandler 사용 가능
         if (sbInstance.current) {
-             // v4 addChannelHandler 사용
-             // 린터 오류 발생 시 주석 처리
-             // @ts-ignore
              sbInstance.current.groupChannel.addGroupChannelHandler(channelHandlerId, channelHandler);
              console.log('Sendbird channel handler added with ID:', channelHandlerId);
         }
 
-
       } catch (error: any) {
         console.error('Sendbird initialization or connection failed:', error);
         setError(`채팅 시스템 초기화 실패: ${error.message || '알 수 없는 오류 발생'}`);
-        // 초기화 실패 시 상태 업데이트는 필요 없음 (isSendbirdInitialized는 false 유지)
       } finally {
         setLoading(false);
       }
@@ -317,70 +329,77 @@ const ChatPage: React.FC = () => {
 
     initializeAndConnectSendbird();
 
-    // 컴포넌트 언마운트 시 Sendbird 연결 해제 및 핸들러 제거
     return () => {
       console.log("ChatPage unmounting. Cleaning up Sendbird.");
       if (sbInstance.current) {
-        // v4 removeChannelHandler는 핸들러 ID를 인자로 받습니다.
-        // SendbirdChat 인스턴스에 removeChannelHandler가 직접 있습니다.
-        sbInstance.current.removeChannelHandler(channelHandlerId);
+        sbInstance.current.groupChannel.removeGroupChannelHandler(channelHandlerId);
         console.log('Sendbird channel handler removed with ID:', channelHandlerId);
 
-        // v4 disconnect는 콜백 인자가 없습니다.
-        // SendbirdChat 인스턴스에 disconnect 메소드가 있는지 확인
         if (typeof sbInstance.current.disconnect === 'function') {
              console.log("Disconnecting from Sendbird");
-             sbInstance.current.disconnect(); // 콜백 제거
+             sbInstance.current.disconnect();
              console.log("Sendbird disconnected.");
         } else {
              console.warn("Sendbird disconnect method not found on sbInstance.current.");
         }
-
+      }
+      // MessageCollection dispose 추가
+      if (messageCollectionRef.current) {
+          messageCollectionRef.current.dispose();
+          messageCollectionRef.current = null;
+          console.log("MessageCollection disposed on unmount.");
       }
     };
-  }, [navigate]); // navigate를 의존성 배열에 추가 (navigate 함수 변경 시 useEffect 재실행)
-
+  }, [navigate]);
 
   const handleOpenChatModal = async (channelUrl: string) => {
     console.log("채널 선택:", channelUrl);
-    // Sendbird 채널 URL로 채널 인스턴스를 가져와서 상태에 저장
-    if (sbInstance.current) { // null 체크
+    if (sbInstance.current) {
       try {
-        // GroupChannelModule의 기능은 SendbirdChat 인스턴스에 직접 노출됩니다.
-         const channel = await sbInstance.current.groupChannel.getChannel(channelUrl);
+         const channel: GroupChannel = await sbInstance.current.groupChannel.getChannel(channelUrl);
         console.log('Selected channel:', channel);
-        setCurrentChannel(channel); // 현재 선택된 채널 상태 업데이트
+
+        // 기존 채널의 MessageCollection이 있다면 정리합니다. (이 부분은 MessageCollection을 사용하지 않아도 유지할 수 있습니다.)
+        if (messageCollectionRef.current) {
+            messageCollectionRef.current.dispose();
+            messageCollectionRef.current = null;
+            console.log("Previous MessageCollection disposed.");
+        }
+
+        setCurrentChannel(channel);
         setIsListModalVisible(false);
         setIsChatModalVisible(true);
 
-        // 선택된 채널의 메시지 불러오기
-        console.log('Fetching messages for channel:', channelUrl);
-         // createMessageListQuery도 groupChannel 모듈의 메소드입니다.
-        const messageListQuery = channel.createMessageListQuery({
-          limit: 100,
-           reverse: true, // 최신 메시지부터 가져오려면 true
-        });
-        const messages = await messageListQuery.next();
-        console.log('Fetched messages:', messages);
+        console.log('Fetching messages for channel using getMessagesByTimestamp:', channelUrl);
+
+        // MessageCollection 대신 getMessagesByTimestamp 사용
+        const messageListParams: MessageListParams = {
+          prevResultSize: 100, // 시작점 이전 메시지 100개 가져오기
+          nextResultSize: 0, // 시작점 이후 메시지는 가져오지 않음
+          reverse: true, // 최신 메시지부터 가져오기 위해 true 설정
+        };
+
+        // startingPoint를 지정하지 않으면 최신 메시지부터 가져옵니다.
+        // 특정 시점(예: 현재 시간)을 기준으로 이전 메시지를 가져오려면 startingPoint를 설정합니다.
+         // const latestMessages = await channel.getMessagesByTimestamp(Date.now(), messageListParams);
+        const latestMessages = await channel.getMessagesByTimestamp(0, messageListParams); // 0을 startingPoint로 하면 최신 메시지부터 가져옵니다.
+
+
+        console.log('Fetched messages using getMessagesByTimestamp:', latestMessages);
 
         // 가져온 Sendbird 메시지 객체를 ChatMessage 인터페이스에 맞게 변환하여 상태에 저장
-        const formattedMessages: ChatMessage[] = messages.map(msg => {
+        // getMessagesByTimestamp(0, { prevResultSize: 100, reverse: true })는 최신 메시지부터 가져옵니다.
+        const formattedMessages: ChatMessage[] = latestMessages.map(msg => {
            const baseMessage: ChatMessage = {
-              // Sendbird 메시지 객체 (BaseMessage 또는 하위 타입)에는 sender 속성이 있습니다.
-              sender: msg.sender?.userId || 'Unknown',
-              // UserMessage 타입일 경우 message 속성 사용, 아니면 빈 문자열
+              sender: (msg as UserMessage).sender?.userId || 'Unknown', // BaseMessage에는 sender 속성이 없으므로 UserMessage로 형변환 후 접근
               message: (msg as UserMessage).message || '',
               messageId: msg.messageId,
               createdAt: msg.createdAt,
               messageType: msg.messageType,
               customType: msg.customType,
               data: msg.data,
-              // paymentInfo, isPaymentComplete 등은 data 파싱 후 추가
             };
-
-             // 안전결제 메시지 데이터 파싱
             try {
-              // customType과 data 속성은 BaseMessage에 있습니다.
               if (msg.customType === 'payment_request' && msg.data) {
                 const customData = JSON.parse(msg.data);
                  if (customData.paymentInfo) {
@@ -391,8 +410,6 @@ const ChatPage: React.FC = () => {
                  }
                  if (customData.isPaymentFormVisible !== undefined) {
                     baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                 } else {
-                   baseMessage.isPaymentFormVisible = false; // 기본값 설정
                  }
               }
             } catch (e) {
@@ -401,63 +418,64 @@ const ChatPage: React.FC = () => {
             return baseMessage;
         });
 
-        // 기존 messagesByUser 상태 업데이트 (선택된 채널의 메시지로 교체)
-        // 불러온 메시지가 최신순이면 reverse()로 순서 뒤집기 필요
-        setMessagesByUser(prev => ({ ...prev, [channel.url]: formattedMessages.reverse() }));
+         // reverse: true 로 이미 최신순이므로 reverse() 제거
+        setMessagesByUser(prev => ({ ...prev, [channel.url]: formattedMessages }));
 
 
-      } catch (messageError: any) { // 에러 타입을 any로 캐스팅
-        console.error('Failed to get channel or fetch messages:', messageError);
+      } catch (messageError: any) {
+        console.error('Failed to get channel or fetch messages using getMessagesByTimestamp:', messageError);
          setError(`채널 메시지 로딩 실패: ${messageError.message || '알 수 없는 오류 발생'}`);
+         // 오류 발생 시 MessageCollection 정리 (사용하지 않으므로 필요 없을 수 있지만 혹시 몰라 유지)
+         if (messageCollectionRef.current) {
+             messageCollectionRef.current.dispose();
+             messageCollectionRef.current = null;
+         }
       }
     } else {
       console.error('Sendbird SDK not initialized.');
        setError('채팅 시스템이 초기화되지 않았습니다.');
-      // TODO: Sendbird 초기화 실패 알림 또는 재시도 로직
     }
   };
 
   const handleCloseListModal = () => {
     setIsListModalVisible(false);
+    setSearchedUserId("");
+    setFoundUser(null);
+    setSearchError(null);
   };
 
   const handleExitClick = () => {
     setIsChatModalVisible(false);
-    // setCurrentUser(null); // Sendbird User ID는 연결 해제 시까지 유지될 수 있습니다.
-    setCurrentChannel(null); // 현재 선택된 채널 상태 초기화
+    setCurrentChannel(null);
     setIsListModalVisible(true);
     setCardNumber("");
-    // TODO: 필요 시 메시지 상태 초기화 setMessagesByUser({});
+     if(currentChannel) {
+        setMessagesByUser(prev => {
+            const newState = { ...prev };
+            delete newState[currentChannel.url];
+            return newState;
+        });
+    }
   };
 
   const handleSendMessage = () => {
-    if (newMessage.trim() === "" || !currentChannel || !sbInstance.current) return;
+    if (newMessage.trim() === "" || !currentChannel || !sbInstance.current || !currentUser) return;
 
-    // v4 UserMessage 생성 파라미터 사용
     const params: UserMessageCreateParams = {
         message: newMessage,
-        // TODO: 커스텀 타입이나 데이터가 필요하다면 추가
-        // customType: 'text',
-        // data: '...',
     };
 
-
-    // 클라이언트 화면 먼저 갱신 (임시 메시지 추가)
-    // 실제 Sendbird 메시지 객체와 유사한 형태로 구성
+    const tempMessageId = Date.now() + Math.random();
     const tempMessage: ChatMessage = {
-      messageId: Date.now(), // 임시 ID
-      // SendbirdChat 인스턴스의 currentUser 속성 접근
-      sender: sbInstance.current.currentUser?.userId || 'Me', // 현재 사용자 정보 활용
-      message: newMessage, // newMessage 사용
-      messageType: 'user', // 사용자 메시지 타입
-      createdAt: Date.now(), // 임시 생성 시간
-      // TODO: 안전결제 메시지 등 커스텀 타입 메시지 처리는 나중에 구현 시 customType, data 추가
-      // tempMessage에 customType과 data를 추가하여 UI에서 즉시 반영할 수도 있습니다.
-      customType: params.customType, // params에서 customType 사용
-      data: params.data // params에서 data 사용
+      messageId: tempMessageId,
+      sender: currentUser.userId,
+      message: newMessage,
+      messageType: 'user',
+      createdAt: Date.now(),
+      customType: params.customType,
+      data: params.data
     };
 
-    // 기존 messagesByUser 상태 업데이트 (선택된 채널의 메시지 목록에 추가)
     setMessagesByUser(prev => ({
       ...prev,
       [currentChannel.url]: [...(prev[currentChannel.url] || []), tempMessage]
@@ -465,38 +483,28 @@ const ChatPage: React.FC = () => {
 
     setNewMessage("");
 
-    // Sendbird 메시지 전송 (v4 비동기 방식)
      currentChannel.sendUserMessage(params)
-      .onSucceeded((message) => { // Sendbird UserMessage 타입 (또는 BaseMessage)
+      .onSucceeded((message) => {
         console.log('Message sent successfully:', message);
-        // 실제 전송된 메시지 객체로 UI 업데이트 (임시 메시지 교체)
         setMessagesByUser(prev => ({
           ...prev,
           [currentChannel.url]: prev[currentChannel.url].map(msg =>
-            // 임시 메시지의 messageId와 실제 전송된 메시지의 messageId를 비교하여 찾습니다.
-            // 임시 messageId는 클라이언트에서 생성하므로 중복 가능성이 있습니다.
-            // 실제로는 임시 메시지에 고유한 클라이언트 측 ID를 부여하고,
-            // 전송 성공 후 서버에서 받은 messageId와 매핑하는 로직이 더 견고합니다.
-            // 여기서는 간단히 임시 messageId로 찾습니다.
-            msg.messageId === tempMessage.messageId ? {
-              ...msg, // 기존 임시 메시지 정보 유지
-              messageId: message.messageId, // 실제 ID로 업데이트
-              createdAt: message.createdAt, // 실제 시간으로 업데이트
-              messageType: message.messageType, // 실제 타입
-              customType: message.customType, // 실제 customType 업데이트
-              data: message.data, // 실제 data 업데이트
-              // TODO: 필요에 따라 message 객체의 다른 속성 업데이트
+            msg.messageId === tempMessageId ? {
+              ...msg,
+              messageId: message.messageId,
+              createdAt: message.createdAt,
+              messageType: message.messageType,
+              customType: message.customType,
+              data: message.data,
             } : msg
           )
         }));
       })
-      .onFailed((error) => { // 실패 콜백
+      .onFailed((error) => {
         console.error('Message send failed:', error);
-        // 메시지 전송 실패 시 처리 (예: 오류 메시지 표시, 재전송 옵션 제공)
-        // UI에서 임시 메시지를 오류 상태로 표시하거나 제거할 수 있습니다.
         setMessagesByUser(prev => ({
           ...prev,
-          [currentChannel.url]: prev[currentChannel.url].filter(msg => msg.messageId !== tempMessage.messageId) // 임시 메시지 제거
+          [currentChannel.url]: prev[currentChannel.url].filter(msg => msg.messageId !== tempMessageId)
         }));
          setError(`메시지 전송 실패: ${error.message || '알 수 없는 오류 발생'}`);
       });
@@ -510,7 +518,7 @@ const ChatPage: React.FC = () => {
   };
 
   const handleSecurePaymentRequest = () => {
-    if (!currentChannel || !sbInstance.current) return;
+    if (!currentChannel || !sbInstance.current || !currentUser) return;
 
     const paymentInfo = {
       itemImage: "/images/파스타.jpg",
@@ -518,33 +526,28 @@ const ChatPage: React.FC = () => {
       price: 50000,
     };
 
-    // Sendbird 커스텀 타입 메시지로 안전결제 요청 전송 (v4 UserMessageCreateParams 사용)
     const params: UserMessageCreateParams = {
-        message: "안전결제 요청이 도착했습니다.", // 실제 전송할 텍스트 메시지 내용 (선택 사항)
-        customType: 'payment_request', // 커스텀 타입으로 메시지 구분
-        data: JSON.stringify({ // paymentInfo와 초기 UI 상태(예: isPaymentComplete)를 string으로 변환하여 data에 저장
+        message: "안전결제 요청이 도착했습니다.",
+        customType: 'payment_request',
+        data: JSON.stringify({
             paymentInfo: paymentInfo,
-            isPaymentComplete: false, // 초기 상태
-            isPaymentFormVisible: false, // 초기 상태 (UI 상태지만 메시지에 저장하여 수신 측에서 활용 가능)
+            isPaymentComplete: false,
+            isPaymentFormVisible: false,
         }),
     };
 
-
-    // 클라이언트 화면 먼저 갱신 (임시 메시지 추가)
+    const tempMessageId = Date.now() + Math.random();
      const tempMessage: ChatMessage = {
-      messageId: Date.now(), // 임시 ID
-      // SendbirdChat 인스턴스의 currentUser 속성 접근
-      sender: sbInstance.current.currentUser?.userId || 'Me', // 현재 사용자 정보 활용
-      message: params.message || '', // 실제 전송될 텍스트 메시지 내용
-      messageType: 'user', // Sendbird에서는 커스텀 메시지도 user message type으로 전송
-      createdAt: Date.now(), // 임시 생성 시간
-      paymentInfo: paymentInfo, // UI 표시를 위한 paymentInfo (data에서 파싱될 내용)
-      isPaymentFormVisible: false, // 초기 UI 상태 (data에서 파싱될 내용)
-      isPaymentComplete: false, // 초기 UI 상태 (data에서 파싱될 내용)
-      // customType, data 등 Sendbird 메시지 객체의 다른 속성은 전송 성공 후 업데이트
-      // tempMessage에 customType과 data를 추가하여 UI에서 즉시 반영할 수도 있습니다.
-      customType: params.customType, // params에서 customType 사용
-      data: params.data // params에서 data 사용
+      messageId: tempMessageId,
+      sender: currentUser.userId,
+      message: params.message || '',
+      messageType: 'user',
+      createdAt: Date.now(),
+      paymentInfo: paymentInfo,
+      isPaymentFormVisible: false,
+      isPaymentComplete: false,
+      customType: params.customType,
+      data: params.data
     };
 
      setMessagesByUser(prev => ({
@@ -552,27 +555,21 @@ const ChatPage: React.FC = () => {
         [currentChannel.url]: [...(prev[currentChannel.url] || []), tempMessage]
       }));
 
-
     currentChannel.sendUserMessage(params)
-      .onSucceeded((message) => { // Sendbird UserMessage 타입 (또는 BaseMessage)
+      .onSucceeded((message) => {
           console.log('Payment request message sent successfully:', message);
-           // 실제 전송된 메시지 객체로 UI 업데이트 (임시 메시지 교체)
-           // 전송 성공 시 반환되는 메시지 객체에는 customType과 data가 포함됩니다.
             setMessagesByUser(prev => ({
               ...prev,
               [currentChannel.url]: prev[currentChannel.url].map(msg => {
-                if (msg.messageId === tempMessage.messageId) { // 임시 ID 비교
-                  const updatedMsg: ChatMessage = {
-                     ...msg,
-                     messageId: message.messageId, // 실제 ID로 업데이트
-                     createdAt: message.createdAt, // 실제 시간으로 업데이트
-                     messageType: message.messageType, // 실제 타입
-                     customType: message.customType, // 실제 customType 업데이트
-                     data: message.data, // 실제 data 업데이트
-                     // 실제 메시지 객체의 data를 파싱하여 paymentInfo, isPaymentComplete 등 업데이트
+                if (msg.messageId === tempMessageId) {
+                  const updatedMsg: ChatMessage = { ...msg,
+                     messageId: message.messageId,
+                     createdAt: message.createdAt,
+                     messageType: message.messageType,
+                     customType: message.customType,
+                     data: message.data,
                   };
                    try {
-                    // 실제 메시지 객체의 customType과 data를 확인
                     if (message.customType === 'payment_request' && message.data) {
                       const actualData = JSON.parse(message.data);
                        if (actualData.paymentInfo) {
@@ -589,97 +586,302 @@ const ChatPage: React.FC = () => {
                     console.error("Failed to parse sent message data:", e);
                   }
                   return updatedMsg;
-
                 } else {
                   return msg;
                 }
               })
             }));
         })
-      .onFailed((error) => { // 실패 콜백
+      .onFailed((error) => {
         console.error('Payment request message send failed:', error);
-         // UI에서 임시 메시지를 오류 상태로 표시하거나 제거할 수 있습니다.
           setMessagesByUser(prev => ({
             ...prev,
-            [currentChannel.url]: prev[currentChannel.url].filter(msg => msg.messageId !== tempMessage.messageId) // 임시 메시지 제거
+            [currentChannel.url]: prev[currentChannel.url].filter(msg => msg.messageId !== tempMessageId)
           }));
          setError(`안전결제 메시지 전송 실패: ${error.message || '알 수 없는 오류 발생'}`);
         });
   };
 
-  // TODO: 메시지 ID를 사용하여 특정 메시지의 UI 상태를 변경하도록 수정 필요
-  const togglePaymentForm = (messageId: number | undefined) => {
-    if (!currentChannel || messageId === undefined) return;
-    setMessagesByUser((prev) => ({
-      ...prev,
-      [currentChannel.url]: prev[currentChannel.url].map((msg) => {
-         // 메시지 ID로 찾아서 isPaymentFormVisible 상태 토글
-        if (msg.messageId === messageId) {
-           // Sendbird 메시지 객체의 data를 업데이트하는 API 호출이 필요할 수 있습니다. (권장)
-           // UI 상태만 변경하는 경우 아래와 같이 상태 업데이트
-           return { ...msg, isPaymentFormVisible: !msg.isPaymentFormVisible };
+  const togglePaymentForm = async (messageId: number | undefined) => {
+    if (!currentChannel || messageId === undefined || !sbInstance.current) {
+        console.error("Cannot toggle payment form: Channel or SDK not ready.");
+        setError("결제 폼 상태 업데이트 실패: 시스템 오류");
+        // Attempt to toggle state locally even if Sendbird update fails immediately
+         setMessagesByUser((prev) => ({
+            ...prev,
+            [currentChannel!.url]: prev[currentChannel!.url].map((msg) => {
+               if (msg.messageId === messageId) {
+                 return { ...msg, isPaymentFormVisible: !msg.isPaymentFormVisible };
+              }
+              return msg;
+            }),
+          }));
+        return;
+    }
+
+    const messageToUpdate = messagesByUser[currentChannel!.url]?.find(msg => msg.messageId === messageId);
+    if (!messageToUpdate || messageToUpdate.customType !== 'payment_request' || !messageToUpdate.data) {
+        console.warn("Message not found or is not a payment request message for toggle.");
+         setMessagesByUser((prev) => ({ // Keep local state update attempt
+            ...prev,
+            [currentChannel!.url]: prev[currentChannel!.url].map((msg) => {
+               if (msg.messageId === messageId) {
+                 return { ...msg, isPaymentFormVisible: !msg.isPaymentFormVisible };
+              }
+              return msg;
+            }),
+          }));
+        return;
+    }
+
+    let existingData; // Declare existingData outside try block
+
+    try {
+        existingData = JSON.parse(messageToUpdate.data);
+        const updatedData = {
+            ...existingData,
+            isPaymentFormVisible: !existingData.isPaymentFormVisible
+        };
+
+        console.log("Attempting to update message:", messageId, "with data:", updatedData);
+
+        const updatedMessage = await currentChannel!.updateUserMessage(messageId, {
+            message: messageToUpdate.message,
+            customType: messageToUpdate.customType,
+            data: JSON.stringify(updatedData),
+        });
+
+        console.log("Payment form visibility updated via Sendbird message update:", updatedMessage);
+        // Sendbird handler (onMessageUpdated) will receive this update and modify state,
+        // so explicit state update here might cause a flicker or be redundant depending on handler implementation.
+        // However, including it provides immediate feedback if the handler is slow or absent for local user updates.
+         setMessagesByUser((prev) => ({
+             ...prev,
+            [currentChannel!.url]: prev[currentChannel!.url].map((msg) => {
+                if (msg.messageId === updatedMessage.messageId) {
+                   const formattedUpdatedMsg: ChatMessage = {
+                        ...msg,
+                        messageId: updatedMessage.messageId,
+                        createdAt: updatedMessage.createdAt,
+                        messageType: updatedMessage.messageType,
+                        customType: updatedMessage.customType,
+                        data: updatedMessage.data,
+                   };
+                    try {
+                        // Re-parse data from the actual updated message from Sendbird
+                        if (updatedMessage.customType === 'payment_request' && updatedMessage.data) {
+                                const actualData = JSON.parse(updatedMessage.data);
+                                if (actualData.paymentInfo) {
+                                  formattedUpdatedMsg.paymentInfo = actualData.paymentInfo;
+                                }
+                                if (actualData.isPaymentComplete !== undefined) {
+                                   formattedUpdatedMsg.isPaymentComplete = actualData.isPaymentComplete;
+                                }
+                                if (actualData.isPaymentFormVisible !== undefined) {
+                                   formattedUpdatedMsg.isPaymentFormVisible = actualData.isPaymentFormVisible;
+                                }
+                             }
+                          } catch (e) {
+                             console.error("Failed to parse updated message data from Sendbird response:", e);
+                          }
+                       return formattedUpdatedMsg;
+                    } else {
+                       return msg;
+                    }
+                 })
+            }));
+        } catch (error: any) {
+             console.error('Failed to update payment form visibility:', error);
+              setError(`결제 폼 상태 업데이트 실패: ${error.message || '알 수 없는 오류 발생'}`);
+              // Revert local state if update failed, using existingData from outside try block
+              if (existingData !== undefined) { // Check if existingData was successfully parsed
+                  setMessagesByUser((prev) => ({
+                      ...prev,
+                      [currentChannel!.url]: prev[currentChannel!.url].map((msg) => {
+                        if (msg.messageId === messageId) {
+                             // Revert the toggle attempt using the original visibility state
+                            return { ...msg, isPaymentFormVisible: existingData.isPaymentFormVisible };
+                        }
+                        return msg;
+                      })
+                  }));
+              } else {
+                   // If existingData was not parsed, we can't revert accurately, maybe just log or handle differently
+                   console.warn("Could not revert local state for payment form visibility due to parsing error.");
+              }
         }
-        return msg;
-      }),
-    }));
   };
 
-   // TODO: 메시지 ID를 사용하여 특정 메시지의 UI 상태를 변경하도록 수정 필요
-   // 실제 결제 처리 후 Sendbird 메시지 업데이트 API를 호출하여 isPaymentComplete 등을 변경해야 합니다.
-  const handlePaymentSubmit = (messageId: number | undefined) => {
+  const handlePaymentSubmit = async (messageId: number | undefined) => {
     if (cardNumber.length !== 12) {
       alert("카드 번호는 12자리여야 합니다.");
       return;
     }
 
-    alert("결제가 완료되었습니다.");
+    if (!currentChannel || messageId === undefined || !sbInstance.current) {
+         console.error("Cannot complete payment: Channel or SDK not ready.");
+         setError("결제 완료 실패: 시스템 오류");
+         setCardNumber("");
+        return;
+    }
 
-    if (!currentChannel || messageId === undefined || !sbInstance.current) return;
+    const messageToComplete = messagesByUser[currentChannel.url]?.find(msg => msg.messageId === messageId);
+     if (!messageToComplete || messageToComplete.customType !== 'payment_request' || !messageToComplete.data) {
+        console.warn("Message not found or is not a payment request message for completion.");
+         setCardNumber("");
+         setError("결제 완료 실패: 유효하지 않은 메시지");
+        return;
+    }
 
-    // TODO: 백엔드에 실제 결제 처리 요청
-    // TODO: 결제 성공 시 Sendbird 메시지 업데이트 API를 호출하여 해당 메시지의 data 필드에
-    // isPaymentComplete = true 상태를 반영하도록 해야 합니다.
-    // Sendbird Chat SDK에는 메시지 업데이트 API가 있습니다. (Channel.updateUserMessage)
-    // 업데이트된 메시지는 모든 참여자에게 onMessageUpdated 이벤트를 통해 전달됩니다.
+    let existingData; // Declare existingData outside try block
 
-    // 임시: UI에서 즉시 결제 상태 반영 및 결제 완료 메시지 추가
-    const paymentSuccessMessage: ChatMessage = {
-      // SendbirdChat 인스턴스의 currentUser 속성 접근
-      sender: sbInstance.current.currentUser?.userId || 'Me', // 현재 사용자
-      message: "결제가 완료되었습니다.",
-      hidden: false, // 항상 보이도록 설정
-      isPaymentComplete: true, // UI 상태 업데이트
-      messageId: Date.now(), // 임시 ID 또는 새로운 메시지 ID
-      messageType: 'user',
-      createdAt: Date.now(),
-    };
+    try {
+        existingData = JSON.parse(messageToComplete.data);
+        const updatedData = {
+            ...existingData,
+            isPaymentComplete: true,
+            isPaymentFormVisible: false,
+        };
 
-    setMessagesByUser((prev) => ({
-      ...prev,
-      [currentChannel.url]: prev[currentChannel.url]
-        .map((msg) => {
-          // 해당 메시지의 isPaymentFormVisible를 false, isPaymentComplete를 true로 업데이트
-          if (msg.messageId === messageId) {
-             return { ...msg, isPaymentFormVisible: false, isPaymentComplete: true };
-          }
-          return msg;
-        })
-        .concat(paymentSuccessMessage), // 결제 완료 메시지 추가
-    }));
+        console.log("Attempting to update payment status for message:", messageId, "with data:", updatedData);
 
-    setCardNumber("");
+         const updatedMessage = await currentChannel.updateUserMessage(messageId, {
+            message: messageToComplete.message,
+            customType: messageToComplete.customType,
+            data: JSON.stringify(updatedData),
+        });
 
-    // TODO: 백엔드에 결제 완료 및 Sendbird 메시지 업데이트 요청 로직 추가
+         console.log("Payment status updated via Sendbird message update:", updatedMessage);
+         // Sendbird handler (onMessageUpdated) will receive this update and modify state
+          setMessagesByUser((prev) => ({
+              ...prev,
+              [currentChannel.url]: prev[currentChannel.url].map((msg) => {
+                if (msg.messageId === updatedMessage.messageId) {
+                   const formattedUpdatedMsg: ChatMessage = {
+                      ...msg,
+                      messageId: updatedMessage.messageId,
+                      createdAt: updatedMessage.createdAt,
+                      messageType: updatedMessage.messageType,
+                      customType: updatedMessage.customType,
+                      data: updatedMessage.data,
+                   };
+                    try {
+                     // Re-parse data from the actual updated message from Sendbird
+                     if (updatedMessage.customType === 'payment_request' && updatedMessage.data) {
+                       const actualData = JSON.parse(updatedMessage.data);
+                        if (actualData.paymentInfo) {
+                         formattedUpdatedMsg.paymentInfo = actualData.paymentInfo;
+                        }
+                        if (actualData.isPaymentComplete !== undefined) {
+                           formattedUpdatedMsg.isPaymentComplete = actualData.isPaymentComplete;
+                        }
+                        if (actualData.isPaymentFormVisible !== undefined) {
+                           formattedUpdatedMsg.isPaymentFormVisible = actualData.isPaymentFormVisible;
+                        }
+                     }
+                   } catch (e) {
+                     console.error("Failed to parse updated message data from Sendbird response:", e);
+                   }
+                   return formattedUpdatedMsg;
+                 } else {
+                   return msg;
+                 }
+               })
+             }));
+             setCardNumber("");
+             alert("결제가 완료되었습니다.");
+         }
+        catch (error: any) {
+             console.error("Failed to update payment status:", error);
+             setError(`결제 완료 상태 업데이트 실패: ${error.message || '알 수 없는 오류 발생'}`);
+             setCardNumber("");
+        }
   };
 
+  const handleSearchUser = async () => {
+    if (!searchedUserId || !sbInstance.current) {
+      setSearchError("사용자 ID를 입력해주세요.");
+      setFoundUser(null);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    setFoundUser(null);
+
+    try {
+      console.log(`Searching for user with ID: ${searchedUserId}`);
+      const userListQuery = sbInstance.current.createApplicationUserListQuery({
+         userIdsFilter: [searchedUserId],
+         limit: 1,
+      });
+
+      const users = await userListQuery.next();
+      console.log("Search results:", users);
+
+      if (users && users.length > 0) {
+        setFoundUser(users[0]);
+      } else {
+        setSearchError("일치하는 사용자를 찾을 수 없습니다.");
+      }
+
+    } catch (e: any) {
+      console.error("User search failed:", e);
+      setSearchError(`사용자 검색 실패: ${e.message || '알 수 없는 오류'}`);
+      setFoundUser(null);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleStartNewChat = async (targetUserId: string) => {
+    if (!sbInstance.current || !currentUser || !targetUserId) {
+      console.error("Cannot start chat: SDK not initialized or target user ID missing.");
+      setError("채팅 시작 실패: 시스템 오류");
+      return;
+    }
+     if (currentUser.userId === targetUserId) {
+        setError("자신과 채팅을 시작할 수 없습니다.");
+        return;
+     }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log(`Attempting to create or get channel with user ID: ${targetUserId}`);
+      const params = {
+        invitedUserIds: [targetUserId],
+        isDistinct: true,
+      };
+
+       const newChannel: GroupChannel = await sbInstance.current.groupChannel.createChannel(params);
+
+      console.log('Channel created or retrieved successfully:', newChannel);
+
+      setChannels(prevChannels => {
+          if (!prevChannels.find(ch => ch.url === newChannel.url)) {
+              return [newChannel, ...prevChannels];
+          }
+          return prevChannels;
+      });
+
+      await handleOpenChatModal(newChannel.url);
+
+    } catch (e: any) {
+      console.error("Failed to create or get channel:", e);
+      setError(`채팅 시작 실패: ${e.message || '알 수 없는 오류'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="chat-page">
-      {/* 로딩 및 오류 상태 표시 */}
       {loading && <div className="loading">Sendbird 로딩 중...</div>}
       {error && <div className="error">오류: {error}</div>}
 
-      {!loading && !error && isListModalVisible && ( // 로딩 중, 오류 시 목록 숨김
+      {!loading && !error && isListModalVisible && (
         <div className="modal-overlay">
           <div className="chat-list-modal">
             <div className="chat-list-header">
@@ -688,74 +890,81 @@ const ChatPage: React.FC = () => {
                 닫기
               </button>
             </div>
+
+            <div className="new-chat-section">
+                <h3>새로운 채팅 시작</h3>
+                <input
+                    type="text"
+                    placeholder="사용자 ID 입력"
+                    value={searchedUserId}
+                    onChange={(e) => setSearchedUserId(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSearchUser(); }}
+                />
+                <button onClick={handleSearchUser} disabled={isSearching || !isSendbirdInitialized}>
+                    {isSearching ? '검색 중...' : '사용자 검색'}
+                </button>
+                {searchError && <p className="search-error">{searchError}</p>}
+
+                {foundUser && (
+                    <div className="found-user">
+                        <img
+                           src={foundUser.profileUrl || "/profile-placeholder.jpg"}
+                           alt={foundUser.nickname || foundUser.userId}
+                           className="profile-icon"
+                        />
+                        <span>{foundUser.nickname || foundUser.userId}</span>
+                        <button
+                            onClick={() => handleStartNewChat(foundUser.userId)}
+                            disabled={currentUser?.userId === foundUser.userId || loading || !isSendbirdInitialized}
+                        >
+                            채팅 시작
+                        </button>
+                    </div>
+                )}
+            </div>
+
             <ul className="chat-list">
               {channels.map((channel) => {
-                // isGroupChannel 속성이 함수인지 확인하고 호출하도록 수정 (린터 오류 해결)
-                // Sendbird v4 문서에 따르면 isGroupChannel은 Boolean 속성이지만,
-                // 린터가 함수로 인식하는 경우를 대비하여 이전처럼 함수 호출 및 any 캐스팅 사용
-                const isOneToOne = (channel as any).isGroupChannel && (channel as any).isGroupChannel() && channel.memberCount === 2;
-                // Sendbird SDK에서 제공하는 User 타입 사용 (import 제거)
-                let otherUser: import('@sendbird/chat').User | null = null;
-                 // sbInstance.current가 존재하고, 현재 사용자가 로그인되어 있으며, 채널 멤버가 있을 때
-                 // Sendbird User 타입을 가져오기 위해 members 배열 사용
-                if (isOneToOne && channel.members && sbInstance.current?.currentUser) {
+                const isOneToOne = channel.isGroupChannel && channel.memberCount === 2;
+                let otherUser: User | null = null;
+                if (isOneToOne && channel.members && currentUser) {
                   otherUser = channel.members.find(
-                    // 현재 사용자의 userId와 다른 멤버 찾기
-                    // SendbirdChat 인스턴스의 currentUser 속성 접근
-                    (member) => member.userId !== sbInstance.current?.currentUser?.userId
-                  ) || null; // 찾지 못하면 null
+                    (member) => member.userId !== currentUser.userId
+                  ) || null;
                 }
 
-                // 표시할 이름과 이미지 결정
-                // 1:1 채널이면 상대방 닉네임, 아니면 채널 이름, 둘 다 없으면 채널 URL
                 const displayName = otherUser?.nickname || channel.name || channel.url;
-                // 1:1 채널이면 상대방 프로필 이미지, 아니면 채널 커버 이미지, 둘 다 없으면 기본 이미지
                 const displayImage = otherUser?.profileUrl || channel.coverUrl || "/profile-placeholder.jpg";
 
                 return (
                   <li
-                    key={channel.url} // 채널 URL을 key로 사용
-                    onClick={() => handleOpenChatModal(channel.url)} // 채널 URL 전달
+                    key={channel.url}
+                    onClick={() => handleOpenChatModal(channel.url)}
                   >
                     <img src={displayImage} alt={displayName} />
                     <div className="chat-info">
                       <strong>{displayName}</strong>
                       <p>
-                        {/* Sendbird 채널 객체에서 최신 메시지 정보 가져오기 */}
-                         {/* lastMessage가 UserMessage 타입인지 확인 후 message 속성 접근 */}
-                        {channel.lastMessage && (channel.lastMessage as UserMessage).message ? (channel.lastMessage as UserMessage).message : "대화 시작"} {/* 최신 메시지 */}
+                         {channel.lastMessage && (channel.lastMessage as UserMessage).message ? (channel.lastMessage as UserMessage).message : "대화 시작"}
                       </p>
                     </div>
                   </li>
                 );
               })}
-              {/* 채널 목록이 비어 있을 경우 메시지 표시 */}
-              {channels.length === 0 && <p>채널이 없습니다.</p>}
+              {channels.length === 0 && !loading && !error && <p>채널이 없습니다.</p>}
             </ul>
           </div>
         </div>
       )}
 
-      {!loading && !error && isChatModalVisible && currentChannel && currentUser && ( // 로딩 중, 오류 시 채팅 모달 숨김
+      {!loading && !error && isChatModalVisible && currentChannel && currentUser && (
         <div className="modal-overlay">
           <div className="chat-modal">
             <div className="chat-header">
               <div className="chat-header-left">
-                 {/* TODO: currentChannel의 멤버 정보를 사용하여 상대방 프로필 이미지/닉네임 표시 */}
-                 {/* 현재는 임시로 currentUser(본인 Sendbird User ID)만 표시 */}
-                {/* <img
-                  src={
-                    // TODO: currentChannel.members 에서 상대방 찾아서 profileUrl 사용
-                    'profile-placeholder.jpg'
-                  }
-                  alt={currentUser}
-                /> */}
-                 {/* 임시: 현재 채팅 중인 채널 이름 또는 상대방 닉네임 표시 */}
-                 {/* currentChannel이 1:1 채널이고 currentUser가 있다면 상대방 정보 표시 */}
-                 {/* isGroupChannel 속성이 함수인지 확인하고 호출하도록 수정 (린터 오류 해결) */}
-                 {(currentChannel as any).isGroupChannel && (currentChannel as any).isGroupChannel() && currentChannel.memberCount === 2 && currentChannel.members && sbInstance.current?.currentUser ?
-                   currentChannel.members.find(member => member.userId !== sbInstance.current?.currentUser?.userId)?.nickname || currentChannel.name || currentChannel.url // 타입 캐스팅
-                   : currentChannel.name || currentChannel.url // 1:1 채널이 아니거나 사용자 정보 없으면 채널 이름/URL 표시
+                 {currentChannel.isGroupChannel && currentChannel.memberCount === 2 && currentChannel.members && currentUser ?
+                   currentChannel.members.find(member => member.userId !== currentUser.userId)?.nickname || currentChannel.name || currentChannel.url
+                   : currentChannel.name || currentChannel.url
                  }
               </div>
               <button className="exit-btn" onClick={handleExitClick}>
@@ -764,36 +973,27 @@ const ChatPage: React.FC = () => {
             </div>
 
             <div className="chat-messages">
-              {/* Sendbird 메시지 객체를 사용하여 메시지 표시 */}
-              {/* currentChannel?.url이 안전하게 접근되도록 합니다. */}
-              {/* messagesByUser[currentChannel.url]가 undefined일 수 있으므로 ?. 연산자 사용 */}
               {messagesByUser[currentChannel.url]?.map(
                 (msg, index) =>
-                  // msg.hidden 상태를 직접 사용
                   !msg.hidden && (
                     <div
-                      key={msg.messageId || index} // Sendbird 메시지 ID 또는 인덱스를 key로 사용
-                      className={`message-row ${msg.sender === currentUser ? 'me' : 'you'}`} // msg.sender (Sendbird User ID)와 currentUser (본인 Sendbird User ID) 비교
+                      key={msg.messageId || index}
+                      className={`message-row ${msg.sender === currentUser.userId ? 'me' : 'you'}`}
                     >
-                      {/* msg.sender (Sendbird User ID)와 현재 로그인 사용자 ID 비교하여 프로필 이미지 표시 */}
-                      {/* 메시지 보낸 사람이 현재 사용자가 아닐 때만 프로필 이미지 표시 */}
-                      {(msg.sender !== currentUser) && (
+                      {(msg.sender !== currentUser.userId) && (
                         <img
-                          src={/* TODO: 상대방 프로필 이미지 URL (채널 멤버 정보에서 가져와야 함) */ 'profile-placeholder.jpg'}
+                          src={'/profile-placeholder.jpg'}
                           alt="상대방"
                           className="profile-icon"
                         />
                       )}
                       <div
-                        className={`message ${msg.sender === currentUser ? 'me-message' : 'you-message'}`} // msg.sender (Sendbird User ID)와 currentUser (본인 Sendbird User ID) 비교
+                        className={`message ${msg.sender === currentUser.userId ? 'me-message' : 'you-message'}`}
                       >
-                        {/* ChatMessage 타입은 message 속성이 string이므로 바로 사용 */}
-                        {/* 메시지 내용이 있을 때만 split */}
                         {msg.message?.split("\n").map((line, i) => (
                           <div key={i}>{line}</div>
                         ))}
 
-                        {/* msg.paymentInfo 존재 여부로 결제 카드 표시 */}
                         {msg.paymentInfo && (
                           <div className="payment-card">
                             <img
@@ -805,11 +1005,10 @@ const ChatPage: React.FC = () => {
                               <p>₩{msg.paymentInfo.price.toLocaleString()}</p>
                             </div>
 
-                            {/* msg.isPaymentFormVisible 및 msg.isPaymentComplete 상태 사용 */}
                             {!msg.isPaymentFormVisible &&
                               !msg.isPaymentComplete && (
                                 <button
-                                  onClick={() => togglePaymentForm(msg.messageId)} // 메시지 ID 전달
+                                  onClick={() => togglePaymentForm(msg.messageId)}
                                   className="payment-btn"
                                 >
                                   결제하기
@@ -820,7 +1019,7 @@ const ChatPage: React.FC = () => {
                               <form
                                 onSubmit={(e) => {
                                   e.preventDefault();
-                                  handlePaymentSubmit(msg.messageId); // 메시지 ID 전달
+                                  handlePaymentSubmit(msg.messageId);
                                 }}
                                 className="payment-form"
                               >
@@ -846,8 +1045,7 @@ const ChatPage: React.FC = () => {
                     </div>
                   )
               )}
-              {/* 메시지 목록이 비어 있을 경우 메시지 표시 */}
-              {messagesByUser[currentChannel.url]?.length === 0 && <p>메시지가 없습니다.</p>} {/* currentChannel.url 안전하게 사용 */}
+              {messagesByUser[currentChannel.url]?.length === 0 && !loading && !error && <p>메시지가 없습니다.</p>}
             </div>
 
             <div className="chat-input-area">
@@ -857,8 +1055,8 @@ const ChatPage: React.FC = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <button onClick={handleSendMessage}>전송</button>
-              <button onClick={handleSecurePaymentRequest}>
+              <button onClick={handleSendMessage} disabled={loading || !currentChannel}>전송</button>
+              <button onClick={handleSecurePaymentRequest} disabled={loading || !currentChannel}>
                 안전결제 요청
               </button>
             </div>
