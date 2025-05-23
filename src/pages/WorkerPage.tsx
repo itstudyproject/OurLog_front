@@ -4,9 +4,23 @@ import "../styles/WorkerPage.css";
 import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
 interface Post {
-  id: number;
+  postId: number; // 🔧 이 줄 추가!
+  imageUrl: string;
   title: string;
-  image: string;
+  artist: string;
+  highestBid: string;
+  link: string;
+  isArtist?: boolean;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 }
 
 interface LikeStatus {
@@ -63,16 +77,24 @@ const WorkerPage: React.FC = () => {
     // Fetch profile
     fetchProfile(userId)
       .then((data) => {
-        console.log("📦 fetchProfile 응답:", data);
-        setProfile(data);
-        if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
-        if (typeof data.followingCnt === "number")
-          setFollowingCnt(data.followingCnt);
-        if (typeof data.isFollowing === "boolean")
-          setIsFollowing(data.isFollowing);
+        if ("nickname" in data) {
+          // 정상 응답인 경우
+          setProfile(data);
+          if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
+          if (typeof data.followingCnt === "number")
+            setFollowingCnt(data.followingCnt);
+          if (typeof data.isFollowing === "boolean")
+            setIsFollowing(data.isFollowing);
+        } else {
+          // 에러 객체가 들어온 경우
+          console.error("프로필 데이터 에러:", data);
+          setProfile(null); // 또는 기본값 처리
+        }
       })
-      .catch((err) => console.error("❌ fetchProfile 실패:", err));
-
+      .catch((err) => {
+        console.error("fetchProfile 실패:", err);
+        setProfile(null);
+      });
     // Fetch posts and likes
     const fetchPostsAndLikes = async () => {
       try {
@@ -85,27 +107,101 @@ const WorkerPage: React.FC = () => {
         });
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
-        const posts: Post[] = await res.json();
-        setCardData(posts);
+        const posts: any[] = await res.json();
+        console.log("🔥 서버에서 받은 posts:", posts);
+        // 첫 번째 게시글의 전체 구조 로깅
+        if (posts.length > 0) {
+          console.log("🔍 첫 번째 게시글 전체 구조:", JSON.stringify(posts[0], null, 2));
+        }
 
+        // boardNo가 5인 아트 게시글만 필터링 및 매핑
+        const artPosts: Post[] = posts
+          .filter(item => {
+            console.log("📋 게시글 필터링:", {
+              postId: item.postId,
+              boardNo: item.boardNo,
+              hasPictureDTOList: !!item.pictureDTOList,
+              pictureDTOListLength: item.pictureDTOList?.length,
+              imagePath: item.imagePath,
+              resizedImagePath: item.resizedImagePath,
+              thumbnailImagePath: item.thumbnailImagePath
+            });
+            return item.boardNo === 5;
+          })
+          .map(item => {
+            // 대표 이미지 URL 결정 로직
+            let imageUrl = "/default-image.png";
+            
+            // 1. pictureDTOList에서 이미지 찾기
+            if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+              const firstImage = item.pictureDTOList[0];
+              if (firstImage.resizedImagePath) {
+                imageUrl = `${baseUrl}/picture/display/${firstImage.resizedImagePath}`;
+              } else if (firstImage.originImagePath) {
+                imageUrl = `${baseUrl}/picture/display/${firstImage.originImagePath}`;
+              }
+            }
+            // 2. 게시글 자체의 이미지 필드 확인
+            else if (item.resizedImagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.resizedImagePath}`;
+            } else if (item.imagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.imagePath}`;
+            } else if (item.thumbnailImagePath) {
+              imageUrl = `${baseUrl}/picture/display/${item.thumbnailImagePath}`;
+            }
+
+            console.log("📸 최종 이미지 URL:", {
+              postId: item.postId,
+              imageUrl: imageUrl,
+              hasPictureDTOList: !!item.pictureDTOList,
+              pictureDTOListLength: item.pictureDTOList?.length,
+              imagePath: item.imagePath,
+              resizedImagePath: item.resizedImagePath,
+              thumbnailImagePath: item.thumbnailImagePath
+            });
+
+            return {
+              postId: item.postId,
+              imageUrl: imageUrl,
+              title: item.title,
+              artist: item.nickname,
+              highestBid: item.tradeDTO?.highestBid?.toLocaleString() || '정보 없음',
+              link: `/Art/${item.postId}`,
+              isArtist: true,
+              favoriteCnt: item.favoriteCnt,
+              pictureDTOList: item.pictureDTOList,
+            };
+          });
+
+        setCardData(artPosts); // 필터링 및 매핑된 아트 게시글 목록으로 상태 업데이트
+
+        // 좋아요 상태 및 개수 가져오는 로직 (artPosts 기준으로 다시 매핑)
         const likeResults = await Promise.all(
-          posts.map(async (post) => {
+          artPosts.map(async (post) => { // artPosts를 사용하여 반복
             try {
+              // 좋아요 상태 확인 API 호출
               const likedRes = await fetch(
-                `${baseUrl}/favorites/${loggedInUserId}/${post.id}`,
+                `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
                 {
                   method: "GET",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                  },
                   credentials: "include",
                 }
               );
               const liked = JSON.parse(await likedRes.text());
 
+              // 좋아요 개수 확인 API 호출
               const countRes = await fetch(
-                `${baseUrl}/ourlog/favorites/count/${post.id}`,
+                `${baseUrl}/favorites/count/${post.postId}`, // ✨ /ourlog 중복 제거
                 {
                   method: "GET",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                  },
                   credentials: "include",
                 }
               );
@@ -113,7 +209,10 @@ const WorkerPage: React.FC = () => {
 
               return { liked, count };
             } catch (err) {
-              console.error(`❌ Like data fetch 실패: post ${post.id}`, err);
+              console.error(
+                `❌ Like data fetch 실패: post ${post.postId}`,
+                err
+              );
               return { liked: false, count: 0 };
             }
           })
@@ -181,15 +280,39 @@ const WorkerPage: React.FC = () => {
   };
 
   const handleLikeToggle = async (index: number, postId: number) => {
-    if (isNaN(loggedInUserId)) {
-      console.warn("❌ 좋아요 실패: 로그인 사용자 정보 없음");
+    if (loggedInUserId === undefined) return;
+    if (postId === undefined) {
+      console.error("❌ postId가 undefined입니다!");
       return;
     }
 
+    const token = localStorage.getItem("token");
+    console.log("토큰 값:", token);
+    if (!token) {
+      console.warn("❗️ 토큰이 없습니다. 로그인 필요");
+      return;
+    }
+
+    const currentLike = likes[index] || { liked: false, count: 0 };
+    const newLiked = !currentLike.liked;
+    const newCount = newLiked
+      ? currentLike.count + 1
+      : Math.max(0, currentLike.count - 1);
+
+    setLikes((prevLikes) =>
+      prevLikes.map((like, i) =>
+        i === index ? { liked: newLiked, count: newCount } : like
+      )
+    );
+
     try {
-      const response = await fetch(`${baseUrl}/ourlog/favorites/toggle`, {
+      const response = await fetch(`${baseUrl}/favorites/toggle`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+
+          Authorization: `Bearer ${token}`, // 헤더 추가
+        },
         credentials: "include",
         body: JSON.stringify({
           userDTO: { userId: loggedInUserId },
@@ -210,6 +333,9 @@ const WorkerPage: React.FC = () => {
       );
     } catch (err) {
       console.error("❌ 좋아요 토글 실패:", err);
+      setLikes((prevLikes) =>
+        prevLikes.map((like, i) => (i === index ? currentLike : like))
+      );
     }
   };
 
@@ -224,7 +350,9 @@ const WorkerPage: React.FC = () => {
         <div className="worker-info">
           <div className="worker-meta-row">
             <div className="worker-name">
-              {profile?.nickname || "닉네임 없음"}
+              {typeof profile?.nickname === "string"
+                ? profile.nickname
+                : "닉네임 없음"}
             </div>
             <div className="worker-stats">
               <div className="stat">
@@ -252,30 +380,45 @@ const WorkerPage: React.FC = () => {
 
       <section className="worker-gallery">
         {currentCards.map((card, index) => {
+          console.log("🃏 카드 데이터:", card); // 이 줄 추가!
           const globalIndex = (currentPage - 1) * cardsPerPage + index;
           const like = likes[globalIndex] || { liked: false, count: 0 };
 
+          console.log("🔍 like 상태", {
+            index,
+            globalIndex,
+            like: likes[globalIndex],
+          }); // 이 위치!
+
           return (
             <div
-              key={card.id}
+              key={card.postId}
               className="worker-card"
-              onClick={() => handleCardClick(card.id)}
+              onClick={() => handleCardClick(card.postId)}
               style={{ cursor: "pointer", position: "relative" }}
             >
               <figure className="card-image-wrapper">
                 <img
-                  src={card.image || "/default-image.png"}
-                  alt={`작품 ${card.id}`}
+                  src={card.imageUrl || "/default-image.png"}
+                  alt={`작품 ${card.postId}`}
                   className="card-image"
                 />
                 <button
                   className="like-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleLikeToggle(globalIndex, card.id);
+                    console.log("👍 좋아요 버튼 클릭됨", {
+                      globalIndex,
+                      postId: card.postId,
+                    });
+                    handleLikeToggle(globalIndex, card.postId);
                   }}
                 >
-                  ♥ {like.count}
+                  ♥{" "}
+                  <span>
+                    {" "}
+                    {typeof like.count === "number" ? like.count : 0}{" "}
+                  </span>
                 </button>
               </figure>
               <div className="card-body">

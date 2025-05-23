@@ -22,6 +22,8 @@ const ArtDetail = () => {
 
   const [mainImagePicture, setMainImagePicture] = useState<PictureDTO | null>(null);
 
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
   const handleGoBack = () => {
     navigate("/Art");
   };
@@ -161,7 +163,7 @@ const ArtDetail = () => {
 
   const handleArtistClick = () => {
     if (post?.nickname) {
-      navigate(`/worker/${post.nickname}`);  // 작가의 페이지로 이동
+      navigate(`/worker/${post.userId}`);  // 작가의 페이지로 이동
     } else {
       console.warn("Artist nickname is null or undefined, cannot navigate to artist page.");
     }
@@ -259,47 +261,80 @@ const ArtDetail = () => {
               return;
           }
 
-          console.log("경매 상태 업데이트 요청 헤더:", headers); // 헤더 로깅 추가
+          console.log("경매 상태 업데이트 요청:", { tradeId, status });
 
-          // TODO: 경매 상태를 업데이트하는 백엔드 API 엔드포인트 확인 또는 구현 필요
-          // 임시 API 경로: /ourlog/trades/{tradeId}/close
           const response = await fetch(`http://localhost:8080/ourlog/trades/${tradeId}/close`, {
-              method: 'PUT', // 또는 PATCH 등 적절한 HTTP 메소드 사용
+              method: 'PUT',
               headers: {
                   ...headers,
-                  // 'Content-Type': 'application/json', // 즉시 구매와 달리 /close 엔드포인트는 본문이 필요 없음
+                  'Content-Type': 'application/json',
               },
-              // body: JSON.stringify({ tradeStatus: status }), // 즉시 구매와 달리 /close 엔드포인트는 본문이 필요 없음
+              body: JSON.stringify({ 
+                  tradeStatus: status,
+                  endTime: new Date().toISOString()
+              }),
           });
 
           if (!response.ok) {
               const errorText = await response.text();
               console.error(`경매 상태 업데이트 실패 (${response.status}):`, errorText);
-              // 실패 시 사용자에게 알림 또는 재시도 로직 추가 가능
+              alert("경매 상태 업데이트에 실패했습니다.");
           } else {
               console.log(`경매 ID ${tradeId} 상태가 ${status}로 업데이트되었습니다.`);
-              // 상태 업데이트 성공 시 UI 갱신 (예: 다시 fetchArtworkDetail 호출 또는 post 상태 직접 업데이트)
-               if (post?.postId) {
-                   fetchArtworkDetail(post.postId.toString()); // 상태 갱신을 위해 다시 불러옴
-               }
+              if (post?.postId) {
+                  fetchArtworkDetail(post.postId.toString());
+              }
           }
       } catch (error) {
           console.error("경매 상태 업데이트 요청 중 오류 발생:", error);
+          alert("경매 상태 업데이트 중 오류가 발생했습니다.");
       }
+  };
+
+  // 조회수 증가 함수 추가
+  const increaseArtworkViewCount = async (postId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/increaseViews/${postId}`,
+        {
+          method: "POST",
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (response.status === 403) {
+        console.warn("작품 조회수 증가 실패: 인증 필요");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("작품 조회수 증가 실패");
+      }
+      console.log("작품 조회수 증가 성공");
+    } catch (error) {
+      console.error("작품 조회수 증가 실패:", error);
+    }
   };
 
   useEffect(() => {
     if (id && !isNaN(Number(id))) {
-      fetchArtworkDetail(id);
-    } else {
+      const postId = id; // id를 postId로 사용
+      // 조회수 증가 API 호출
+      increaseArtworkViewCount(postId);
+      // 작품 상세 정보 불러오기
+      fetchArtworkDetail(postId);
+    } else if (id !== 'payment') {
       console.warn("Post ID is missing or not a valid number in URL parameters:", id);
-      if (id !== 'payment') {
-           alert("잘못된 접근입니다. 작품 정보를 불러올 수 없습니다.");
-           setPost(null);
-      }
-       setLoading(false);
+      alert("잘못된 접근입니다. 작품 정보를 불러올 수 없습니다.");
+      setPost(null);
+      setLoading(false);
+    } else {
+      // 'payment' 경로인 경우 로딩 상태 해제만
+      setLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate]); // id가 변경될 때마다 useEffect 실행
 
   useEffect(() => {
     if (post?.tradeDTO?.lastBidTime) {
@@ -311,6 +346,10 @@ const ArtDetail = () => {
         if (distance < 0) {
           clearInterval(timer);
           setCountdown("경매 종료");
+          // 경매 종료 시간이 지났을 때 자동으로 상태 업데이트
+          if (post.tradeDTO && !post.tradeDTO.tradeStatus) {
+            updateAuctionStatus(post.tradeDTO.tradeId, 1);
+          }
         } else {
           const days = Math.floor(distance / (1000 * 60 * 60 * 24));
           const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -324,8 +363,7 @@ const ArtDetail = () => {
     } else {
        setCountdown("경매 정보 없음");
     }
-
-  }, [post?.tradeDTO?.lastBidTime]);
+  }, [post?.tradeDTO?.lastBidTime, post?.tradeDTO?.tradeStatus]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -344,6 +382,41 @@ const ArtDetail = () => {
     }
   }, [showShareOptions]);
 
+  useEffect(() => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user && user.userId) {
+          setCurrentUserId(user.userId);
+      } else {
+          setCurrentUserId(null);
+      }
+  }, []);
+
+  const handleReregisterClick = () => {
+      if (!post) return;
+      navigate(`/art/register`, { state: { postData: post, isReregister: true } });
+  };
+
+  const handleDownloadOriginal = () => {
+      if (!post?.pictureDTOList || post.pictureDTOList.length === 0) {
+          alert("다운로드할 이미지가 없습니다.");
+          return;
+      }
+      const originalImagePath = post.pictureDTOList[0].originImagePath;
+      if (!originalImagePath) {
+           alert("원본 이미지 경로 정보를 찾을 수 없습니다.");
+           return;
+      }
+
+      const imageUrl = `http://localhost:8080/ourlog/picture/display/${originalImagePath}`;
+
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.setAttribute('download', `${post.title || post.postId}_original.jpg`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -361,41 +434,56 @@ const ArtDetail = () => {
     );
   }
 
+  const isSeller = currentUserId !== null && post.userId === currentUserId;
+  const isSuccessfulBidder = currentUserId !== null && post.tradeDTO?.tradeStatus === true && post.tradeDTO?.bidderId === currentUserId;
+
   return (
     <div className="art-detail-container">
       <div className="art-detail-content">
         <div className="left-content">
-          <div className="art-image-grid-container">
-            {post?.pictureDTOList && post.pictureDTOList.length > 0 ? (
-                post.pictureDTOList.map((picture, index) => {
-                  const imageUrl = picture.originImagePath
-                    ? `http://localhost:8080/ourlog/picture/display/${picture.originImagePath}`
-                    : null;
+          <div className="art-image-display-area">
+            <div className="main-image-container">
+              {mainImagePicture ? (
+                <img
+                  src={`http://localhost:8080/ourlog/picture/display/${mainImagePicture.originImagePath}`}
+                  alt={post?.title || "Main artwork image"}
+                  className="main-artwork-image"
+                />
+              ) : (
+                <div className="no-image-placeholder main">이미지 없음</div>
+              )}
+            </div>
 
-                  if (!imageUrl) return null;
+            {post?.pictureDTOList && post.pictureDTOList.length > 1 && (
+              <div className="thumbnail-list-container">
+                {post.pictureDTOList
+                  .filter(pic => pic.uuid !== mainImagePicture?.uuid)
+                  .map((picture, index) => {
+                    const imageUrl = picture.originImagePath
+                      ? `http://localhost:8080/ourlog/picture/display/${picture.originImagePath}`
+                      : null;
 
-                  const isMain = picture.uuid === mainImagePicture?.uuid;
+                    if (!imageUrl) return null;
 
-                  return (
-                    <div
-                      key={picture.uuid || index}
-                      className={isMain ? "art-grid-item-main" : "art-grid-item-thumbnail"}
-                      onClick={() => handleImageClick(picture)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <img
-                        src={imageUrl}
-                        alt={`${post?.title || (isMain ? 'Main image' : 'Thumbnail image')} ${index + 1}`}
-                        className={isMain ? "art-grid-img-main" : "art-grid-img-thumbnail"}
-                      />
-                    </div>
-                  );
-                })
-            ) : (
-               <div className="no-image-placeholder">이미지 없음</div>
+                    return (
+                      <div
+                        key={picture.uuid || index}
+                        className="thumbnail-item"
+                        onClick={() => handleImageClick(picture)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`${post?.title || 'Thumbnail image'} ${index + 1}`}
+                          className="thumbnail-image"
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
             )}
           </div>
-          <div className="artwork-description">
+          <div className="artwork-description-relocated">
             <h3>작품 설명</h3>
             <div className="description-content">
               <p>{post.content || '설명 없음'}</p>
@@ -490,10 +578,25 @@ const ArtDetail = () => {
               <div className="auction-timer">
                 <div className="timer-icon">⏱️</div>
                 <div className="timer-content">
-                  <span>남은 시간</span>
-                  <p>{countdown}</p>
+                  <span>{post.tradeDTO.tradeStatus ? '상태' : '남은 시간'}</span>
+                  {post.tradeDTO.tradeStatus ? (
+                    // 경매 종료 시 메시지 및 채팅 버튼
+                    null
+                  ) : (
+                    // 경매 진행 중 시 남은 시간
+                    <p>{countdown}</p>
+                  )}
                 </div>
               </div>
+
+              {post.tradeDTO.tradeStatus && (
+                 <div className="auction-ended-info">
+                    <p>경매가 종료되었습니다.</p>
+                    <button className="chat-button" onClick={handleOpenChat}>
+                      <span className="chat-icon">💬</span> 작가와 1:1 채팅
+                    </button>
+                 </div>
+              )}
 
               {!post.tradeDTO.tradeStatus && (
                 <>
@@ -524,30 +627,15 @@ const ArtDetail = () => {
                     <button className="chat-button" onClick={handleOpenChat}>
                       <span className="chat-icon">💬</span> 작가와 1:1 채팅
                     </button>
-                    <button className="bid-history-button" onClick={handleBidHistory}>
-                      입찰내역
-                    </button>
                   </div>
                 </>
-              )}
-
-              {post.tradeDTO.tradeStatus && (
-                 <div className="auction-ended-info">
-                    <p>경매가 종료되었습니다.</p>
-                    <button className="chat-button" onClick={handleOpenChat}>
-                      <span className="chat-icon">💬</span> 작가와 1:1 채팅
-                    </button>
-                    <button className="bid-history-button" onClick={handleBidHistory}>
-                      입찰내역
-                    </button>
-                 </div>
               )}
             </>
           ) : (
             <div className="non-trade-info">
                <p>이 게시물은 경매 상품이 아닙니다.</p>
                <button className="chat-button" onClick={handleOpenChat}>
-                <span className="chat-icon">��</span> 작가와 1:1 채팅
+                <span className="chat-icon">💬</span> 작가와 1:1 채팅
                </button>
             </div>
           )}
@@ -558,9 +646,15 @@ const ArtDetail = () => {
         <button onClick={handleGoBack} className="back-button">
           목록으로
         </button>
+        {post?.tradeDTO?.tradeStatus === true && isSeller && (
+            <button type="button" className="reregister-button" onClick={handleReregisterClick}>
+                경매 재등록
+            </button>
+        )}
       </div>
     </div>
   );
 };
 
 export default ArtDetail;
+

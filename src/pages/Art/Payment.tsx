@@ -13,7 +13,8 @@ interface PaymentInfo {
   title: string; // 게시글 제목
   price: number; // 즉시 구매가 (nowBuy)
   author: string; // 작가 닉네임 (nickname)
-  imageSrc?: string; // 게시글 대표 이미지 (fileName)
+  // imageSrc는 resizedImagePath, thumbnailImagePath, fileName 등을 사용할 수 있습니다.
+  imageSrc?: string; 
 }
 
 const ArtPayment = () => {
@@ -30,6 +31,8 @@ const ArtPayment = () => {
     // location.state에서 post 객체를 가져옵니다.
     if (location.state && (location.state as any).post) {
       const receivedPost: PostDTO = (location.state as any).post;
+      // 받은 post 데이터 콘솔 출력
+      console.log("Received post data in Payment page:", receivedPost); 
       setPostData(receivedPost);
 
       // 전달받은 post 객체로부터 PaymentInfo를 구성합니다.
@@ -39,7 +42,8 @@ const ArtPayment = () => {
               title: receivedPost.title || '제목 없음',
               price: receivedPost.tradeDTO.nowBuy ?? 0, // 즉시 구매가 사용
               author: receivedPost.nickname || '알 수 없는 작가',
-              imageSrc: receivedPost.fileName // 대표 이미지 사용
+              // resizedImagePath를 우선 사용하고, 없으면 thumbnailImagePath, 없으면 fileName 사용
+              imageSrc: receivedPost.resizedImagePath || receivedPost.thumbnailImagePath || receivedPost.fileName // 이미지 경로 사용
           });
           setLoading(false);
       } else {
@@ -191,7 +195,11 @@ const ArtPayment = () => {
             <div className="artwork-thumbnail">
               {/* paymentInfo.imageSrc가 있을 때만 이미지 표시 */}
               {paymentInfo.imageSrc ? (
-                <img src={paymentInfo.imageSrc} alt={paymentInfo.title} />
+                <img 
+                  // src 속성을 수정하여 전체 URL 구성 (백엔드에서 이미 경로를 제공한다고 가정)
+                  src={`http://localhost:8080${paymentInfo.imageSrc}`}
+                  alt={paymentInfo.title}
+                 />
               ) : (
                 <div className="no-image-placeholder">이미지 없음</div>
               )}

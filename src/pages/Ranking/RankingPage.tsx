@@ -11,6 +11,16 @@ type Artwork = {
   views: number;
   followers: number;
   downloads: number;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 };
 
 type RankingKey = "views" | "followers" | "downloads";
@@ -63,19 +73,36 @@ const RankingPage: React.FC = () => {
 
       const data = JSON.parse(raw);
       const mapped: Artwork[] = data.map((item: any) => {
-        const hasUser = item.userProfileDTO && item.userProfileDTO.nickname;
+        let artworkImageSrc = "/default-image.jpg";
+
+        const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
+
+        if (picData.resizedImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+        } else if (picData.thumbnailImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+        } else if (picData.originImagePath) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+        } else if (picData.fileName) {
+          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
+        }
+
         return {
           id: item.postId,
           title: item.title,
-          author: hasUser ? item.userProfileDTO.nickname : "unknown",
-          avatar:
-            hasUser && item.userProfileDTO.profileImage
-              ? `/avatar/${item.userProfileDTO.thumbnailImagePath}` // ✅ 경로 수정
+          author: item.nickname || "익명",
+          avatar: item.profileImage
+              ? `http://localhost:8080/ourlog/picture/display/${item.profileImage}`
               : "/images/default-avatar.png",
-          imageSrc: `/image/${item.fileName}`, // ✅ 경로 수정
+          imageSrc: artworkImageSrc,
           views: item.views,
           followers: item.followers,
           downloads: item.downloads,
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList
         };
       });
 

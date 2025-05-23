@@ -13,6 +13,8 @@
     "@fontsource/material-icons": "^5.2.5",
     "@hello-pangea/dnd": "^18.0.1",
     "@radix-ui/react-slot": "^1.1.0",
+    "@sendbird/chat": "^4.18.0",
+    "@sendbird/uikit-react": "^3.16.6",
     "@tailwindcss/postcss": "^4.1.5",
     "@tailwindcss/vite": "^4.1.5",
     "@types/react-datepicker": "^6.2.0",

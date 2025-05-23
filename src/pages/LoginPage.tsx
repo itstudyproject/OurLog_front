@@ -145,6 +145,7 @@ const LoginPage: React.FC = () => {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
+            'X-Request-ID': crypto.randomUUID(),
           }
         }
       );
@@ -166,6 +167,7 @@ const LoginPage: React.FC = () => {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
         }
       });
 

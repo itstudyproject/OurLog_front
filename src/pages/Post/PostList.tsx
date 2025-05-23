@@ -102,17 +102,20 @@ const PostList = () => {
         const postMap = new Map();
         dtoList.forEach((item: any) => {
           const postId = item.postId || item.id;
+          // 썸네일 이미지 정보 찾기
+          const thumbnailPic = item.pictureDTOList?.find(
+            (pic: any) => pic.picName === item.fileName
+          );
+
           if (!postMap.has(postId)) {
             postMap.set(postId, {
               id: postId,
               title: item.title,
-              author: item.userDTO?.nickname || "",
+              author: item.nickname || "익명", // nickname 필드 사용
               createdAt: item.regDate || item.createdAt || "",
               thumbnail:
-                item.fileName && item.uuid && item.path
-                  ? `http://localhost:8080/ourlog/picture/display/${
-                      item.path
-                    }/s_${item.uuid}_${item.fileName}?t=${Date.now()}`
+                thumbnailPic && thumbnailPic.uuid && thumbnailPic.path
+                  ? `http://localhost:8080/ourlog/picture/display/${thumbnailPic.path}/s_${thumbnailPic.uuid}_${thumbnailPic.picName}` // 찾은 pictureDTO 정보 사용
                   : "",
               boardId: item.boardNo || item.boardId,
             });

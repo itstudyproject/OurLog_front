@@ -9,6 +9,16 @@ interface Artwork {
   highestBid: string;
   link: string;
   isArtist?: boolean;
+  originImagePath?: string;
+  resizedImagePath?: string;
+  thumbnailImagePath?: string;
+  fileName?: string;
+  pictureDTOList?: Array<{
+    originImagePath?: string;
+    resizedImagePath?: string;
+    thumbnailImagePath?: string;
+    fileName?: string;
+  }> | null;
 }
 
 const VIEWS_API_URL = "http://localhost:8080/ourlog/ranking?type=views";
@@ -50,9 +60,30 @@ const ArtworkSlider: React.FC = () => {
               : "",
           link: `/Art/${item.postId}`,
           isArtist: false,
-          imageUrl: item.fileName
-            ? `http://localhost:8080/images/${item.fileName}`
-            : "/default-image.jpg",
+          imageUrl: (() => {
+            let artworkImageSrc = "/default-image.jpg";
+            const picData =
+              item.pictureDTOList && item.pictureDTOList.length > 0
+                ? item.pictureDTOList[0]
+                : item;
+
+            if (picData.resizedImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+            } else if (picData.thumbnailImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+            } else if (picData.originImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+            } else if (picData.fileName) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
+            }
+
+            return artworkImageSrc;
+          })(),
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList,
         }));
 
         setArtworks(mapped);
@@ -76,11 +107,32 @@ const ArtworkSlider: React.FC = () => {
             Number(item.tradeDTO.highestBid) > 0
               ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
               : "",
-          link: item.nickname ? `/worker/${item.nickname}` : "/worker/unknown",
+          link: item.userId ? `/worker/${item.userId}` : "/worker/unknown",
           isArtist: true,
-          imageUrl: item.fileName
-            ? `http://localhost:8080/images/${item.fileName}`
-            : "/default-image.jpg",
+          imageUrl: (() => {
+            let artworkImageSrc = "/default-image.jpg";
+            const picData =
+              item.pictureDTOList && item.pictureDTOList.length > 0
+                ? item.pictureDTOList[0]
+                : item;
+
+            if (picData.resizedImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+            } else if (picData.thumbnailImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+            } else if (picData.originImagePath) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+            } else if (picData.fileName) {
+              artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
+            }
+
+            return artworkImageSrc;
+          })(),
+          originImagePath: item.originImagePath,
+          resizedImagePath: item.resizedImagePath,
+          thumbnailImagePath: item.thumbnailImagePath,
+          fileName: item.fileName,
+          pictureDTOList: item.pictureDTOList,
         }));
 
         setArtists(mapped);

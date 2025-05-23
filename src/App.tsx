@@ -1,34 +1,26 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import WorkerPage from "./pages/WorkerPage";
 import MyPage from "./pages/MyPage";
-import PostList from "./pages/Post/PostList";
 import PostDetail from "./pages/Post/PostDetail";
+import PostList from "./pages/Post/PostList";
 import PostRegister from "./pages/Post/PostRegister";
+import WorkerPage from "./pages/WorkerPage";
 // import Header from './layouts/Header';
-import TermsCondition from "./pages/TermsCondition";
-import CustomerCenter from "./pages/CustomerCenter";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import RankingPage from "./pages/Ranking/RankingPage";
-import Payment from "./pages/Art/Payment";
-import PostModify from "./pages/Post/PostModify";
 import ArtDetail from "./pages/Art/ArtDetail";
-import BidHistory from "./pages/Art/BidHistory";
-import RegisterPage from "./pages/RegisterPage";
 import ArtList from "./pages/Art/ArtList";
 import ArtRegister from "./pages/Art/ArtRegister";
-import SearchPage from "./pages/SearchPage";
-import PurchaseBidPage from "./pages/PurchaseBidPage/PurchaseBidPage";
-import SalePage from "./pages/SalePage/SalePage";
-import BookmarkPage from "./pages/BookmarkPage";
-import AccountEditPage from "./pages/AccountEdit";
-import ProfileEditPage from "./pages/ProfileEdit";
-import AccountEdit from "./pages/AccountEdit";
-import AccountDelete from "./pages/AccountDelete";
+import BidHistory from "./pages/Art/BidHistory";
+import Payment from "./pages/Art/Payment";
 import ChatPage from "./pages/ChatPage";
+import CustomerCenter from "./pages/CustomerCenter";
+import PostModify from "./pages/Post/PostModify";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RankingPage from "./pages/Ranking/RankingPage";
+import RegisterPage from "./pages/RegisterPage";
+import SearchPage from "./pages/SearchPage";
+import TermsCondition from "./pages/TermsCondition";
 
 function App() {
   return (

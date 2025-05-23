@@ -53,8 +53,8 @@ const PurchaseBidPage: React.FC<Props> = () => {
       {data.currentBids.length > 0 ? (
         <ul>
           {data.currentBids.map((trade) => (
-            <li key={trade.id}>
-              {trade.title} — ₩{trade.price.toLocaleString()}
+            <li key={trade.tradeId}>
+              {trade.postTitle} — ₩{trade.highestBid.toLocaleString()}
             </li>
           ))}
         </ul>
@@ -66,8 +66,8 @@ const PurchaseBidPage: React.FC<Props> = () => {
       {data.wonTrades.length > 0 ? (
         <ul>
           {data.wonTrades.map((trade) => (
-            <li key={trade.id}>
-              {trade.title} — ₩{trade.price.toLocaleString()}
+            <li key={trade.tradeId}>
+              {trade.postTitle} — ₩{trade.highestBid.toLocaleString()}
             </li>
           ))}
         </ul>
