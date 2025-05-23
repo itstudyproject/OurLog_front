@@ -323,3 +323,50 @@
   background-color: #f0b800; /* 호버 시 배경색 추가 */
   border-color: #f0b800; /* 호버 시 테두리 색상 변경 */
 }
+
+/* 메인 페이지로 이동 버튼 스타일 (마이페이지 버튼 스타일 참조) */
+.chat-modal .chat-header .main-page-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease-in-out;
+  background-color: #333; /* 마이페이지 primary 버튼 배경색 */
+  color: #ccc; /* 마이페이지 primary 버튼 글자색 */
+  margin-right: 10px; /* '나가기' 버튼과의 간격 */
+}
+
+.chat-modal .chat-header .main-page-btn:hover {
+  background-color: #444; /* 마이페이지 primary 버튼 호버 색상 */
+}
+
+.search-user-btn,
+.start-chat-btn,
+.send-message-btn,
+.complete-payment-btn {
+  padding: 8px 16px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-user-btn:hover,
+.start-chat-btn:hover,
+.send-message-btn:hover,
+.complete-payment-btn:hover {
+  background-color: #ffd05e;
+}
+
+.search-user-btn:disabled,
+.start-chat-btn:disabled,
+.send-message-btn:disabled,
+.complete-payment-btn:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}

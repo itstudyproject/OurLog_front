@@ -9,6 +9,10 @@ import { OpenChannelModule } from '@sendbird/chat/openChannel';
 import { BaseChannel } from '@sendbird/chat';
 import { User } from '@sendbird/chat';
 
+// UserProfileDTO 타입을 profileApi.ts에서 가져옵니다.
+import { UserProfileDTO, fetchProfile } from "../hooks/profileApi"; // Import fetchProfile and UserProfileDTO
+
+
 // Sendbird SDK v4 인스턴스 타입을 정확히 선언합니다.
 // 초기화 시 사용된 모듈 타입을 포함하여 선언합니다.
 // SendbirdChat.init의 반환 타입은 초기화 시 전달된 모듈에 따라 동적으로 결정됩니다.
@@ -19,11 +23,6 @@ type SendbirdChatInstanceType = SendbirdChat & {
   openChannel: OpenChannelModule;
   createApplicationUserListQuery: (params?: any) => any; // UserListQuery 대신 any 사용
 };
-
-interface UserProfile {
-  nickname: string;
-  profileImage: string;
-}
 
 interface ChatMessage {
   sender: string;
@@ -67,6 +66,10 @@ const ChatPage: React.FC = () => {
   const [foundUser, setFoundUser] = useState<User | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  // 사용자 ID별 프로필 정보를 저장할 상태 추가
+  const [userProfiles, setUserProfiles] = useState<{ [userId: string]: UserProfileDTO }>({});
+
 
   const channelHandlerId = useRef<string>(`CHANNEL_HANDLER_ID_${Date.now()}`).current;
 
@@ -126,6 +129,7 @@ const ChatPage: React.FC = () => {
        if (userString) {
            try {
                const user = JSON.parse(userString);
+               // 백엔드 userId는 숫자이지만, Sendbird userId는 문자열로 사용하므로 변환
                backendUserId = String(user.userId);
            } catch (e) {
                console.error("Failed to parse user info from localStorage for userId", e);
@@ -190,6 +194,41 @@ const ChatPage: React.FC = () => {
         const channels = await channelListQuery.next();
         console.log('Fetched channels:', channels);
         setChannels(channels);
+
+        // 채널 목록 로드 후 각 채널의 상대방 프로필 정보를 가져옵니다.
+        const profilePromises = channels.map(async channel => {
+            if (channel.isGroupChannel && channel.memberCount === 2 && channel.members && user) {
+                const otherUser = channel.members.find(member => member.userId !== user.userId);
+                if (otherUser) {
+                    try {
+                        // Sendbird userId는 문자열이지만, 백엔드 fetchProfile 함수는 숫자를 기대할 수 있으므로 변환 필요
+                        // UserProfileDTO의 userId 타입이 number | { userId: number } 이므로, fetchProfile은 number를 받아야 함
+                        const backendUserId = parseInt(otherUser.userId, 10);
+                        if (!isNaN(backendUserId)) {
+                             const profile = await fetchProfile(backendUserId);
+                            return { userId: otherUser.userId, profile };
+                        } else {
+                            console.warn("Failed to parse Sendbird userId to integer for fetching profile:", otherUser.userId);
+                            return null;
+                        }
+                    } catch (profileError) {
+                        console.error(`Failed to fetch profile for user ${otherUser.userId}:`, profileError);
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }).filter(promise => promise !== null); // Filter out nulls if needed, though Promise.all handles undefined
+
+        const fetchedProfiles = await Promise.all(profilePromises);
+        const profilesMap: { [userId: string]: UserProfileDTO } = {};
+        fetchedProfiles.forEach(item => {
+            if (item) {
+                profilesMap[item.userId] = item.profile;
+            }
+        });
+        setUserProfiles(profilesMap);
+
 
         console.log('Adding Sendbird channel handler');
         const channelHandler = new GroupChannelHandler({
@@ -257,6 +296,18 @@ const ChatPage: React.FC = () => {
                 // @ts-ignore
                 if (channel.isGroupChannel) {
                      setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? channel as GroupChannel : ch));
+                     // 채널 정보가 변경될 때 상대방 프로필도 다시 가져올 수 있습니다. (선택 사항)
+                     if (channel.isGroupChannel && channel.memberCount === 2 && channel.members && currentUser) {
+                         const otherUser = channel.members.find(member => member.userId !== currentUser.userId);
+                         if (otherUser && !userProfiles[otherUser.userId]) {
+                              const backendUserId = parseInt(otherUser.userId, 10);
+                             if (!isNaN(backendUserId)) {
+                                 fetchProfile(backendUserId)
+                                    .then(profile => setUserProfiles(prev => ({ ...prev, [otherUser.userId]: profile })))
+                                    .catch(profileError => console.error(`Failed to fetch profile for user ${otherUser.userId} on channel change:`, profileError));
+                             }
+                         }
+                     }
                 }
               },
               onChannelDeleted: (channelUrl: string, channelType: string) => {
@@ -350,7 +401,31 @@ const ChatPage: React.FC = () => {
           console.log("MessageCollection disposed on unmount.");
       }
     };
-  }, [navigate]);
+  }, [navigate]); // Added navigate to deps, though it's stable
+
+  // currentChannel이 변경될 때 해당 채널의 상대방 프로필 정보 가져오기
+  useEffect(() => {
+      const fetchOtherUserProfile = async () => {
+          if (currentChannel && currentChannel.isGroupChannel && currentChannel.memberCount === 2 && currentChannel.members && currentUser) {
+               const otherUser = currentChannel.members.find(member => member.userId !== currentUser.userId);
+                if (otherUser && !userProfiles[otherUser.userId]) {
+                    try {
+                        const backendUserId = parseInt(otherUser.userId, 10);
+                         if (!isNaN(backendUserId)) {
+                             const profile = await fetchProfile(backendUserId);
+                            setUserProfiles(prev => ({ ...prev, [otherUser.userId]: profile }));
+                         } else {
+                            console.warn("Failed to parse Sendbird userId to integer for fetching profile:", otherUser.userId);
+                         }
+                    } catch (profileError) {
+                        console.error(`Failed to fetch profile for user ${otherUser.userId}:`, profileError);
+                    }
+                }
+          }
+      };
+      fetchOtherUserProfile();
+  }, [currentChannel, currentUser, userProfiles]); // Added dependencies
+
 
   const handleOpenChatModal = async (channelUrl: string) => {
     console.log("채널 선택:", channelUrl);
@@ -811,6 +886,7 @@ const ChatPage: React.FC = () => {
 
     try {
       console.log(`Searching for user with ID: ${searchedUserId}`);
+      // Sendbird User ID는 문자열입니다. 검색 시에도 문자열로 전달
       const userListQuery = sbInstance.current.createApplicationUserListQuery({
          userIdsFilter: [searchedUserId],
          limit: 1,
@@ -820,7 +896,23 @@ const ChatPage: React.FC = () => {
       console.log("Search results:", users);
 
       if (users && users.length > 0) {
-        setFoundUser(users[0]);
+        const foundSendbirdUser = users[0];
+         // 검색된 사용자의 프로필 정보도 미리 가져와서 상태에 저장 (선택 사항)
+         const backendUserId = parseInt(foundSendbirdUser.userId, 10);
+         if (!isNaN(backendUserId)) {
+             try {
+                 const profile = await fetchProfile(backendUserId);
+                 setUserProfiles(prev => ({ ...prev, [foundSendbirdUser.userId]: profile }));
+                 // Sendbird User 객체에 추가 필드를 직접 추가하는 대신,
+                 // Sendbird User 객체와 백엔드 프로필 정보를 함께 관리하거나
+                 // 필요한 정보만 합쳐서 사용할 수 있습니다. 여기서는 별도 상태에 저장
+             } catch (profileError) {
+                console.error(`Failed to fetch profile for found user ${foundSendbirdUser.userId}:`, profileError);
+             }
+         } else {
+            console.warn("Failed to parse Sendbird userId to integer for fetching profile:", foundSendbirdUser.userId);
+         }
+        setFoundUser(foundSendbirdUser); // Sendbird User 객체를 그대로 저장
       } else {
         setSearchError("일치하는 사용자를 찾을 수 없습니다.");
       }
@@ -834,13 +926,13 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleStartNewChat = async (targetUserId: string) => {
-    if (!sbInstance.current || !currentUser || !targetUserId) {
+  const handleStartNewChat = async (targetSendbirdUserId: string) => {
+    if (!sbInstance.current || !currentUser || !targetSendbirdUserId) {
       console.error("Cannot start chat: SDK not initialized or target user ID missing.");
       setError("채팅 시작 실패: 시스템 오류");
       return;
     }
-     if (currentUser.userId === targetUserId) {
+     if (currentUser.userId === targetSendbirdUserId) {
         setError("자신과 채팅을 시작할 수 없습니다.");
         return;
      }
@@ -849,9 +941,9 @@ const ChatPage: React.FC = () => {
     setError(null);
 
     try {
-      console.log(`Attempting to create or get channel with user ID: ${targetUserId}`);
+      console.log(`Attempting to create or get channel with user ID: ${targetSendbirdUserId}`);
       const params = {
-        invitedUserIds: [targetUserId],
+        invitedUserIds: [targetSendbirdUserId],
         isDistinct: true,
       };
 
@@ -866,6 +958,20 @@ const ChatPage: React.FC = () => {
           return prevChannels;
       });
 
+      // 새 채널 생성 또는 조회 후 해당 채널의 상대방 프로필 가져오기
+      if (newChannel.isGroupChannel && newChannel.memberCount === 2 && newChannel.members && currentUser) {
+         const otherUser = newChannel.members.find(member => member.userId !== currentUser.userId);
+         if (otherUser && !userProfiles[otherUser.userId]) {
+              const backendUserId = parseInt(otherUser.userId, 10);
+             if (!isNaN(backendUserId)) {
+                 fetchProfile(backendUserId)
+                    .then(profile => setUserProfiles(prev => ({ ...prev, [otherUser.userId]: profile })))
+                    .catch(profileError => console.error(`Failed to fetch profile for user ${otherUser.userId} after starting chat:`, profileError));
+             }
+         }
+      }
+
+
       await handleOpenChatModal(newChannel.url);
 
     } catch (e: any) {
@@ -875,6 +981,10 @@ const ChatPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Linter Error fix: Replace function definition check with actual call or check
+  // This condition will always return true since this function is always defined. Did you mean to call it instead?
+  // Fix: Check if currentUser exists before accessing its properties
 
   return (
     <div className="chat-page">
@@ -900,20 +1010,22 @@ const ChatPage: React.FC = () => {
                     onChange={(e) => setSearchedUserId(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSearchUser(); }}
                 />
-                <button onClick={handleSearchUser} disabled={isSearching || !isSendbirdInitialized}>
+                <button className="search-user-btn" onClick={handleSearchUser} disabled={isSearching || !isSendbirdInitialized}>
                     {isSearching ? '검색 중...' : '사용자 검색'}
                 </button>
                 {searchError && <p className="search-error">{searchError}</p>}
 
                 {foundUser && (
                     <div className="found-user">
+                         {/* 검색된 사용자의 프로필 이미지를 표시 */}
                         <img
-                           src={foundUser.profileUrl || "/profile-placeholder.jpg"}
+                           src={userProfiles[foundUser.userId]?.thumbnailImagePath || foundUser.profileUrl || "/profile-placeholder.jpg"}
                            alt={foundUser.nickname || foundUser.userId}
                            className="profile-icon"
                         />
                         <span>{foundUser.nickname || foundUser.userId}</span>
                         <button
+                            className="start-chat-btn"
                             onClick={() => handleStartNewChat(foundUser.userId)}
                             disabled={currentUser?.userId === foundUser.userId || loading || !isSendbirdInitialized}
                         >
@@ -925,16 +1037,25 @@ const ChatPage: React.FC = () => {
 
             <ul className="chat-list">
               {channels.map((channel) => {
-                const isOneToOne = channel.isGroupChannel && channel.memberCount === 2;
+                // Linter Error Fix applied here: ensure currentUser exists
+                const isOneToOne = currentUser && channel.isGroupChannel && channel.memberCount === 2;
                 let otherUser: User | null = null;
-                if (isOneToOne && channel.members && currentUser) {
+                let otherUserProfile: UserProfileDTO | undefined = undefined;
+
+                if (isOneToOne && channel.members) {
                   otherUser = channel.members.find(
-                    (member) => member.userId !== currentUser.userId
+                    (member) => currentUser && member.userId !== currentUser.userId // Check currentUser existence
                   ) || null;
+                   // 상대방 사용자의 프로필 정보 가져오기
+                   if(otherUser) {
+                       otherUserProfile = userProfiles[otherUser.userId];
+                   }
                 }
 
                 const displayName = otherUser?.nickname || channel.name || channel.url;
-                const displayImage = otherUser?.profileUrl || channel.coverUrl || "/profile-placeholder.jpg";
+                // 상대방 프로필 이미지 URL이 있으면 사용, 없으면 Sendbird 프로필 URL 또는 기본 이미지 사용
+                const displayImage = otherUserProfile?.thumbnailImagePath || otherUser?.profileUrl || channel.coverUrl || "/profile-placeholder.jpg";
+
 
                 return (
                   <li
@@ -962,11 +1083,16 @@ const ChatPage: React.FC = () => {
           <div className="chat-modal">
             <div className="chat-header">
               <div className="chat-header-left">
-                 {currentChannel.isGroupChannel && currentChannel.memberCount === 2 && currentChannel.members && currentUser ?
-                   currentChannel.members.find(member => member.userId !== currentUser.userId)?.nickname || currentChannel.name || currentChannel.url
+                 {/* Linter Error Fix applied here: ensure currentUser exists */}
+                 {currentUser && currentChannel.isGroupChannel && currentChannel.memberCount === 2 && currentChannel.members ?
+                   // 현재 채널의 상대방 프로필 정보 가져오기
+                   currentChannel.members.find(member => currentUser && member.userId !== currentUser.userId)?.nickname || currentChannel.name || currentChannel.url // Check currentUser existence
                    : currentChannel.name || currentChannel.url
                  }
               </div>
+              <button className="main-page-btn" onClick={() => navigate('/')}>
+                메인 페이지로 이동
+              </button>
               <button className="exit-btn" onClick={handleExitClick}>
                 나가기
               </button>
@@ -980,9 +1106,11 @@ const ChatPage: React.FC = () => {
                       key={msg.messageId || index}
                       className={`message-row ${msg.sender === currentUser.userId ? 'me' : 'you'}`}
                     >
+                       {/* 메시지 보낸 사용자가 현재 사용자가 아닌 경우에만 프로필 사진 표시 */}
                       {(msg.sender !== currentUser.userId) && (
-                        <img
-                          src={'/profile-placeholder.jpg'}
+                         // 메시지 보낸 사용자의 프로필 사진을 표시
+                         <img
+                          src={userProfiles[msg.sender]?.thumbnailImagePath || '/profile-placeholder.jpg'}
                           alt="상대방"
                           className="profile-icon"
                         />
@@ -1032,7 +1160,7 @@ const ChatPage: React.FC = () => {
                                   }
                                   maxLength={12}
                                 />
-                                <button type="submit">결제 완료</button>
+                                <button className="complete-payment-btn" type="submit">결제 완료</button>
                               </form>
                             )}
 
@@ -1055,8 +1183,8 @@ const ChatPage: React.FC = () => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <button onClick={handleSendMessage} disabled={loading || !currentChannel}>전송</button>
-              <button onClick={handleSecurePaymentRequest} disabled={loading || !currentChannel}>
+              <button className="send-message-btn" onClick={handleSendMessage} disabled={loading || !currentChannel}>전송</button>
+              <button className="secure-payment-btn" onClick={handleSecurePaymentRequest} disabled={loading || !currentChannel}>
                 안전결제 요청
               </button>
             </div>
