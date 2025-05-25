@@ -99,32 +99,29 @@ const WorkerPage: React.FC = () => {
 
         const posts: Post[] = await res.json();
 
-        // 각 게시글별 좋아요 상태, 개수 가져오기
         const postsWithLikes = await Promise.all(
           posts.map(async (post) => {
             try {
-              // 좋아요 상태 확인 API 호출
               const likedRes = await fetch(
                 `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
                 {
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                    Authorization: `Bearer ${token}`,
                   },
                   credentials: "include",
                 }
               );
               const liked = JSON.parse(await likedRes.text());
 
-              // 좋아요 개수 확인 API 호출
               const countRes = await fetch(
                 `${baseUrl}/favorites/count/${post.postId}`,
                 {
                   method: "GET",
                   headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`, // ✨ 토큰 추가
+                    Authorization: `Bearer ${token}`,
                   },
                   credentials: "include",
                 }
@@ -155,7 +152,6 @@ const WorkerPage: React.FC = () => {
     fetchPostsAndLikes();
   }, [userId, loggedInUserId]);
 
-  // 팔로우/언팔로우 토글
   const handleFollowToggle = async () => {
     if (
       isNaN(loggedInUserId) ||
@@ -175,7 +171,6 @@ const WorkerPage: React.FC = () => {
       ? `${baseUrl}/followers/${loggedInUserId}/follow/${userId}`
       : `${baseUrl}/followers/${loggedInUserId}/unfollow/${userId}`;
 
-    // UI 즉시 반영
     setIsFollowing(isNowFollowing);
     setFollowCnt((prev) => prev + (isNowFollowing ? 1 : -1));
 
@@ -195,25 +190,38 @@ const WorkerPage: React.FC = () => {
         setFollowingCnt(data.followingCnt);
     } catch (err) {
       console.error("❌ 팔로우 토글 실패:", err);
-      // 실패 시 UI 롤백
       setIsFollowing(!isNowFollowing);
       setFollowCnt((prev) => prev + (isNowFollowing ? -1 : 1));
     }
   };
 
-  // 채팅창 열기
   const handleOpenChat = () => {
     navigate("/chat");
   };
 
-  // 작품 클릭 시 상세 페이지 이동
   const handleCardClick = (id: number) => {
     navigate(`/Art/${id}`);
   };
 
-  // 좋아요 토글
+  // ✅ Optimistic Update 적용한 좋아요 토글 함수
   const handleLikeToggle = async (postId: number) => {
     const token = localStorage.getItem("token");
+
+    // Optimistic UI 업데이트
+    setCardData((prev) =>
+      prev.map((card) => {
+        if (card.postId === postId) {
+          const newLiked = !card.liked;
+          const newFavoriteCnt = (card.favoriteCnt ?? 0) + (newLiked ? 1 : -1);
+          return {
+            ...card,
+            liked: newLiked,
+            favoriteCnt: newFavoriteCnt,
+          };
+        }
+        return card;
+      })
+    );
 
     try {
       const result = await fetch(`${baseUrl}/favorites/toggle`, {
@@ -232,20 +240,38 @@ const WorkerPage: React.FC = () => {
 
       const data = await result.json();
 
-      // cardData 상태 업데이트
-      setCardData((prev) =>
-        prev.map((card) =>
-          card.postId === postId
-            ? {
-              ...card,
-              liked: data.favorited,
-              favoriteCnt: data.favoriteCount ?? card.favoriteCnt,
-            }
-            : card
-        )
-      );
+      if (typeof data.favoriteCount === "number") {
+        setCardData((prev) =>
+          prev.map((card) =>
+            card.postId === postId
+              ? {
+                ...card,
+                liked: data.favorited,
+                favoriteCnt: data.favoriteCount,
+              }
+              : card
+          )
+        );
+      }
     } catch (error) {
       console.error("좋아요 처리 실패", error);
+
+      // 실패 시 optimistic rollback
+      setCardData((prev) =>
+        prev.map((card) => {
+          if (card.postId === postId) {
+            const rolledBackLiked = !card.liked;
+            const rolledBackFavoriteCnt =
+              (card.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1);
+            return {
+              ...card,
+              liked: rolledBackLiked,
+              favoriteCnt: rolledBackFavoriteCnt,
+            };
+          }
+          return card;
+        })
+      );
     }
   };
 
