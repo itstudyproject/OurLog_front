@@ -245,10 +245,10 @@ const WorkerPage: React.FC = () => {
           prev.map((card) =>
             card.postId === postId
               ? {
-                ...card,
-                liked: data.favorited,
-                favoriteCnt: data.favoriteCount,
-              }
+                  ...card,
+                  liked: data.favorited,
+                  favoriteCnt: data.favoriteCount,
+                }
               : card
           )
         );
@@ -305,9 +305,11 @@ const WorkerPage: React.FC = () => {
                 {isFollowing ? "팔로잉" : "팔로우"}
               </button>
             )}
-            <button className="btn" onClick={handleOpenChat}>
-              채팅창
-            </button>
+            {!isNaN(loggedInUserId) && loggedInUserId !== userId && (
+              <button className="btn" onClick={handleOpenChat}>
+                채팅창
+              </button>
+            )}
           </div>
         </div>
       </div>
