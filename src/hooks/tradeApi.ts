@@ -2,10 +2,17 @@
 import { getAuthHeaders } from '../utils/auth';
 
 export interface TradeDTO {
-  id: number;
-  title: string;
-  price: number;
-  thumbnailUrl?: string;
+  tradeId: number; // 거래 ID
+  postId: number; // 게시글 ID
+  startPrice: number; // 시작가
+  highestBid: number; // 현재 최고 입찰가
+  nowBuy: number | null; // 즉시 구매가
+  tradeStatus: boolean; // 거래 상태 (true: 종료, false: 진행 중)
+  lastBidTime?: string; // 마지막 입찰 시간 또는 경매 종료 시간
+  bidderId?: number; // 현재 최고 입찰자 ID
+  bidderNickname?: string; // 현재 최고 입찰자 닉네임
+  postTitle?: string; // 게시글 제목 (백엔드 API에 추가 필요)
+  postImage?: string;
 }
 
 // 서버에서 내려주는 전체 응답 형태
