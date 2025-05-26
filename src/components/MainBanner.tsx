@@ -3,9 +3,9 @@ import "../styles/MainBanner.css";
 
 const MainBanner: React.FC = () => {
   const images = [
-    "/images/mainbanner1.png",
-    "/images/mainbanner2.png",
-    "/images/mainbanner3.png",
+    "/images/mainbanner6.png",
+    "/images/mainbanner8.png",
+    "/images/mainbanner7.png",
   ];
   const [currentIndex, setCurrentIndex] = useState(0);
 
