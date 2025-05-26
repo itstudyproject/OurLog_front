@@ -1,5 +1,14 @@
 /* src/styles/MyPage.css */
 
+/* 기본 설정 */
+body {
+  background-color: #1a1a1a; /* 배경색 */
+  color: #ccc; /* 기본 글자색 */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 /* MyPage 컨테이너 */
 .mp-container {
   max-width: 800px; /* 원래 이미지 기반 너비 */
@@ -159,13 +168,64 @@
 /* 이 부분은 PurchaseBidPage.css 등에서 스타일링될 것입니다. */
 /* MyPage.css에서는 컨테이너 역할만 하도록 할 수 있습니다. */
 
+/* ✅ 마이페이지 탭 컨텐츠 그리드 스타일 */
+.mp-tab-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 반응형 그리드 */
+    gap: 20px; /* 그리드 항목 간 간격 */
+    margin-bottom: 40px;
+}
+
+/* ✅ 마이페이지 카드 스타일 (WorkerPage.css 참고, mp- 접두사 사용) */
+/* .mp-card는 WorkerPage.css의 .worker-card 클래스를 재활용하므로 별도 정의 불필요 */
+/* .mp-card-image-wrapper, .mp-card-image, .mp-card-body, .mp-card-title도 동일 */
+/* 필요한 경우 .mp-like-button만 WorkerPage.css의 .worker-like-button과 분리 */
+
+/* ✅ 마이페이지 좋아요 버튼 스타일 (WorkerPage.css 참고, mp- 접두사 사용) */
+.mp-like-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  outline: none;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #cccccc;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mp-like-button.liked {
+  color: #ff6347; /* 주황색 하트 */
+}
+
+.mp-like-button:hover {
+  background: #777777; /* 호버 시 배경색 */
+  color: #ff8c00; /* 호버 시 색상 */
+}
+
+/* ✅ 로딩 및 내용 없음 메시지 스타일 */
+.mp-loading,
+.mp-no-content {
+    text-align: center;
+    font-size: 18px;
+    color: #999;
+    padding: 50px 0;
+}
+
 
 /* 필요하다면 푸터 스타일 추가 */
 /* 현재 MyPage에는 별도 푸터 없어 보입니다. */
 
 /* 로딩 화면 - BidHistory.css에 이미 정의되어 있을 수 있습니다. */
 /* 필요하다면 MyPage.css에도 복사/수정 */
-.loading {
+.loading { /* 이 클래스는 mp-loading과 다를 수 있으니 주의 */
   display: flex;
   justify-content: center;
   align-items: center;

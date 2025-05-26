@@ -166,15 +166,68 @@ const ArtDetail = () => {
     setShowShareOptions(!showShareOptions);
   };
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    if (post) {
-      const followMsg = !isFollowing
-        ? "작가님을 팔로우합니다."
-        : "작가님 팔로우를 취소합니다.";
-      alert(followMsg);
+  const handleFollow = async () => {
+    if (
+      currentUserId === null ||
+      post?.userId === undefined ||
+      currentUserId === 0 || // 로그인 안됨 또는 유효하지 않음
+      post.userId === 0 || // 아티스트 ID 유효하지 않음
+      currentUserId === post.userId // 본인 팔로우 방지
+    ) {
+      console.warn("🔴 팔로우 조건 미충족", { loggedInUserId: currentUserId, userId: post?.userId });
+      // 로그인 필요 또는 본인 팔로우 불가 등의 메시지를 사용자에게 보여줄 수 있습니다.
+       if (currentUserId === null || currentUserId === 0) {
+          alert("팔로우 기능을 사용하려면 로그인이 필요합니다.");
+       } else if (currentUserId === post?.userId) {
+          // 본인 팔로우 시도 시 메시지 (선택 사항)
+       }
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const isNowFollowing = !isFollowing;
+    const method = isNowFollowing ? "POST" : "DELETE";
+    const url = isNowFollowing
+      ? `http://localhost:8080/ourlog/followers/${currentUserId}/follow/${post.userId}`
+      : `http://localhost:8080/ourlog/followers/${currentUserId}/unfollow/${post.userId}`;
+
+    // Optimistic UI 업데이트
+    setIsFollowing(isNowFollowing);
+    // 팔로우/팔로잉 수 업데이트는 WorkerPage에서만 필요한 기능이므로 ArtDetail에서는 생략합니다.
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        // 실패 시 롤백
+        setIsFollowing(!isNowFollowing);
+        const errorMsg = isNowFollowing ? "팔로우 실패" : "팔로우 취소 실패";
+        try {
+           const errorText = await res.text();
+           console.error(`❌ ${errorMsg} 응답:`, errorText);
+           alert(`${errorMsg}: ${errorText || '서버 오류'}`);
+        } catch (e) {
+           console.error(`❌ ${errorMsg} 응답 처리 중 오류:`, e);
+           alert(`${errorMsg}: 서버 오류`);
+        }
+        throw new Error(`${errorMsg} (${res.status})`);
+      }
+
+      // 성공 시 추가 작업 (필요하다면)
+      console.log(isNowFollowing ? "팔로우 성공" : "팔로우 취소 성공");
+
+    } catch (err) {
+      console.error("❌ 팔로우 API 요청 실패:", err);
+      // setIsFollowing(!isNowFollowing); // 이미 위에서 롤백 처리
     }
   };
+
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -272,9 +325,66 @@ const ArtDetail = () => {
       setPost({
         ...postData,
         liked: userLiked, // 좋아요 상태 추가
-        favoriteCnt: postData.favoriteCnt ?? 0, // 좋아요 카운트 확인
+        favoriteCnt: postData.favoriteCnt ?? 0, // 초기 좋아요 카운트 (업데이트 예정)
       });
-      setIsFollowing(false); // TODO: 팔로우 상태도 API로 가져와야 함
+
+      // ✅ 추가: 로그인된 사용자의 팔로우 상태를 추가로 가져옴
+      let userFollowing = false;
+      if (currentUserId !== null && postData?.userId && currentUserId !== postData.userId) {
+        try {
+          const followStatusResponse = await fetch(
+            `http://localhost:8080/ourlog/followers/isFollowing/${currentUserId}/${postData.userId}`,
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            }
+          );
+
+          if (followStatusResponse.ok) {
+            const statusData = await followStatusResponse.json();
+            userFollowing = statusData === true; // API 응답 형태에 따라 조정
+          } else {
+            console.warn(
+              `사용자 팔로우 상태 불러오기 실패 (${followStatusResponse.status})`
+            );
+          }
+        } catch (followError) {
+          console.error("사용자 팔로우 상태 불러오기 오류:", followError);
+        }
+      }
+      setIsFollowing(userFollowing); // 팔로우 상태 초기화
+
+      // ✅ 추가: 최신 좋아요 수를 다시 가져와 업데이트
+      if (postData?.postId !== undefined && postData.postId !== null) {
+          try {
+              const countResponse = await fetch(
+                  `http://localhost:8080/ourlog/favorites/count/${postData.postId}`,
+                  {
+                      method: "GET",
+                      headers: getAuthHeaders(),
+                  }
+              );
+              if (countResponse.ok) {
+                  const countData = await countResponse.json();
+                  if (typeof countData === "number") {
+                      setPost(prevPost => {
+                          if (!prevPost || prevPost.postId !== postData.postId) return prevPost;
+                          return { ...prevPost, favoriteCnt: countData };
+                      });
+                  } else if (countData && typeof countData.count === "number") { // 응답 형태가 { count: number } 인 경우
+                       setPost(prevPost => {
+                          if (!prevPost || prevPost.postId !== postData.postId) return prevPost;
+                          return { ...prevPost, favoriteCnt: countData.count };
+                      });
+                  }
+              } else {
+                  console.warn(`❌ ArtDetail 좋아요 수 불러오기 실패 (${countResponse.status}) for postId ${postData.postId}`);
+              }
+          } catch (countError) {
+              console.error("❌ ArtDetail 좋아요 수 불러오기 오류:", countError);
+          }
+      }
+
       setBidAmount(Number(postData?.tradeDTO?.highestBid || 0) + 1000);
       setLoading(false);
 
@@ -679,59 +789,18 @@ const ArtDetail = () => {
               <h3>{post.nickname || "알 수 없는 작가"}</h3>
               <p>일러스트레이터</p>
             </div>
-            <div className="artist-buttons" style={{ position: "relative" }}>
-              <button
-                className={`follow-button ${isFollowing ? "following" : ""}`}
-                onClick={handleFollow}
-              >
-                {isFollowing ? "팔로잉" : "팔로우"}
-              </button>
-              <button
-                className="share-button"
-                onClick={() => setShowShareOptions((v) => !v)}
-                ref={shareBtnRef}
-              >
-                공유
-              </button>
-              {showShareOptions && (
-                <div className="share-popover" ref={popoverRef}>
-                  <button
-                    onClick={handleCopyLink}
-                    className="share-popover-btn"
-                  >
-                    🔗
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `https://twitter.com/intent/tweet?url=${window.location.href}`
-                      )
-                    }
-                    className="share-popover-btn"
-                  >
-                    🐦
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`
-                      )
-                    }
-                    className="share-popover-btn"
-                  >
-                    📘
-                  </button>
-                  <button
-                    onClick={() =>
-                      alert("카카오톡 공유는 추후 구현 예정입니다.")
-                    }
-                    className="share-popover-btn"
-                  >
-                    💬
-                  </button>
-                  <div className="share-popover-arrow" />
-                </div>
+            <div className="artist-buttons">
+              {currentUserId !== null && post?.userId !== undefined && currentUserId !== post.userId && (
+                <button
+                  onClick={handleFollow}
+                  className={`follow-button ${isFollowing ? 'following' : ''}`}
+                >
+                  {isFollowing ? "팔로잉" : "팔로우"}
+                </button>
               )}
+              <button onClick={handleOpenChat} className="share-button">
+                채팅
+              </button>
             </div>
           </div>
 

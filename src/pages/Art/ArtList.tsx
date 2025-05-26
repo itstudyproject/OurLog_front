@@ -5,7 +5,8 @@ import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import { PostDTO } from '../../types/postTypes';
 
 interface ArtworkWithLike extends PostDTO {
-  liked?: boolean; // ArtList 조회 시 백엔드에서 제공하지 않으므로 클라이언트에서 관리
+  liked?: boolean; // 현재 사용자가 좋아요를 눌렀는지 여부
+  // favoriteCnt는 PostDTO에 이미 포함되어 있지만, 최신 값을 fetch 후 업데이트합니다.
 }
 
 const ArtList = () => {
@@ -84,7 +85,7 @@ const ArtList = () => {
         }
 
         const { pageResultDTO } = data;
-        const mappedArtworks: ArtworkWithLike[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+        let initialArtworks: ArtworkWithLike[] = (pageResultDTO.dtoList || []).map((item: any) => ({
           postId: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
@@ -96,7 +97,7 @@ const ArtList = () => {
           thumbnailImagePath: item.thumbnailImagePath || null,
           followers: item.followers || null,
           downloads: item.downloads || null,
-          favoriteCnt: item.favoriteCnt || item.likeCount || null,
+          favoriteCnt: item.favoriteCnt || item.likeCount || 0, // 초기값 사용
           tradeDTO: item.tradeDTO ? {
             tradeId: item.tradeDTO.tradeId,
             postId: item.tradeDTO.postId,
@@ -107,7 +108,7 @@ const ArtList = () => {
             highestBid: item.tradeDTO.highestBid || null,
             bidAmount: item.tradeDTO.bidAmount || null,
             nowBuy: item.tradeDTO.nowBuy,
-            tradeStatus: item.tradeDTO.tradeStatus,
+            tradeStatus: item.tradeDTO.tradeStatus, // true/false 또는 0/1
             startBidTime: item.tradeDTO.startBidTime || null,
             lastBidTime: item.tradeDTO.lastBidTime || null
           } : null,
@@ -116,10 +117,77 @@ const ArtList = () => {
           replyCnt: item.replyCnt || null,
           regDate: item.regDate || item.createdAt || null,
           modDate: item.modDate || item.updatedAt || null,
+          liked: false, // 초기값 false, 아래에서 업데이트
         }));
 
-        setArtworks(mappedArtworks);
         setTotalPages(pageResultDTO.totalPage || 1);
+
+        // ✅ 각 게시글의 최신 좋아요 수와 사용자의 좋아요 상태를 병렬로 가져옵니다.
+        const artworksWithLatestData = await Promise.all(
+          initialArtworks.map(async (artwork) => {
+            if (artwork.postId === undefined || artwork.postId === null) {
+              console.warn("❌ Artwork without postId:", artwork);
+              return artwork; // postId 없는 경우 건너뛰기
+            }
+
+            let latestFavoriteCnt = artwork.favoriteCnt; // 초기값
+            let userLiked = false; // 초기값
+
+            try {
+              // 최신 좋아요 수 가져오기
+              const countResponse = await fetch(
+                `http://localhost:8080/ourlog/favorites/count/${artwork.postId}`,
+                {
+                  method: "GET",
+                  headers: getAuthHeaders(),
+                }
+              );
+              if (countResponse.ok) {
+                const countData = await countResponse.json();
+                if (typeof countData === "number") {
+                  latestFavoriteCnt = countData; // 최신 좋아요 수 반영
+                } else if (countData && typeof countData.count === "number") { // 응답 형태가 { count: number } 인 경우
+                    latestFavoriteCnt = countData.count;
+                }
+              } else {
+                console.warn(
+                  `❌ 좋아요 수 불러오기 실패 (${countResponse.status}) for postId ${artwork.postId}`
+                );
+              }
+            } catch (countError) {
+              console.error("❌ 좋아요 수 불러오기 오류:", countError);
+            }
+
+            // 사용자의 좋아요 상태 가져오기 (로그인된 경우)
+            if (!isNaN(loggedInUserId) && loggedInUserId !== null && loggedInUserId > 0) {
+              try {
+                const likeStatusResponse = await fetch(
+                  `http://localhost:8080/ourlog/favorites/${loggedInUserId}/${artwork.postId}`,
+                  {
+                    method: "GET",
+                    headers: getAuthHeaders(),
+                  }
+                );
+
+                if (likeStatusResponse.ok) {
+                  const statusData = await likeStatusResponse.json();
+                  userLiked = statusData === true; // API 응답 형태에 따라 조정
+                } else {
+                  console.warn(
+                    `❌ 사용자 좋아요 상태 불러오기 실패 (${likeStatusResponse.status}) for postId ${artwork.postId}`
+                  );
+                }
+              } catch (likeError) {
+                console.error("❌ 사용자 좋아요 상태 불러오기 오류:", likeError);
+              }
+            }
+
+            return { ...artwork, favoriteCnt: latestFavoriteCnt, liked: userLiked };
+          })
+        );
+
+        setArtworks(artworksWithLatestData); // 최신 데이터로 artworks 상태 업데이트
+
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
         setArtworks([]);
@@ -130,7 +198,7 @@ const ArtList = () => {
     };
 
     fetchArtworks();
-  }, [currentPage, searchTerm, navigate]);
+  }, [currentPage, searchTerm, navigate, loggedInUserId]); // loggedInUserId를 의존성 배열에 추가
 
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
