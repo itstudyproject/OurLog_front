@@ -264,7 +264,6 @@ const PostRegister = () => {
           uuid: img.uuid,
           picName: img.picName,
           path: img.path,
-          picDescribe: null,
           downloads: 0,
           tag: null,
           originImagePath: `${img.path}/${img.uuid}_${img.picName}`,

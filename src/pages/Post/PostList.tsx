@@ -38,12 +38,22 @@ const PostList = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const postsPerPage = 10;
 
-  // ✅ 토큰 확인용 (필요 시 삭제 가능)
+  // ✅ 토큰 확인 및 localStorage에서 저장된 페이지 번호 불러오기
   useEffect(() => {
     if (!hasToken()) {
       console.warn("토큰이 없습니다. 로그인이 필요할 수 있습니다.");
     }
-  }, []);
+
+    // localStorage에서 저장된 페이지 번호 확인 (ArtList와 다른 키 사용)
+    const savedPage = localStorage.getItem('postListPage');
+    if (savedPage) {
+      const pageNumber = parseInt(savedPage, 10);
+      if (!isNaN(pageNumber) && pageNumber >= 1) {
+        setCurrentPage(pageNumber); // 저장된 페이지로 상태 업데이트
+      }
+      localStorage.removeItem('postListPage'); // 사용 후 삭제
+    }
+  }, []); // 빈 배열: 컴포넌트 마운트 시 한 번만 실행
 
   // ✅ pathname이 바뀌면 boardId 재설정
   useEffect(() => {
@@ -134,15 +144,19 @@ const PostList = () => {
     };
 
     fetchPosts();
-  }, [selectedBoardId, currentPage, searchTerm]);
+  }, [selectedBoardId, currentPage, searchTerm, navigate]); // currentPage와 navigate를 의존성 배열에 추가
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchTerm(searchInput);
-    setCurrentPage(1);
+    setCurrentPage(1); // 검색 시에는 1페이지로 이동
   };
 
-  const handlePostClick = (postId: number) => navigate(`/Post/${postId}`);
+  const handlePostClick = (postId: number) => {
+    // 상세 페이지로 이동하기 전에 현재 페이지 번호를 localStorage에 저장
+    localStorage.setItem('postListPage', String(currentPage));
+    navigate(`/Post/${postId}`);
+  };
 
   const handleRegisterClick = () => {
     let category = "";
