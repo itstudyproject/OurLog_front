@@ -40,9 +40,9 @@ export const updateProfile = async (
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
   const res = await fetch(
-    `http://localhost:8080/ourlog/profile/profileEdit/${userId}`,
+    `http://localhost:8080/ourlog/profile/edit/${userId}`,
     {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         ...getAuthHeaders(),
         "Content-Type": "application/json",

@@ -4,7 +4,7 @@ import "../../styles/ArtPayment.css";
 import { getAuthHeaders } from "../../utils/auth";
 
 // src/types에서 필요한 인터페이스를 임포트합니다.
-import { PostDTO } from "../../types/postTypes";
+import { PostDTO, PictureDTO } from "../../types/postTypes";
 
 // Payment 페이지에서 사용할 정보 인터페이스
 // ArtDetail에서 전달받는 PostDTO 구조에 맞춰 조정합니다.
@@ -14,7 +14,7 @@ interface PaymentInfo {
   price: number; // 즉시 구매가 (nowBuy)
   author: string; // 작가 닉네임 (nickname)
   // imageSrc는 resizedImagePath, thumbnailImagePath, fileName 등을 사용할 수 있습니다.
-  imageSrc?: string; 
+  // imageSrc?: string; // 이제 pictureDTOList를 사용할 것이므로 필요 없음
 }
 
 const ArtPayment = () => {
@@ -26,13 +26,15 @@ const ArtPayment = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedMethod, setSelectedMethod] = useState<string>("카카오페이");
   const [agreement, setAgreement] = useState<boolean>(false);
+  // ArtDetail처럼 메인 이미지 상태 추가
+  const [mainImagePicture, setMainImagePicture] = useState<PictureDTO | null>(null);
 
   useEffect(() => {
     // location.state에서 post 객체를 가져옵니다.
     if (location.state && (location.state as any).post) {
       const receivedPost: PostDTO = (location.state as any).post;
       // 받은 post 데이터 콘솔 출력
-      console.log("Received post data in Payment page:", receivedPost); 
+      console.log("Received post data in Payment page:", receivedPost);
       setPostData(receivedPost);
 
       // 전달받은 post 객체로부터 PaymentInfo를 구성합니다.
@@ -42,9 +44,23 @@ const ArtPayment = () => {
               title: receivedPost.title || '제목 없음',
               price: receivedPost.tradeDTO.nowBuy ?? 0, // 즉시 구매가 사용
               author: receivedPost.nickname || '알 수 없는 작가',
-              // resizedImagePath를 우선 사용하고, 없으면 thumbnailImagePath, 없으면 fileName 사용
-              imageSrc: receivedPost.resizedImagePath || receivedPost.thumbnailImagePath || receivedPost.fileName // 이미지 경로 사용
+              // imageSrc: receivedPost.resizedImagePath || receivedPost.thumbnailImagePath || receivedPost.fileName // 이제 pictureDTOList를 사용
           });
+
+          // ✅ ArtDetail처럼 pictureDTOList에서 메인 이미지 설정
+          if (receivedPost.pictureDTOList && receivedPost.pictureDTOList.length > 0) {
+              const thumbnail = receivedPost.pictureDTOList.find(
+                (pic: PictureDTO) => pic.uuid === receivedPost.fileName // fileName과 uuid 일치 확인
+              );
+              if (thumbnail) {
+                setMainImagePicture(thumbnail);
+              } else {
+                setMainImagePicture(receivedPost.pictureDTOList[0]); // 없으면 첫 번째 이미지
+              }
+          } else {
+              setMainImagePicture(null); // 이미지 목록이 없으면 메인 이미지 없음
+          }
+
           setLoading(false);
       } else {
           console.error("TradeDTO is missing in the received post data.");
@@ -70,6 +86,11 @@ const ArtPayment = () => {
 
   const handlePaymentMethodSelect = (method: string) => {
     setSelectedMethod(method);
+  };
+
+  // ✅ ArtDetail처럼 썸네일 클릭 핸들러 추가
+  const handleImageClick = (picture: PictureDTO) => {
+    setMainImagePicture(picture);
   };
 
   // 실제 결제 처리 및 API 호출 함수
@@ -194,10 +215,10 @@ const ArtPayment = () => {
           <div className="artwork-order-info">
             <div className="artwork-thumbnail">
               {/* paymentInfo.imageSrc가 있을 때만 이미지 표시 */}
-              {paymentInfo.imageSrc ? (
+              {mainImagePicture ? (
                 <img 
                   // src 속성을 수정하여 전체 URL 구성 (백엔드에서 이미 경로를 제공한다고 가정)
-                  src={`http://localhost:8080${paymentInfo.imageSrc}`}
+                  src={`http://localhost:8080/ourlog/picture/display/${mainImagePicture.originImagePath}`}
                   alt={paymentInfo.title}
                  />
               ) : (
@@ -249,6 +270,54 @@ const ArtPayment = () => {
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* ✅ ArtDetail처럼 이미지 표시 영역을 payment-content 밖으로 이동 */}
+      <div className="payment-image-display-area">
+        <div className="main-image-container">
+          {mainImagePicture ? (
+            <img
+              // ArtDetail처럼 originImagePath 사용 및 URL 구성
+              src={`http://localhost:8080/ourlog/picture/display/${mainImagePicture.originImagePath}`}
+              alt={paymentInfo.title}
+              className="main-artwork-image"
+            />
+          ) : (
+            <div className="no-image-placeholder main">이미지 없음</div>
+          )}
+        </div>
+
+        {/* ✅ ArtDetail처럼 썸네일 목록 표시 */}
+        {postData?.pictureDTOList && postData.pictureDTOList.length > 1 && (
+          <div className="thumbnail-list-container">
+            {postData.pictureDTOList
+              .filter((pic) => pic.uuid !== mainImagePicture?.uuid) // 현재 메인 이미지는 썸네일에서 제외
+              .map((picture, index) => {
+                const imageUrl = picture.originImagePath
+                  ? `http://localhost:8080/ourlog/picture/display/${picture.originImagePath}` // ArtDetail처럼 URL 구성
+                  : null;
+
+                if (!imageUrl) return null;
+
+                return (
+                  <div
+                    key={picture.uuid || index}
+                    className="thumbnail-item"
+                    onClick={() => handleImageClick(picture)} // 클릭 시 메인 이미지 변경
+                    style={{ cursor: "pointer" }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`${paymentInfo.title || "Thumbnail image"} ${
+                        index + 1
+                      }`}
+                      className="thumbnail-image"
+                    />
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </div>
 
       <div className="payment-method-section">

@@ -47,7 +47,7 @@ function App() {
 
         <Route path="mypage/*" element={<MyPage />} />
         <Route path="worker/:userId" element={<WorkerPage />} />
-
+        <Route path="chat" element={<ChatPage />} />
         <Route path="post">
           <Route index element={<PostList />} />
           <Route path="news" element={<PostList />} />
