@@ -654,3 +654,26 @@ body {
    width: 80px;
    height: 80px;
 }
+
+/* ✅ 좋아요 버튼 스타일 추가 */
+.art-detail-like-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px; /* 하트 아이콘 크기 */
+  padding: 0;
+  margin: 0;
+  display: flex; /* 좋아요 수와 함께 정렬 */
+  align-items: center;
+  gap: 5px; /* 하트와 숫자 사이 간격 */
+  color: #cccccc; /* 기본 하트 색상 (회색) */
+  transition: color 0.2s ease-in-out;
+}
+
+.art-detail-like-button.liked {
+  color: #ff6347; /* 좋아요 눌렀을 때 하트 색상 (주황색) */
+}
+
+.art-detail-like-button:hover {
+  color: #ff8c00; /* 호버 시 색상 변경 */
+}

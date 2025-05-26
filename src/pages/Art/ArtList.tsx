@@ -4,9 +4,13 @@ import "../../styles/ArtList.css";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import { PostDTO } from '../../types/postTypes';
 
+interface ArtworkWithLike extends PostDTO {
+  liked?: boolean; // ArtList 조회 시 백엔드에서 제공하지 않으므로 클라이언트에서 관리
+}
+
 const ArtList = () => {
   const navigate = useNavigate();
-  const [artworks, setArtworks] = useState<PostDTO[]>([]);
+  const [artworks, setArtworks] = useState<ArtworkWithLike[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -15,9 +19,30 @@ const ArtList = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const artworksPerPage = 15;
 
+  const rawLoggedInUser = localStorage.getItem("user");
+  let loggedInUserId: number | null = null;
+
+  try {
+    const parsedData = rawLoggedInUser ? JSON.parse(rawLoggedInUser) : null;
+    if (parsedData && typeof parsedData.userId === "number") {
+      loggedInUserId = parsedData.userId;
+    }
+  } catch (error) {
+    console.error("❌ JSON 파싱 실패:", error);
+  }
+
   useEffect(() => {
     if (!hasToken()) {
       console.warn("토큰이 없습니다. 로그인이 필요할 수 있습니다.");
+    }
+
+    const savedPage = localStorage.getItem('artworkListPage');
+    if (savedPage) {
+      const pageNumber = parseInt(savedPage, 10);
+      if (!isNaN(pageNumber) && pageNumber >= 1) {
+        setCurrentPage(pageNumber);
+      }
+      localStorage.removeItem('artworkListPage');
     }
   }, []);
 
@@ -59,7 +84,7 @@ const ArtList = () => {
         }
 
         const { pageResultDTO } = data;
-        const mappedArtworks: PostDTO[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+        const mappedArtworks: ArtworkWithLike[] = (pageResultDTO.dtoList || []).map((item: any) => ({
           postId: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
@@ -139,6 +164,7 @@ const ArtList = () => {
   const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const handleArtworkClick = (artworkId: number) => {
+    localStorage.setItem('artworkListPage', String(currentPage));
     navigate(`/Art/${artworkId}`);
   };
 
@@ -189,6 +215,85 @@ const ArtList = () => {
 
     return { text, isEndingSoon, isEnded: false };
   }
+
+  // ✅ Optimistic Update 적용한 좋아요 토글 함수
+  const handleLikeToggle = async (artworkId: number) => {
+    if (loggedInUserId === null) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    // Optimistic UI 업데이트
+    setArtworks((prev) =>
+      prev.map((artwork) => {
+        if (artwork.postId === artworkId) {
+          const newLiked = !(artwork.liked ?? false);
+          const newFavoriteCnt = (artwork.favoriteCnt ?? 0) + (newLiked ? 1 : -1);
+          return {
+            ...artwork,
+            liked: newLiked,
+            favoriteCnt: newFavoriteCnt,
+          };
+        }
+        return artwork;
+      })
+    );
+
+    try {
+      const result = await fetch(`http://localhost:8080/ourlog/favorites/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: loggedInUserId,
+          postId: artworkId,
+        }),
+      });
+
+      if (!result.ok) throw new Error("서버 응답 오류");
+
+      const data = await result.json();
+
+      // 백엔드 응답으로 최종 상태 업데이트
+      if (typeof data.favoriteCount === "number") {
+        setArtworks((prev) =>
+          prev.map((artwork) =>
+            artwork.postId === artworkId
+              ? {
+                ...artwork,
+                liked: data.favorited,
+                favoriteCnt: data.favoriteCount,
+              }
+              : artwork
+          )
+        );
+      }
+    } catch (error) {
+      console.error(`좋아요 처리 실패: ${artworkId}`, error);
+
+      // 실패 시 optimistic rollback
+      setArtworks((prev) =>
+        prev.map((artwork) => {
+          if (artwork.postId === artworkId) {
+            const rolledBackLiked = !(artwork.liked ?? false); // optimistic update 이전 상태
+            const rolledBackFavoriteCnt = (artwork.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1); // optimistic update 이전 상태
+            return {
+              ...artwork,
+              liked: rolledBackLiked,
+              favoriteCnt: rolledBackFavoriteCnt,
+            };
+          }
+          return artwork;
+        })
+      );
+      alert("좋아요 처리에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
 
   if (loading) {
     return (
@@ -280,7 +385,15 @@ const ArtList = () => {
                 ) : (
                   <div className="art-list-item-no-image">이미지 없음</div>
                 )}
-                <div className="art-list-item-likes">♥ {artwork.favoriteCnt ?? 0}</div>
+                <div
+                  className={`art-list-like-button ${artwork.liked ? 'liked' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // 부모 div의 클릭 이벤트 방지
+                    handleLikeToggle(artwork.postId);
+                  }}
+                >
+                  {artwork.liked ? '🧡' : '🤍'} {artwork.favoriteCnt ?? 0}
+                </div>
               </div>
               <div className="art-list-item-info">
                 <h3 className="art-list-item-title">{artwork.title}</h3>

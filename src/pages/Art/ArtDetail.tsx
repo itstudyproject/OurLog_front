@@ -7,10 +7,14 @@ import "../../styles/ArtDetail.css";
 import { PostDTO } from "../../types/postTypes";
 import { PictureDTO } from "../../types/pictureTypes";
 
+interface PostDetailWithLike extends PostDTO {
+  liked?: boolean;
+}
+
 const ArtDetail = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const [post, setPost] = useState<PostDTO | null>(null);
+  const [post, setPost] = useState<PostDetailWithLike | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [bidAmount, setBidAmount] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
@@ -238,35 +242,66 @@ const ArtDetail = () => {
       }
 
       const data = await response.json();
-      setPost(data.postDTO);
-      setIsFollowing(false);
-      setBidAmount(Number(data.postDTO?.tradeDTO?.highestBid || 0) + 1000);
+      const postData = data.postDTO;
+
+      // ✅ 로그인된 사용자의 좋아요 상태를 추가로 가져옴
+      let userLiked = false;
+      if (currentUserId !== null) {
+        try {
+          const likeStatusResponse = await fetch(
+            `http://localhost:8080/ourlog/favorites/${currentUserId}/${postId}`,
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            }
+          );
+
+          if (likeStatusResponse.ok) {
+            const statusData = await likeStatusResponse.json();
+            userLiked = statusData === true; // API 응답 형태에 따라 조정 (boolean 또는 { favorited: boolean })
+          } else {
+            console.warn(
+              `사용자 좋아요 상태 불러오기 실패 (${likeStatusResponse.status})`
+            );
+          }
+        } catch (likeError) {
+          console.error("사용자 좋아요 상태 불러오기 오류:", likeError);
+        }
+      }
+
+      setPost({
+        ...postData,
+        liked: userLiked, // 좋아요 상태 추가
+        favoriteCnt: postData.favoriteCnt ?? 0, // 좋아요 카운트 확인
+      });
+      setIsFollowing(false); // TODO: 팔로우 상태도 API로 가져와야 함
+      setBidAmount(Number(postData?.tradeDTO?.highestBid || 0) + 1000);
       setLoading(false);
 
       if (
-        data.postDTO?.pictureDTOList &&
-        data.postDTO.pictureDTOList.length > 0
+        postData?.pictureDTOList &&
+        postData.pictureDTOList.length > 0
       ) {
-        const thumbnail = data.postDTO.pictureDTOList.find(
-          (pic: PictureDTO) => pic.uuid === data.postDTO.fileName
+        const thumbnail = postData.pictureDTOList.find(
+          (pic: PictureDTO) => pic.uuid === postData.fileName
         );
         if (thumbnail) {
           setMainImagePicture(thumbnail);
         } else {
-          setMainImagePicture(data.postDTO.pictureDTOList[0]);
+          setMainImagePicture(postData.pictureDTOList[0]);
         }
       } else {
         setMainImagePicture(null);
       }
 
       // 경매 정보가 있고 종료 시간이 지났으면 상태 업데이트 요청
-      if (data.postDTO?.tradeDTO && data.postDTO.tradeDTO.lastBidTime) {
-        const endTime = new Date(data.postDTO.tradeDTO.lastBidTime).getTime();
+      if (postData?.tradeDTO && postData.tradeDTO.lastBidTime) {
+        const endTime = new Date(postData.tradeDTO.lastBidTime).getTime();
         const now = Date.now();
         // tradeStatus가 0(진행 중)이고, 종료 시간이 현재 시간보다 이전이면
         if (
-          (data.postDTO.tradeDTO.tradeStatus === 0 ||
-            data.postDTO.tradeDTO.tradeStatus === null) &&
+          (postData.tradeDTO.tradeStatus === 0 ||
+            postData.tradeDTO.tradeStatus === null) &&
           now >= endTime
         ) {
           console.log(
@@ -274,7 +309,7 @@ const ArtDetail = () => {
               endTime
             ).toLocaleString()})이 지났습니다. 상태 업데이트를 시도합니다.`
           );
-          updateAuctionStatus(data.postDTO.tradeDTO.tradeId, 1);
+          updateAuctionStatus(postData.tradeDTO.tradeId, 1);
         }
       }
     } catch (error) {
@@ -378,7 +413,7 @@ const ArtDetail = () => {
       // 'payment' 경로인 경우 로딩 상태 해제만
       setLoading(false);
     }
-  }, [id, navigate]); // id가 변경될 때마다 useEffect 실행
+  }, [id, navigate, currentUserId]); // currentUserId 변경 시에도 다시 불러오도록 의존성 추가
 
   useEffect(() => {
     if (post?.tradeDTO?.lastBidTime) {
@@ -411,7 +446,7 @@ const ArtDetail = () => {
     } else {
       setCountdown("경매 정보 없음");
     }
-  }, [post?.tradeDTO?.lastBidTime, post?.tradeDTO?.tradeStatus]);
+  }, [post?.tradeDTO?.lastBidTime, post?.tradeDTO?.tradeStatus, post?.tradeDTO?.tradeId]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -466,6 +501,79 @@ const ArtDetail = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // ✅ 좋아요 토글 함수 추가 (Optimistic Update 포함)
+  const handleLikeToggle = async () => {
+    if (currentUserId === null) {
+      alert("로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+    if (!post || post.postId === undefined || post.postId === null) {
+      console.error("작품 정보가 없어 좋아요 토글 불가");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    // Optimistic UI 업데이트
+    setPost((prevPost) => {
+      if (!prevPost) return null;
+      const newLiked = !(prevPost.liked ?? false);
+      const newFavoriteCnt = (prevPost.favoriteCnt ?? 0) + (newLiked ? 1 : -1);
+      return {
+        ...prevPost,
+        liked: newLiked,
+        favoriteCnt: newFavoriteCnt,
+      };
+    });
+
+    try {
+      const result = await fetch(`http://localhost:8080/ourlog/favorites/toggle`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: currentUserId,
+          postId: post.postId,
+        }),
+      });
+
+      if (!result.ok) throw new Error("서버 응답 오류");
+
+      const data = await result.json();
+
+      // 백엔드 응답으로 최종 상태 업데이트
+      if (post.postId !== undefined && post.postId !== null && typeof data.favoriteCount === "number") {
+        setPost((prevPost) => {
+          if (!prevPost || prevPost.postId !== post.postId) return prevPost;
+          return {
+            ...prevPost,
+            liked: data.favorited,
+            favoriteCnt: data.favoriteCount,
+          };
+        });
+      }
+
+    } catch (error) {
+      console.error(`좋아요 처리 실패: ${post.postId}`, error);
+
+      // 실패 시 optimistic rollback
+      setPost((prevPost) => {
+        if (!prevPost) return null;
+        const rolledBackLiked = !(prevPost.liked ?? false); // optimistic update 이전 상태
+        const rolledBackFavoriteCnt = (prevPost.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1); // optimistic update 이전 상태
+        return {
+          ...prevPost,
+          liked: rolledBackLiked,
+          favoriteCnt: rolledBackFavoriteCnt,
+        };
+      });
+      alert("좋아요 처리에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (loading) {
@@ -629,6 +737,15 @@ const ArtDetail = () => {
 
           <div className="art-title">
             <h2>{post.title || "제목 없음"}</h2>
+            {/* ✅ 좋아요 버튼 추가 */}
+            {currentUserId !== null && post?.postId !== undefined && post?.postId !== null && (
+              <button
+                className={`art-detail-like-button ${post.liked ? 'liked' : ''}`}
+                onClick={handleLikeToggle}
+              >
+                {post.liked ? '🧡' : '🤍'} {post.favoriteCnt ?? 0}
+              </button>
+            )}
             <p className="art-date">
               등록일:{" "}
               {post?.tradeDTO?.startBidTime

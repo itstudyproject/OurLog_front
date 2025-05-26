@@ -5,7 +5,6 @@ import { fetchProfile, UserProfileDTO } from "../hooks/profileApi";
 
 interface Post {
   postId: number;
-  imageUrl: string;
   title: string;
   artist: string;
   highestBid: string;
@@ -23,9 +22,14 @@ interface Post {
     thumbnailImagePath?: string;
     fileName?: string;
   }> | null;
+  boardNo?: number;
+  imageUrl?: string;
 }
 
 const baseUrl = "http://localhost:8080/ourlog";
+
+// ✅ 이미지 서빙을 위한 백엔드 베이스 URL 추가 (필요에 따라 수정하세요)
+const imageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 예시 경로, 실제 백엔드 경로에 맞게 수정 필요
 
 const WorkerPage: React.FC = () => {
   const { userId: paramUserId } = useParams<{ userId: string }>();
@@ -99,8 +103,32 @@ const WorkerPage: React.FC = () => {
 
         const posts: Post[] = await res.json();
 
+        // ✅ 추가: boardNo가 5인 게시글만 필터링
+        const artPosts = posts.filter(post => post.boardNo === 5);
+
+        // ✅ 각 게시글에 이미지 URL 추가 (resizedImagePath 우선)
+        const postsWithImageUrls = artPosts.map(post => {
+          const imagePath = post.pictureDTOList && post.pictureDTOList.length > 0
+            ? post.pictureDTOList[0].resizedImagePath ||
+              post.pictureDTOList[0].thumbnailImagePath ||
+              post.pictureDTOList[0].originImagePath
+            : null; // 이미지 경로가 없는 경우 null
+
+          // 백엔드 이미지 서빙 URL과 조합하여 최종 imageUrl 생성
+          const imageUrl = imagePath ? `${imageBaseUrl}${imagePath}` : "/default-image.png";
+
+          // 백엔드 응답에서 artist, highestBid, link, isArtist 필드를 확인하고 매핑해야 합니다.
+          // 현재 Post 인터페이스에 정의되어 있지만, 백엔드 응답에 포함되어 있지 않다면 표시되지 않습니다.
+          // 백엔드 응답 구조에 맞게 매핑 또는 제거가 필요합니다.
+          return {
+            ...post,
+            imageUrl,
+          };
+        });
+
         const postsWithLikes = await Promise.all(
-          posts.map(async (post) => {
+          // 필터링된 artPosts 배열을 사용합니다.
+          postsWithImageUrls.map(async (post) => {
             try {
               const likedRes = await fetch(
                 `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
@@ -329,7 +357,7 @@ const WorkerPage: React.FC = () => {
                 className="card-image"
               />
               <button
-                className="like-button"
+                className={`worker-like-button ${card.liked ? 'liked' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleLikeToggle(card.postId);
