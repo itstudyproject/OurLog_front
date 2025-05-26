@@ -21,6 +21,7 @@ import RankingPage from "./pages/Ranking/RankingPage";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
 import TermsCondition from "./pages/TermsCondition";
+import SocialLoginHandler from './components/SocialLoginHandler';
 
 function App() {
   return (
@@ -46,7 +47,6 @@ function App() {
 
         <Route path="mypage/*" element={<MyPage />} />
         <Route path="worker/:userId" element={<WorkerPage />} />
-        {/*<Route path="worker" element={<WorkerPage />} />*/}
 
         <Route path="post">
           <Route index element={<PostList />} />
@@ -60,18 +60,11 @@ function App() {
         </Route>
       </Route>
 
-      {/* 별도 레이아웃을 사용하는 페이지들 */}
       <Route path="/login" element={<LoginPage />} />
-
-      <Route path="/board/:boardId" element={<PostList />} />
-      <Route path="/chat" element={<ChatPage />} />
-
-      <Route path="post">
-        <Route index element={<PostList />} />
-        <Route path="register" element={<PostRegister />} />
-      </Route>
+      <Route path="/social-login-handler" element={<SocialLoginHandler />} />
 
       <Route path="/register" element={<RegisterPage />} />
+
     </Routes>
   );
 }

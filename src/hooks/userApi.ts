@@ -1,3 +1,4 @@
+import { tr } from "date-fns/locale";
 import { getAuthHeaders } from "../utils/auth";
 
 // 사용자 등록 시 필요한 데이터 타입
