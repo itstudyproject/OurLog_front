@@ -12,19 +12,91 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // URL에서 소셜 로그인 토큰 및 이메일 확인 로직 제거
-    // const params = new URLSearchParams(location.search);
-    // const socialToken = params.get("token");
-    // const socialEmail = params.get("email");
+  // 프로필 정보를 가져오는 함수 (userId 기준)
+  const fetchProfile = async (userId: number, token: string): Promise<any | null> => {
+    try {
+      const profileResponse = await fetch(`http://localhost:8080/ourlog/profile/get/by-user?userId=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
+        }
+      });
 
-    // 소셜 로그인 처리 로직 제거
-    // if (socialToken && socialEmail) {
-    //   console.log("소셜 로그인 토큰 감지:", socialToken.substring(0, 20) + '...');
-    //   console.log("소셜 로그인 이메일 감지:", socialEmail);
-    //   navigate(location.pathname, { replace: true });
-    //   fetchUserDataAndLogin(socialToken, socialEmail);
-    // } else {
+      if (!profileResponse.ok) {
+         // 프로필이 없는 경우 (404 Not Found 등) null 반환
+         if (profileResponse.status === 404) {
+            console.log(`Profile not found for userId: ${userId}`);
+            return null;
+         }
+         const errorBody = await profileResponse.text();
+         console.error("Failed to fetch profile:", profileResponse.status, errorBody);
+         throw new Error(`Failed to fetch profile: ${profileResponse.status}`);
+      }
+
+      const profileInfo = await profileResponse.json();
+      console.log("Fetched profile:", profileInfo);
+      return profileInfo;
+
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      throw error; // 오류 발생 시 throw
+    }
+  };
+
+  // 새 프로필을 생성하는 함수
+  const createProfile = async (userId: number, email: string, token: string): Promise<number | null> => {
+     try {
+        const createResponse = await fetch(`http://localhost:8080/ourlog/profile/create`, {
+          method: "POST",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-Request-ID': crypto.randomUUID(),
+          },
+          body: JSON.stringify({
+            userId: userId,
+            profileName: email.split('@')[0], // 이메일 앞 부분을 기본 프로필 이름으로 사용
+            profileImageUrl: "/images/mypage.png" // 기본 이미지 사용
+          })
+        });
+
+        if (!createResponse.ok) {
+           const errorBody = await createResponse.text();
+           console.error("Failed to create profile:", createResponse.status, errorBody);
+           throw new Error(`Failed to create profile: ${createResponse.status}`);
+        }
+
+        const newProfile = await createResponse.json();
+        console.log("Created new profile:", newProfile);
+        return newProfile.profileId; // 새로 생성된 프로필 ID 반환
+
+     } catch (error) {
+        console.error("Error creating profile:", error);
+        throw error; // 오류 발생 시 throw
+     }
+  };
+
+  const checkAndCreateProfile = async (userId: number, email: string, token: string): Promise<number | null> => {
+      try {
+          // 1. 프로필 조회
+          const existingProfile = await fetchProfile(userId, token);
+
+          if (existingProfile) {
+              // 프로필이 존재하면 해당 ID 반환
+              return existingProfile.profileId;
+          } else {
+              // 프로필이 없으면 생성
+              console.log("Profile does not exist. Creating new profile...");
+              return await createProfile(userId, email, token);
+          }
+      } catch (error) {
+          console.error("Error in checkAndCreateProfile:", error);
+          return null; // 오류 발생 시 null 반환
+      }
+  };
+
+  useEffect(() => {
       // 일반 로그인 토큰 확인 또는 자동 로그인 처리 (기존 로직)
       const token = localStorage.getItem("token");
 
@@ -160,16 +232,24 @@ const LoginPage: React.FC = () => {
       const userInfo = await userResponse.json();
       console.log("사용자 정보:", userInfo);
 
-      // 4. 사용자 프로필 확인 및 없으면 생성 (일반 로그인 후 프로필 생성 로직은 LoginPage에 유지)
+      // 4. 사용자 프로필 확인 및 없으면 생성 (추가된 로직)
       let profileId: number | null = null;
-      // fetchProfile, createProfile 함수는 필요에 따라 LoginPage에 유지하거나 별도 유틸로 분리 가능
-      // 현재는 fetchUserDataAndLogin에서만 호출되므로 SocialLoginHandler로 이동하는 것이 좋음
-      // 만약 일반 로그인 후에도 프로필 생성/확인 로직이 필요하다면 여기에 유지해야 함.
-      // 현재 구조상 fetchUserDataAndLogin만 이 함수들을 호출하므로 SocialLoginHandler로 이동하는 것이 맞습니다.
-      // 아래 checkAndCreateProfile 호출 부분도 제거해야 합니다.
-      // if (userInfo.userId) {
-      //   profileId = await checkAndCreateProfile(userInfo.userId, userInfo);
-      // }
+      if (userInfo.userId) {
+        // checkAndCreateProfile 함수 호출 시 email과 token 전달
+        profileId = await checkAndCreateProfile(userInfo.userId, email, token);
+        if (profileId === null) {
+             setError("프로필 정보를 처리하는 중 오류가 발생했습니다.");
+             setToken(""); // 토큰 삭제
+             localStorage.removeItem("user"); // 사용자 정보 삭제
+             return; // 오류 발생 시 중단
+        }
+      } else {
+           setError("사용자 ID를 가져오는데 실패했습니다.");
+           setToken(""); // 토큰 삭제
+           localStorage.removeItem("user"); // 사용자 정보 삭제
+           return; // 오류 발생 시 중단
+      }
+
 
        // 5. 사용자 정보 저장 및 로그인 처리 (일반 로그인용 handleLoginSuccess 로직)
        const userData = {
@@ -177,7 +257,7 @@ const LoginPage: React.FC = () => {
         userId: userInfo.userId,
         token: token,
         profileImage: userInfo.profileImage || "/images/mypage.png",
-        // profileId: userData.profileId // checkAndCreateProfile 호출 제거 시 이 부분도 수정
+        profileId: profileId // 프로필 ID 저장
       };
 
       // 일반 로그인 성공 처리 로직 (handleLoginSuccess 로직 복사 또는 별도 함수)
@@ -196,7 +276,7 @@ const LoginPage: React.FC = () => {
           email: userData.email,
           userId: userData.userId,
           profileImage: userData.profileImage || "/images/mypage.png",
-          // profileId: userData.profileId // 프로필 ID가 필요하다면 여기도 수정
+          profileId: profileId // 프로필 ID 저장
         })
       );
 
