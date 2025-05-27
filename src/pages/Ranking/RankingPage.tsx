@@ -1,27 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RankingPage.css";
-
-type Artwork = {
-  id: number;
-  title: string;
-  author: string;
-  imageSrc: string;
-  avatar: string;
-  views: number;
-  followers: number;
-  downloads: number;
-  originImagePath?: string;
-  resizedImagePath?: string;
-  thumbnailImagePath?: string;
-  fileName?: string;
-  pictureDTOList?: Array<{
-    originImagePath?: string;
-    resizedImagePath?: string;
-    thumbnailImagePath?: string;
-    fileName?: string;
-  }> | null;
-};
+import { getAuthHeaders } from "../../utils/auth";
+import { PostDTO } from "../../types/postTypes";
 
 type RankingKey = "views" | "followers" | "downloads";
 
@@ -40,75 +21,106 @@ const rankingTypes = [
 
 const API_URL = "http://localhost:8080/ourlog/ranking";
 
-function formatNumber(num: number): string {
-  if (num >= 1_000_000)
-    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return num.toString();
+function formatNumber(num: number | null | undefined): string {
+  if (num === null || num === undefined || isNaN(Number(num))) return "0";
+  const numberValue = Number(num);
+  if (numberValue >= 1_000_000)
+    return (numberValue / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (numberValue >= 1_000) return (numberValue / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return numberValue.toString();
 }
 
 const RankingPage: React.FC = () => {
   const navigate = useNavigate();
   const [rankingType, setRankingType] = useState<RankingKey>("views");
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [artworks, setArtworks] = useState<PostDTO[]>([]);
   const [visibleCount, setVisibleCount] = useState(12);
   const loader = useRef(null);
 
   const fetchRankings = useCallback(async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-      const res = await fetch(`${API_URL}?type=${rankingType}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const contentType = res.headers.get("Content-Type") || "";
-      const raw = await res.text();
-
-      if (!res.ok || !contentType.includes("application/json")) {
-        console.error("🚨 JSON 응답이 아님:", res.status, raw);
+      const headers = getAuthHeaders();
+      if (!headers) {
+        console.warn("인증 헤더를 가져올 수 없습니다.");
+        setArtworks([]);
         return;
       }
 
-      const data = JSON.parse(raw);
-      const mapped: Artwork[] = data.map((item: any) => {
-        let artworkImageSrc = "/default-image.jpg";
-
-        const picData = (item.pictureDTOList && item.pictureDTOList.length > 0) ? item.pictureDTOList[0] : item;
-
-        if (picData.resizedImagePath) {
-          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
-        } else if (picData.thumbnailImagePath) {
-          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
-        } else if (picData.originImagePath) {
-          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
-        } else if (picData.fileName) {
-          artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
-        }
-
-        return {
-          id: item.postId,
-          title: item.title,
-          author: item.nickname || "익명",
-          avatar: item.profileImage
-              ? `http://localhost:8080/ourlog/picture/display/${item.profileImage}`
-              : "/images/default-avatar.png",
-          imageSrc: artworkImageSrc,
-          views: item.views,
-          followers: item.followers,
-          downloads: item.downloads,
-          originImagePath: item.originImagePath,
-          resizedImagePath: item.resizedImagePath,
-          thumbnailImagePath: item.thumbnailImagePath,
-          fileName: item.fileName,
-          pictureDTOList: item.pictureDTOList
-        };
+      const res = await fetch(`${API_URL}?type=${rankingType}`, {
+        method: 'GET',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
       });
 
-      setArtworks(mapped);
+      if (!res.ok) {
+        console.error(`랭킹 데이터 요청 실패: ${res.status}`);
+        if (res.status === 403) {
+          console.warn("랭킹 데이터를 불러올 권한이 없습니다.");
+          setArtworks([]);
+          return;
+        }
+        setArtworks([]);
+        return;
+      }
+
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        console.error("🚨 랭킹 데이터 형식이 올바르지 않습니다. 배열이 필요합니다.");
+        setArtworks([]);
+        return;
+      }
+
+      const processedData: PostDTO[] = data.map((item: any) => ({
+        postId: item.postId,
+        userId: item.userId,
+        title: item.title,
+        content: item.content,
+        nickname: item.nickname,
+        fileName: item.fileName,
+        boardNo: item.boardNo,
+        views: item.views,
+        tag: item.tag,
+        thumbnailImagePath: item.thumbnailImagePath,
+        resizedImagePath: item.resizedImagePath,
+        originImagePath: item.originImagePath,
+        followers: item.followers,
+        downloads: item.downloads,
+        favoriteCnt: item.favoriteCnt,
+        tradeDTO: item.tradeDTO,
+        pictureDTOList: item.pictureDTOList,
+        profileImage: item.profileImage,
+        replyCnt: item.replyCnt,
+        regDate: item.regDate,
+        modDate: item.modDate,
+      }));
+
+      if (rankingType === "followers") {
+        const uniqueData = processedData.reduce((acc: PostDTO[], current: PostDTO) => {
+          const exists = acc.find(item => item.userId === current.userId);
+          if (!exists) {
+            acc.push(current);
+          }
+          return acc;
+        }, []);
+        
+        uniqueData.sort((a, b) => (b.followers || 0) - (a.followers || 0));
+        setArtworks(uniqueData);
+      } else {
+        if (rankingType === 'views') {
+          processedData.sort((a, b) => (b.views || 0) - (a.views || 0));
+        } else if (rankingType === 'downloads') {
+          processedData.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+        }
+        setArtworks(processedData);
+      }
+      
+      setVisibleCount(12);
     } catch (error) {
       console.error("🥶 랭킹 데이터 요청 실패:", error);
+      setArtworks([]);
     }
   }, [rankingType]);
 
@@ -136,6 +148,60 @@ const RankingPage: React.FC = () => {
   const podium = artworks.slice(0, 3);
   const rest = artworks.slice(3, visibleCount);
 
+  const getImageUrl = (item: PostDTO, isArtistRanking: boolean): string => {
+    let imageUrl = "/default-image.jpg";
+    const BASE_URL = "http://localhost:8080/ourlog/picture/display";
+
+    if (isArtistRanking) {
+      if (item.profileImage) {
+        return `${BASE_URL}/${item.profileImage}`;
+      }
+      if (item.resizedImagePath) {
+        return `${BASE_URL}/${item.resizedImagePath}`;
+      } else if (item.thumbnailImagePath) {
+        return `${BASE_URL}/${item.thumbnailImagePath}`;
+      } else if (item.originImagePath && (typeof item.originImagePath === 'string' ? item.originImagePath !== '' : item.originImagePath.length > 0)) {
+        const path = typeof item.originImagePath === 'string' ? item.originImagePath : item.originImagePath[0];
+        if (path) return `${BASE_URL}/${path}`;
+      } else if (item.fileName) {
+        return `${BASE_URL}/${item.fileName}`;
+      } else if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+        const picData = item.pictureDTOList[0];
+        if (picData.resizedImagePath) {
+          return `${BASE_URL}/${picData.resizedImagePath}`;
+        } else if (picData.thumbnailImagePath) {
+          return `${BASE_URL}/${picData.thumbnailImagePath}`;
+        } else if (picData.originImagePath) {
+          return `${BASE_URL}/${picData.originImagePath}`;
+        }
+      }
+    } else {
+      if (item.resizedImagePath) {
+        return `${BASE_URL}/${item.resizedImagePath}`;
+      } else if (item.thumbnailImagePath) {
+        return `${BASE_URL}/${item.thumbnailImagePath}`;
+      } else if (item.originImagePath && (typeof item.originImagePath === 'string' ? item.originImagePath !== '' : item.originImagePath.length > 0)) {
+        const path = typeof item.originImagePath === 'string' ? item.originImagePath : item.originImagePath[0];
+        if (path) return `${BASE_URL}/${path}`;
+      } else if (item.fileName) {
+        return `${BASE_URL}/${item.fileName}`;
+      } else if (item.pictureDTOList && item.pictureDTOList.length > 0) {
+        const picData = item.pictureDTOList[0];
+        if (picData.resizedImagePath) {
+          return `${BASE_URL}/${picData.resizedImagePath}`;
+        } else if (picData.thumbnailImagePath) {
+          return `${BASE_URL}/${picData.thumbnailImagePath}`;
+        } else if (picData.originImagePath) {
+          return `${BASE_URL}/${picData.originImagePath}`;
+        }
+      } else if (item.profileImage) {
+        // return `${BASE_URL}/${item.profileImage}`;
+      }
+    }
+
+    return imageUrl;
+  };
+
   return (
     <div className="art-list-container">
       <div className="ranking-banner">
@@ -156,19 +222,18 @@ const RankingPage: React.FC = () => {
         ))}
       </div>
 
-      {/* 🥇 Top 3 */}
       <div className="ranking-podium-row">
         {podiumOrder.map((idx) =>
           podium[idx] ? (
             <div
-              key={idx}
+              key={`podium-${rankingType}-${idx}-${rankingType === 'followers' ? podium[idx].userId : podium[idx].postId}`}
               className={`ranking-podium-card ${
                 idx === 0 ? "first" : idx === 1 ? "second" : "third"
               }`}
             >
               <div
                 className="ranking-podium-image-card"
-                onClick={() => navigate(`/Art/${podium[idx].id}`)}
+                onClick={() => navigate(rankingType === 'followers' ? `/worker/${podium[idx].userId}` : `/Art/${podium[idx].postId}`)}
               >
                 <div
                   className="ranking-badge"
@@ -180,27 +245,45 @@ const RankingPage: React.FC = () => {
                   {idx + 1}
                 </div>
                 <img
-                  src={podium[idx].imageSrc}
-                  alt={podium[idx].title}
+                  src={getImageUrl(podium[idx], rankingType === 'followers')}
+                  alt={rankingType === 'followers' ? `${podium[idx].nickname} 대표 이미지` : podium[idx].title}
                   className="podium-image"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/default-image.jpg";
+                  }}
                 />
+                {rankingType === 'followers' && podium[idx].profileImage && (
+                  <img
+                    src={`http://localhost:8080/ourlog/picture/display/${podium[idx].profileImage}`}
+                    alt={`${podium[idx].nickname} 아바타`}
+                    className="podium-avatar"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/images/default-avatar.png";
+                    }}
+                  />
+                )}
                 <div
                   className="ranking-author-info large"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/profile/${podium[idx].author}`);
+                    navigate(rankingType === 'followers' ? `/worker/${podium[idx].userId}` : `/profile/${podium[idx].nickname}`);
                   }}
                 >
                   <span className="ranking-list-author">
-                    {podium[idx].author}
+                    {rankingType === 'followers' ? podium[idx].nickname : podium[idx].title}
                   </span>
                   <span className="ranking-list-meta">
-                    {rankingType === "views" && `👁️ ${podium[idx].views}`}
-                    {rankingType === "followers" &&
-                      `👥 ${podium[idx].followers}`}
-                    {rankingType === "downloads" &&
-                      `⬇️ ${podium[idx].downloads}`}
+                    {rankingType === "views" && formatNumber(podium[idx].views) !== "0" && `👁️ ${formatNumber(podium[idx].views)}`}
+                    {rankingType === "followers" && formatNumber(podium[idx].followers) !== "0" &&
+                      `👥 ${formatNumber(podium[idx].followers)}`}
+                    {rankingType === "downloads" && formatNumber(podium[idx].downloads) !== "0" &&
+                      `⬇️ ${formatNumber(podium[idx].downloads)}`}
                   </span>
+                  {rankingType === 'followers' && podium[idx].title && (
+                    <span className="ranking-list-author-sub">{podium[idx].title}</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -208,28 +291,49 @@ const RankingPage: React.FC = () => {
         )}
       </div>
 
-      {/* 🔢 나머지 리스트 */}
       <div className="ranking-list-row">
         {rest.map((art, idx) => (
-          <div key={art.id} className="ranking-list-card">
+          <div 
+            key={`rest-${rankingType}-${idx}-${rankingType === 'followers' ? art.userId : art.postId}`} 
+            className="ranking-list-card"
+          >
             <div className="ranking-list-badge">{idx + 4}</div>
             <img
-              src={art.imageSrc}
-              alt={art.title}
+              src={getImageUrl(art, rankingType === 'followers')}
+              alt={rankingType === 'followers' ? `${art.nickname} 대표 이미지` : art.title}
               className="ranking-list-image-full"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/default-image.jpg";
+              }}
+              onClick={() => navigate(rankingType === 'followers' ? `/worker/${art.userId}` : `/Art/${art.postId}`)}
             />
+            {rankingType === 'followers' && art.profileImage && (
+              <img
+                src={`http://localhost:8080/ourlog/picture/display/${art.profileImage}`}
+                alt={`${art.nickname} 아바타`}
+                className="ranking-list-avatar"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/default-avatar.png";
+                }}
+              />
+            )}
             <div
               className="ranking-author-info small"
-              onClick={() => navigate(`/profile/${art.author}`)}
+              onClick={() => navigate(rankingType === 'followers' ? `/worker/${art.userId}` : `/profile/${art.nickname}`)}
             >
-              <span className="ranking-list-author">{art.author}</span>
+              <span className="ranking-list-author">{rankingType === 'followers' ? art.nickname : art.title}</span>
               <span className="ranking-list-meta right-align">
-                {rankingType === "views" && `👁️ ${formatNumber(art.views)}`}
-                {rankingType === "followers" &&
+                {rankingType === "views" && formatNumber(art.views) !== "0" && `👁️ ${formatNumber(art.views)}`}
+                {rankingType === "followers" && formatNumber(art.followers) !== "0" &&
                   `👥 ${formatNumber(art.followers)}`}
-                {rankingType === "downloads" &&
+                {rankingType === "downloads" && formatNumber(art.downloads) !== "0" &&
                   `⬇️ ${formatNumber(art.downloads)}`}
               </span>
+              {rankingType === 'followers' && art.title && (
+                <span className="ranking-list-author-sub">{art.title}</span>
+              )}
             </div>
           </div>
         ))}

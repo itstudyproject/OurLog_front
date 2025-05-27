@@ -46,7 +46,18 @@ const ArtworkSlider: React.FC = () => {
   useEffect(() => {
     const fetchArtworks = async () => {
       try {
-        const res = await fetch(VIEWS_API_URL);
+        const token = localStorage.getItem('token'); // 토큰 가져오기
+        const res = await fetch(VIEWS_API_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const data = await res.json();
         const mapped = data.map((item: any) => ({
           title: item.title,
@@ -90,12 +101,24 @@ const ArtworkSlider: React.FC = () => {
         setArtworkIndexes(getRandomIndexes(mapped.length, 3));
       } catch (e) {
         console.error("인기 작품 불러오기 실패", e);
+        setArtworks([]); // 에러 시 빈 배열로 설정
       }
     };
 
     const fetchArtists = async () => {
       try {
-        const res = await fetch(FOLLOWERS_API_URL);
+        const token = localStorage.getItem('token'); // 토큰 가져오기
+        const res = await fetch(FOLLOWERS_API_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const data = await res.json();
         const mapped = data.map((item: any) => ({
           title: item.title || "대표작 없음",
@@ -139,6 +162,7 @@ const ArtworkSlider: React.FC = () => {
         setArtistIndexes(getRandomIndexes(mapped.length, 3));
       } catch (e) {
         console.error("주요 아티스트 불러오기 실패", e);
+        setArtists([]); // 에러 시 빈 배열로 설정
       }
     };
 
