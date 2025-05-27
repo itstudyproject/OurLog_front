@@ -127,8 +127,6 @@ const LoginPage: React.FC = () => {
            setError("소셜 로그인 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         } else if (errorMessage === "missing_social_login_params") {
            setError("소셜 로그인 정보가 부족합니다. 다시 시도해주세요.");
-        } else {
-           setError("로그인 처리 중 알 수 없는 오류가 발생했습니다.");
         }
         // 오류 메시지 표시 후 URL에서 오류 파라미터 제거
          navigate(location.pathname, { replace: true });
