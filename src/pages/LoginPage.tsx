@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
   // 프로필 정보를 가져오는 함수 (userId 기준)
   const fetchProfile = async (userId: number, token: string): Promise<any | null> => {
     try {
-      const profileResponse = await fetch(`http://localhost:8080/ourlog/profile/get/by-user?userId=${userId}`, {
+      const profileResponse = await fetch(`http://localhost:8080/ourlog/profile/get/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
