@@ -11,7 +11,6 @@ interface ArtWork {
   thumbnail?: string;
   contents?: string;
   highestBid: number;
-  likes: number;
   createdAt: string;
   imageSrc: string;
   userId?: string;
@@ -135,7 +134,6 @@ const SearchPage = () => {
               artistProfileImg: post.artistProfileImg,
               contents: post.contents,
               highestBid: item?.tradeDTO?.highestBid || 0,
-              likes: item?.favoriteCnt || 0,
               createdAt: post.createdAt,
               imageSrc: item ? getImageSrcFromItem(item) : post.thumbnail || "",
               userId: post.userId,
@@ -236,7 +234,6 @@ const SearchPage = () => {
                     {art.imageSrc && art.imageSrc.trim() !== "" && (
                       <img src={art.imageSrc} alt={art.title} />
                     )}
-                    <div className="artwork-likes">🤍 {art.likes}</div>
                   </div>
                   <div className="artwork-info">
                     <h3>{art.title}</h3>
