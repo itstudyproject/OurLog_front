@@ -500,7 +500,7 @@ const MyPage: React.FC = () => {
           className="mp-profile-image"
         >
           <img
-            src={profile?.thumbnailImagePath || "/images/mypage/default.png"}
+            src={profile?.thumbnailImagePath || "/images/mypage.png"}
             alt="프로필"
           />
         </div>

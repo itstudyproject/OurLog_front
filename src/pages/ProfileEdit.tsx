@@ -25,7 +25,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
     introduction: profile?.introduction || "",
     originImagePath: profile?.originImagePath || "",
     thumbnailImagePath:
-      profile?.thumbnailImagePath || "/images/Logo.png",
+      profile?.thumbnailImagePath || "/images/mypage.png",
       // "현대 미술과 사진을 좋아합니다. 특히 추상화에 관심이 많습니다.",
       // profilePicture: profile?.thumbnailImagePath || "/images/Logo.png",
     });
