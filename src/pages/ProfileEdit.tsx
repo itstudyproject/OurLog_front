@@ -162,7 +162,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
               <input
                 type="text"
                 id="nickName"
-                name="nickName"
+                name="nickname"
                 value={profileData.nickname}
                 onChange={handleInputChange}
                 className="form-input"
