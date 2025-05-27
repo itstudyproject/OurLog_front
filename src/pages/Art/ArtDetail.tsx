@@ -7,9 +7,39 @@ import "../../styles/ArtDetail.css";
 import { PostDTO } from "../../types/postTypes";
 import { PictureDTO } from "../../types/pictureTypes";
 
+// ✅ 이미지 서빙을 위한 백엔드 베이스 URL 추가
+const imageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 예시 경로, 실제 백엔드 경로에 맞게 수정 필요
+
 interface PostDetailWithLike extends PostDTO {
   liked?: boolean;
 }
+
+// ✅ 조회수 증가 함수를 fetchArtworkDetail 밖으로 이동
+const increaseArtworkViewCount = async (postId: string) => {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/ourlog/post/increaseViews/${postId}`,
+      {
+        method: "POST",
+        headers: {
+          ...getAuthHeaders(),
+        },
+      }
+    );
+
+    if (response.status === 403) {
+      console.warn("작품 조회수 증가 실패: 인증 필요");
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error("작품 조회수 증가 실패");
+    }
+    console.log("작품 조회수 증가 성공");
+  } catch (error) {
+    console.error("작품 조회수 증가 실패:", error);
+  }
+};
 
 const ArtDetail = () => {
   const { id } = useParams<{ id?: string }>();
@@ -21,6 +51,9 @@ const ArtDetail = () => {
   const [showShareOptions, setShowShareOptions] = useState<boolean>(false);
   const shareBtnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  // ✅ 특정 postId에 대한 조회수 증가 API 호출 여부를 추적하는 ref
+  const isViewCountIncreasedRef = useRef<{ [key: string]: boolean }>({});
 
   const [countdown, setCountdown] = useState<string>("");
 
@@ -333,7 +366,7 @@ const ArtDetail = () => {
       if (currentUserId !== null && postData?.userId && currentUserId !== postData.userId) {
         try {
           const followStatusResponse = await fetch(
-            `http://localhost:8080/ourlog/followers/isFollowing/${currentUserId}/${postData.userId}`,
+            `http://localhost:8080/ourlog/followers/status/isFollowing/${currentUserId}/${postData.userId}`,
             {
               method: "GET",
               headers: getAuthHeaders(),
@@ -477,39 +510,18 @@ const ArtDetail = () => {
     }
   };
 
-  // 조회수 증가 함수 추가
-  const increaseArtworkViewCount = async (postId: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/ourlog/post/increaseViews/${postId}`,
-        {
-          method: "POST",
-          headers: {
-            ...getAuthHeaders(),
-          },
-        }
-      );
-
-      if (response.status === 403) {
-        console.warn("작품 조회수 증가 실패: 인증 필요");
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("작품 조회수 증가 실패");
-      }
-      console.log("작품 조회수 증가 성공");
-    } catch (error) {
-      console.error("작품 조회수 증가 실패:", error);
-    }
-  };
-
+  // ✅ useEffect에서 increaseArtworkViewCount와 fetchArtworkDetail을 별도로 호출하도록 수정
   useEffect(() => {
     if (id && !isNaN(Number(id))) {
-      const postId = id; // id를 postId로 사용
-      // 조회수 증가 API 호출
-      increaseArtworkViewCount(postId);
-      // 작품 상세 정보 불러오기
+      const postId = id;
+
+      // ✅ 해당 postId에 대해 조회수 증가 API가 아직 호출되지 않았다면 호출
+      if (!isViewCountIncreasedRef.current[postId]) {
+        increaseArtworkViewCount(postId);
+        isViewCountIncreasedRef.current[postId] = true; // 호출했음을 기록
+      }
+
+      // 작품 상세 정보 불러오기 (이것은 매번 호출될 수 있음)
       fetchArtworkDetail(postId);
     } else if (id !== "payment") {
       console.warn(
@@ -774,8 +786,13 @@ const ArtDetail = () => {
             >
               {post.profileImage ? (
                 <img
-                  src={post.profileImage}
+                  src={
+                    post.profileImage.startsWith('/ourlog')
+                      ? `http://localhost:8080${post.profileImage}`
+                      : `${imageBaseUrl}${post.profileImage}`
+                  }
                   alt={`${post.nickname || "알 수 없는 작가"} 프로필`}
+                  className="artist-profile-image"
                 />
               ) : (
                 <div className="default-avatar">👤</div>

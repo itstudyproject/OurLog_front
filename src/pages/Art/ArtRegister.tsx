@@ -803,6 +803,7 @@ const ArtRegister = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  onClick={(e) => e.stopPropagation()}
                   className="hidden"
                   id="artwork-image-main"
                   multiple
@@ -866,6 +867,7 @@ const ArtRegister = () => {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  onClick={(e) => e.stopPropagation()}
                   className="hidden"
                   id="artwork-image-additional"
                   multiple
