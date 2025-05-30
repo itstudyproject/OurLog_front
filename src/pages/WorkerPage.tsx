@@ -77,8 +77,6 @@ const WorkerPage: React.FC = () => {
           if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
           if (typeof data.followingCnt === "number")
             setFollowingCnt(data.followingCnt);
-          if (typeof data.isFollowing === "boolean")
-            setIsFollowing(data.isFollowing);
         } else {
           console.error("프로필 데이터 에러:", data);
           setProfile(null);
@@ -90,22 +88,32 @@ const WorkerPage: React.FC = () => {
       });
 
     // 팔로우 상태 확인
-    if (!isNaN(loggedInUserId) && loggedInUserId !== userId) {
-      fetch(`${baseUrl}/followers/status/isFollowing/${loggedInUserId}/${userId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setIsFollowing(data);
-        })
-        .catch((err) => {
-          console.error("팔로우 상태 확인 실패:", err);
-        });
-    }
+    const checkFollowingStatus = async () => {
+      if (!isNaN(loggedInUserId) && loggedInUserId !== userId) {
+        try {
+          const res = await fetch(`${baseUrl}/followers/status/isFollowing/${loggedInUserId}/${userId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setIsFollowing(data);
+          } else {
+            console.warn(`❌ 팔로우 상태 확인 실패 (${res.status})`);
+            setIsFollowing(false);
+          }
+        } catch (err) {
+          console.error("❌ 팔로우 상태 확인 실패:", err);
+          setIsFollowing(false);
+        }
+      } else {
+        setIsFollowing(false);
+      }
+    };
+    checkFollowingStatus();
 
     // 게시글과 좋아요 정보 가져오기
     const fetchPostsAndLikes = async () => {
@@ -120,24 +128,17 @@ const WorkerPage: React.FC = () => {
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
         const posts: Post[] = await res.json();
-
-        // ✅ 추가: boardNo가 5인 게시글만 필터링
         const artPosts = posts.filter(post => post.boardNo === 5);
 
-        // ✅ 각 게시글에 이미지 URL 추가 (resizedImagePath 우선)
         const postsWithImageUrls = artPosts.map(post => {
           const imagePath = post.pictureDTOList && post.pictureDTOList.length > 0
             ? post.pictureDTOList[0].resizedImagePath ||
               post.pictureDTOList[0].thumbnailImagePath ||
               post.pictureDTOList[0].originImagePath
-            : null; // 이미지 경로가 없는 경우 null
+            : null;
 
-          // 백엔드 이미지 서빙 URL과 조합하여 최종 imageUrl 생성
           const imageUrl = imagePath ? `${imageBaseUrl}${imagePath}` : "/default-image.png";
 
-          // 백엔드 응답에서 artist, highestBid, link, isArtist 필드를 확인하고 매핑해야 합니다.
-          // 현재 Post 인터페이스에 정의되어 있지만, 백엔드 응답에 포함되어 있지 않다면 표시되지 않습니다.
-          // 백엔드 응답 구조에 맞게 매핑 또는 제거가 필요합니다.
           return {
             ...post,
             imageUrl,
@@ -145,8 +146,11 @@ const WorkerPage: React.FC = () => {
         });
 
         const postsWithLikes = await Promise.all(
-          // 필터링된 artPosts 배열을 사용합니다.
           postsWithImageUrls.map(async (post) => {
+            if (isNaN(loggedInUserId) || !post.postId) {
+              return { ...post, liked: false, favoriteCnt: 0 };
+            }
+
             try {
               const likedRes = await fetch(
                 `${baseUrl}/favorites/${loggedInUserId}/${post.postId}`,
@@ -207,6 +211,9 @@ const WorkerPage: React.FC = () => {
       loggedInUserId === userId
     ) {
       console.warn("🔴 팔로우 조건 미충족", { loggedInUserId, userId });
+      if (isNaN(loggedInUserId) || loggedInUserId === 0) {
+        alert("팔로우 기능을 사용하려면 로그인이 필요합니다.");
+      }
       return;
     }
 
@@ -228,16 +235,24 @@ const WorkerPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) throw new Error("팔로우 요청 실패");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`❌ 팔로우 요청 실패 (${res.status}):`, errorText);
+        setIsFollowing(!isNowFollowing);
+        setFollowCnt((prev) => prev + (isNowFollowing ? -1 : 1));
+        alert(`팔로우 요청 실패: ${errorText || res.statusText}`);
+        throw new Error(`팔로우 요청 실패 (${res.status})`);
+      }
 
       const data = await res.json();
       if (typeof data.followCnt === "number") setFollowCnt(data.followCnt);
       if (typeof data.followingCnt === "number")
         setFollowingCnt(data.followingCnt);
+
+      console.log(isNowFollowing ? "팔로우 성공" : "팔로우 취소 성공", data);
+
     } catch (err) {
       console.error("❌ 팔로우 토글 실패:", err);
-      setIsFollowing(!isNowFollowing);
-      setFollowCnt((prev) => prev + (isNowFollowing ? -1 : 1));
     }
   };
 
@@ -249,11 +264,15 @@ const WorkerPage: React.FC = () => {
     navigate(`/Art/${id}`);
   };
 
-  // ✅ Optimistic Update 적용한 좋아요 토글 함수
   const handleLikeToggle = async (postId: number) => {
+    if (isNaN(loggedInUserId) || loggedInUserId === 0) {
+      alert("좋아요 기능을 사용하려면 로그인이 필요합니다.");
+      navigate("/login");
+      return;
+    }
+
     const token = localStorage.getItem("token");
 
-    // Optimistic UI 업데이트
     setCardData((prev) =>
       prev.map((card) => {
         if (card.postId === postId) {
@@ -282,7 +301,11 @@ const WorkerPage: React.FC = () => {
         }),
       });
 
-      if (!result.ok) throw new Error("서버 응답 오류");
+      if (!result.ok) {
+        const errorText = await result.text();
+        console.error(`❌ 좋아요 토글 서버 응답 오류 (${result.status}):`, errorText);
+        throw new Error(`서버 응답 오류: ${errorText || result.statusText}`);
+      }
 
       const data = await result.json();
 
@@ -298,11 +321,12 @@ const WorkerPage: React.FC = () => {
               : card
           )
         );
+      } else {
+        console.warn("❌ 좋아요 토글 API 응답에 favoriteCount가 없습니다.", data);
       }
     } catch (error) {
       console.error("좋아요 처리 실패", error);
 
-      // 실패 시 optimistic rollback
       setCardData((prev) =>
         prev.map((card) => {
           if (card.postId === postId) {
@@ -318,6 +342,7 @@ const WorkerPage: React.FC = () => {
           return card;
         })
       );
+      alert("좋아요 처리에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -325,9 +350,17 @@ const WorkerPage: React.FC = () => {
     <div className="worker-container">
       <div className="worker-header">
         <img
-          src={profile?.thumbnailImagePath || "/default-profile.png"}
+          src={profile?.thumbnailImagePath
+               ? (profile.thumbnailImagePath.startsWith('/ourlog') ? `http://localhost:8080${profile.thumbnailImagePath}` : `${imageBaseUrl}${profile.thumbnailImagePath}`)
+               : "/default-profile.png"
+          }
           alt="프로필 이미지"
           className="worker-profile-img"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.src = "/default-profile.png";
+          }}
         />
         <div className="worker-info">
           <div className="worker-meta-row">
@@ -347,7 +380,7 @@ const WorkerPage: React.FC = () => {
           </div>
           <div className="worker-buttons">
             {!isNaN(loggedInUserId) && loggedInUserId !== userId && (
-              <button onClick={handleFollowToggle} className="btn">
+              <button onClick={handleFollowToggle} className={`btn ${isFollowing ? 'following' : ''}`}>
                 {isFollowing ? "팔로잉" : "팔로우"}
               </button>
             )}
@@ -373,16 +406,23 @@ const WorkerPage: React.FC = () => {
                 src={card.imageUrl || "/default-image.png"}
                 alt={`작품 ${card.postId}`}
                 className="card-image"
-              />
-              <button
-                className={`worker-like-button ${card.liked ? 'liked' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLikeToggle(card.postId);
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = "/default-image.png";
                 }}
-              >
-                {card.liked ? "🧡" : "🤍"} <span>{card.favoriteCnt ?? 0}</span>
-              </button>
+              />
+              {!isNaN(loggedInUserId) && loggedInUserId !== 0 && card.postId !== undefined && card.postId !== null && (
+                <button
+                  className={`worker-like-button ${card.liked ? 'liked' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLikeToggle(card.postId);
+                  }}
+                >
+                  {card.liked ? "🧡" : "🤍"} <span>{card.favoriteCnt ?? 0}</span>
+                </button>
+              )}
             </figure>
             <div className="card-body">
               <h2 className="card-title">{card.title}</h2>
@@ -396,6 +436,7 @@ const WorkerPage: React.FC = () => {
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             className="page-btn"
+            disabled={currentPage === 1}
           >
             &lt;
           </button>
@@ -413,6 +454,7 @@ const WorkerPage: React.FC = () => {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             className="page-btn"
+            disabled={currentPage === totalPages}
           >
             &gt;
           </button>
