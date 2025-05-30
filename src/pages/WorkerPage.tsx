@@ -89,6 +89,24 @@ const WorkerPage: React.FC = () => {
         setProfile(null);
       });
 
+    // 팔로우 상태 확인
+    if (!isNaN(loggedInUserId) && loggedInUserId !== userId) {
+      fetch(`${baseUrl}/followers/status/isFollowing/${loggedInUserId}/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setIsFollowing(data);
+        })
+        .catch((err) => {
+          console.error("팔로우 상태 확인 실패:", err);
+        });
+    }
+
     // 게시글과 좋아요 정보 가져오기
     const fetchPostsAndLikes = async () => {
       try {

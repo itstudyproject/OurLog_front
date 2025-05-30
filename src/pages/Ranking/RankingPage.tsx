@@ -86,7 +86,7 @@ const RankingPage: React.FC = () => {
         thumbnailImagePath: item.thumbnailImagePath,
         resizedImagePath: item.resizedImagePath,
         originImagePath: item.originImagePath,
-        followers: item.followers,
+        followers: item.followCnt || item.followers || 0,
         downloads: item.downloads,
         favoriteCnt: item.favoriteCnt,
         tradeDTO: item.tradeDTO,
@@ -102,6 +102,9 @@ const RankingPage: React.FC = () => {
           const exists = acc.find(item => item.userId === current.userId);
           if (!exists) {
             acc.push(current);
+          } else if ((current.followers || 0) > (exists.followers || 0)) {
+            const index = acc.indexOf(exists);
+            acc[index] = current;
           }
           return acc;
         }, []);
@@ -264,27 +267,48 @@ const RankingPage: React.FC = () => {
                     }}
                   />
                 )}
-                <div
-                  className="ranking-author-info large"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(rankingType === 'followers' ? `/worker/${podium[idx].userId}` : `/profile/${podium[idx].nickname}`);
-                  }}
-                >
-                  <span className="ranking-list-author">
-                    {rankingType === 'followers' ? podium[idx].nickname : podium[idx].title}
-                  </span>
-                  <span className="ranking-list-meta">
-                    {rankingType === "views" && formatNumber(podium[idx].views) !== "0" && `👁️ ${formatNumber(podium[idx].views)}`}
-                    {rankingType === "followers" && formatNumber(podium[idx].followers) !== "0" &&
-                      `👥 ${formatNumber(podium[idx].followers)}`}
-                    {rankingType === "downloads" && formatNumber(podium[idx].downloads) !== "0" &&
-                      `⬇️ ${formatNumber(podium[idx].downloads)}`}
-                  </span>
-                  {rankingType === 'followers' && podium[idx].title && (
-                    <span className="ranking-list-author-sub">{podium[idx].title}</span>
-                  )}
-                </div>
+                {rankingType === 'followers' && (
+                  <div
+                    className="ranking-author-info large"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/worker/${podium[idx].userId}`);
+                    }}
+                  >
+                    <span className="ranking-list-author">{podium[idx].nickname}</span>
+                    <span className="ranking-list-meta">
+                      {`👥 ${formatNumber(podium[idx].followers)}`}
+                    </span>
+                  </div>
+                )}
+                {rankingType === 'views' && (
+                  <div
+                    className="ranking-author-info large"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/Art/${podium[idx].postId}`);
+                    }}
+                  >
+                    <span className="ranking-list-author">{podium[idx].title}</span>
+                    <span className="ranking-list-meta">
+                      {formatNumber(podium[idx].views) !== "0" && `👁️ ${formatNumber(podium[idx].views)}`}
+                    </span>
+                  </div>
+                )}
+                {rankingType === 'downloads' && (
+                  <div
+                    className="ranking-author-info large"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/Art/${podium[idx].postId}`);
+                    }}
+                  >
+                    <span className="ranking-list-author">{podium[idx].title}</span>
+                    <span className="ranking-list-meta">
+                      {formatNumber(podium[idx].downloads) !== "0" && `⬇️ ${formatNumber(podium[idx].downloads)}`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           ) : null
@@ -319,22 +343,39 @@ const RankingPage: React.FC = () => {
                 }}
               />
             )}
-            <div
-              className="ranking-author-info small"
-              onClick={() => navigate(rankingType === 'followers' ? `/worker/${art.userId}` : `/profile/${art.nickname}`)}
-            >
-              <span className="ranking-list-author">{rankingType === 'followers' ? art.nickname : art.title}</span>
-              <span className="ranking-list-meta right-align">
-                {rankingType === "views" && formatNumber(art.views) !== "0" && `👁️ ${formatNumber(art.views)}`}
-                {rankingType === "followers" && formatNumber(art.followers) !== "0" &&
-                  `👥 ${formatNumber(art.followers)}`}
-                {rankingType === "downloads" && formatNumber(art.downloads) !== "0" &&
-                  `⬇️ ${formatNumber(art.downloads)}`}
-              </span>
-              {rankingType === 'followers' && art.title && (
-                <span className="ranking-list-author-sub">{art.title}</span>
-              )}
-            </div>
+            {rankingType === 'followers' && (
+              <div
+                className="ranking-author-info small"
+                onClick={() => navigate(`/worker/${art.userId}`)}
+              >
+                <span className="ranking-list-author">{art.nickname}</span>
+                <span className="ranking-list-meta right-align">
+                  {`👥 ${formatNumber(art.followers)}`}
+                </span>
+              </div>
+            )}
+            {rankingType === 'views' && (
+              <div
+                className="ranking-author-info small"
+                onClick={() => navigate(`/Art/${art.postId}`)}
+              >
+                <span className="ranking-list-author">{art.title}</span>
+                <span className="ranking-list-meta right-align">
+                  {formatNumber(art.views) !== "0" && `👁️ ${formatNumber(art.views)}`}
+                </span>
+              </div>
+            )}
+            {rankingType === 'downloads' && (
+              <div
+                className="ranking-author-info small"
+                onClick={() => navigate(`/Art/${art.postId}`)}
+              >
+                <span className="ranking-list-author">{art.title}</span>
+                <span className="ranking-list-meta right-align">
+                  {formatNumber(art.downloads) !== "0" && `⬇️ ${formatNumber(art.downloads)}`}
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -597,7 +597,7 @@ const ArtRegister = () => {
               boardNo: postData.boardNo,
               views: 0,
               tag: postData.tag.join(','),
-              thumbnailImagePath: thumbnailPictureDTO ? thumbnailPictureDTO.thumbnailImagePath : null,
+              thumbnailImagePath: thumbnailPictureDTO ? thumbnailPictureDTO.uuid : null,
               followers: 0,
               downloads: 0,
               favoriteCnt: 0,
