@@ -63,6 +63,8 @@ const ArtDetail = () => {
 
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
   const handleGoBack = () => {
     navigate("/Art");
   };
@@ -698,6 +700,46 @@ const ArtDetail = () => {
     }
   };
 
+  const handleRefreshPrice = async () => {
+    if (!post?.postId) return;
+    
+    setIsRefreshing(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ourlog/post/read/${post.postId}`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("가격 정보 갱신 실패");
+      }
+
+      const data = await response.json();
+      const postData = data.postDTO;
+
+      setPost(prevPost => {
+        if (!prevPost) return null;
+        return {
+          ...prevPost,
+          tradeDTO: postData.tradeDTO
+        };
+      });
+
+      // 현재 입찰가 + 1000원으로 입찰 금액 업데이트
+      if (postData?.tradeDTO?.highestBid !== undefined) {
+        setBidAmount(Number(postData.tradeDTO.highestBid) + 1000);
+      }
+    } catch (error) {
+      console.error("가격 정보 갱신 중 오류 발생:", error);
+      alert("가격 정보를 갱신하는데 실패했습니다.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -842,6 +884,16 @@ const ArtDetail = () => {
 
           {post.tradeDTO ? (
             <>
+              <div className="bid-info-header">
+                <h3>경매 정보</h3>
+                <button 
+                  className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`}
+                  onClick={handleRefreshPrice}
+                  disabled={isRefreshing}
+                >
+                  🔄
+                </button>
+              </div>
               <div className="bid-info">
                 <div className="bid-detail">
                   <span>시작가</span>

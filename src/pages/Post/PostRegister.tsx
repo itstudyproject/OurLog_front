@@ -27,6 +27,7 @@ const PostRegister = () => {
   const params = new URLSearchParams(location.search);
   const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -321,6 +322,34 @@ const PostRegister = () => {
     alert("임시저장 되었습니다.");
   };
 
+  const handleInsertImage = (image: ImageFile) => {
+    const textarea = contentTextareaRef.current;
+    if (!textarea) return;
+
+    const imageUrl = image.preview;
+    const markdownImage = `\\n![${image.picName} 이미지](${imageUrl})\\n`;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = textarea.value;
+
+    const newValue =
+      currentValue.substring(0, start) +
+      markdownImage +
+      currentValue.substring(end);
+
+    setFormData((prev) => ({
+      ...prev,
+      content: newValue,
+    }));
+
+    const newCursorPosition = start + markdownImage.length;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+    }, 0);
+  };
+
   return (
     <div className="post-register-wrapper">
       <div className="post-register-container">
@@ -331,8 +360,8 @@ const PostRegister = () => {
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
             <option value="자유게시판">자유게시판</option>
-            <option value="요청게시판">요청게시판</option>
             <option value="홍보게시판">홍보게시판</option>
+            <option value="요청게시판">요청게시판</option>
           </select>
         </div>
       </div>
@@ -433,43 +462,6 @@ const PostRegister = () => {
             </p>
           </div>
 
-          <DragDropContext onDragEnd={handleContentImageDragEnd}>
-            <Droppable droppableId="content-images" direction="horizontal">
-              {(provided) => (
-                <div
-                  className="content-images"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {formData.images.map((image, index) => (
-                    <Draggable
-                      key={image.id}
-                      draggableId={`content-${image.id}`}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${snapshot.isDragging ? "dragging" : ""
-                            }`}
-                        >
-                          <img
-                            src={image.preview}
-                            alt="내용 이미지"
-                            className="content-image"
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-
           <textarea
             name="content"
             value={formData.content}
@@ -477,6 +469,7 @@ const PostRegister = () => {
             placeholder="내용을 입력하세요"
             className="content-textarea"
             rows={8}
+            ref={contentTextareaRef}
           />
           <div className="char-count">{characterCount}자</div>
 

@@ -677,3 +677,56 @@ body {
 .art-detail-like-button:hover {
   color: #ff8c00; /* 호버 시 색상 변경 */
 }
+
+/* 경매 정보 헤더와 새로고침 버튼 */
+.bid-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.bid-info-header h3 {
+  color: #fff;
+  margin: 0;
+  font-size: 18px;
+}
+
+.refresh-button {
+  background: none;
+  border: none;
+  color: #f8c147;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  background-color: rgba(248, 193, 71, 0.1);
+  transform: scale(1.1);
+}
+
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-button.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
