@@ -9,6 +9,20 @@ import { getAuthHeaders, getToken, hasToken, removeToken } from "../utils/auth";
 const originalFaqs: Question[] = [
   {
     questionId: 1,
+    title: "회원가입을 하고 싶어요.",
+    content:
+      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 2,
     title: "로그인이 안 돼요.",
     content:
       "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
@@ -22,24 +36,10 @@ const originalFaqs: Question[] = [
     isOpen: false,
   },
   {
-    questionId: 2,
-    title: "비밀번호를 잊어버렸어요.",
-    content:
-      "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-  {
     questionId: 3,
-    title: "회원가입은 어떻게 하나요?",
+    title: "프로필을 수정하고 싶어요.",
     content:
-      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+      "프로필 수정은 로그인 후 [마이페이지]-[프로필수정]을 통해 수정할 수 있습니다.",
     regDate: "2024-01-20",
     modDate: "2024-01-20",
     userDTO: {
@@ -51,9 +51,36 @@ const originalFaqs: Question[] = [
   },
   {
     questionId: 4,
-    title: "회원탈퇴는 어떻게 하나요?",
+    title: "회원탈퇴를 하고 싶어요.",
     content:
       "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 5,
+    title: "작품을 등록하고 싶어요.",
+    content: "작품등록은 [아트]-[아트등록]에서 작품을 등록할 수 있습니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 6,
+    title: "제가 관심있는 작가님께 개인적으로 작품을 요청하고 싶어요.",
+    content:
+      "관심있는 작가님의 프로필 또는 작가님의 작품 화면의 [채팅창]을 통해 작품을 요청하거나 대화할 수 있습니다.",
     regDate: "2024-01-20",
     modDate: "2024-01-20",
     userDTO: {
