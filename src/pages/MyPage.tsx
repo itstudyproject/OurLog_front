@@ -40,8 +40,8 @@ interface SaleEntry {
   nowBuy: number | null; // 즉시 구매가
   tradeStatus: boolean; // 거래 상태 (true: 종료, false: 진행 중) - ✅ boolean으로 수정
   lastBidTime?: string; // 마지막 입찰 시간 또는 경매 종료 시간
-  buyerId?: number; // 낙찰자 ID (판매 완료된 경우)
-  buyerNickname?: string; // 낙찰자 닉네임 (판매 완료된 경우)
+  bidderId?: number; // 현재 최고 입찰자 ID
+  bidderNickname?: string; // 현재 최고 입찰자 닉네임
   startBidTime?: string; // 경매 시작 시간
   sellerId: number; // 판매자 ID
 }
@@ -119,16 +119,17 @@ const MyPage: React.FC = () => {
         } else {
             // ✅ API 응답이 SaleEntry 배열이라고 가정하고 처리
             const data: SaleEntry[] = await res.json();
+            console.log("판매 목록 API 응답 데이터:", data); // API 응답 데이터 로깅 추가
 
             // 응답이 배열인지 확인하고 tradeStatus로 목록 분리
             if (Array.isArray(data)) {
                 // ✅ tradeStatus가 boolean 값에 맞게 필터링 로직 수정
                 const selling = data.filter(item => item.tradeStatus === false); // false: 진행 중 (백엔드 boolean 기준)
-                const sold = data.filter(item => item.tradeStatus === true); // true: 판매 완료 (백엔드 boolean 기준)
+                const expired = data.filter(item => item.tradeStatus === true); // true: 기간 만료 (판매 완료 또는 유찰)
                 setSellingPosts(selling);
-                setSoldPosts(sold);
+                setSoldPosts(expired);
                 console.log("판매 목록 상태 업데이트 - sellingPosts:", selling);
-                console.log("판매 목록 상태 업데이트 - soldPosts:", sold);
+                console.log("판매 목록 상태 업데이트 - expiredPosts:", expired);
             } else {
                  console.error("Unexpected sales API response structure:", data); // 이 메시지가 다시 뜨면 다른 구조임
                  alert("판매 목록 데이터 형식이 올바르지 않습니다.");
@@ -593,108 +594,108 @@ const MyPage: React.FC = () => {
 
       {/* ✅ 판매목록/현황 탭 내용 */}
       {activeTab === 'sale' && (
-        userId ? ( // userId가 있을 때만 내용 표시
+        userId ? (
           loadingSales ? (
             <div className="mp-loading"><p>판매 목록을 불러오는 중...</p></div>
           ) : sellingPosts.length === 0 && soldPosts.length === 0 ? (
              <div className="mp-no-content"><p>판매 내역이 없습니다.</p></div>
           ) : (
-            // ✅ BidHistory와 유사한 레이아웃 사용 (mp- 접두사 클래스 활용)
             <div className="mp-sale-trade-lists-wrapper">
               {/* 현재 진행 중인 경매 목록 */}
               <div className="mp-list-section mp-current-sales-section">
                 <h3>현재 판매 중인 경매</h3>
-                <div className="mp-list"> {/* mp-list 클래스는 MyPage.css에 별도 정의 필요 */}
+                <div className="mp-list">
                   {sellingPosts.length > 0 ? (
                     sellingPosts.map((item) => (
                       <div
-                         key={item.tradeId} // tradeId 사용
-                         className="mp-item data" // mp-item data 클래스 사용
-                         onClick={() => handleCardClick(item.postId)} // postId로 이동
+                         key={item.tradeId}
+                         className="mp-item data"
+                         onClick={() => handleCardClick(item.postId)}
                          style={{ cursor: "pointer" }}
                       >
-                         <div className="mp-item-thumbnail"> {/* 썸네일 */}
+                         <div className="mp-item-thumbnail">
                            {item.postImage ? (
                              <img
                                src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
                                alt={item.postTitle || "Artwork"}
                              />
                            ) : (
-                             <div className="mp-no-image-placeholder-small">🖼️</div> // 이미지 없을 때
+                             <div className="mp-no-image-placeholder-small">🖼️</div>
                            )}
                          </div>
-                         <div className="mp-item-details"> {/* 상세 정보 */}
+                         <div className="mp-item-details">
                            <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
-                           {/* ✅ 판매 진행 중일 때는 현재 최고 입찰가 표시 */}
                            <div className="mp-item-price">현재 최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</div>
-                           {/* 남은 시간 표시 */}
                            <div className="mp-item-time">
                              {getRemainingTime(item.lastBidTime)}
                            </div>
                          </div>
-                         <div className="mp-item-status">판매 중</div> {/* 상태 표시 */}
+                         <div className="mp-item-status">판매 중</div>
                       </div>
                     ))
                   ) : (
-                    <div className="mp-no-bids">현재 판매 중인 경매가 없습니다.</div> // 내용 없을 때
+                    <div className="mp-no-bids">현재 판매 중인 경매가 없습니다.</div>
                   )}
                 </div>
               </div>
 
-              {/* 판매 완료된 목록 */}
-              <div className="mp-list-section mp-sold-sales-section">
-                 <h3>판매 완료된 경매</h3>
-                 <div className="mp-list"> {/* mp-list 클래스 사용 */}
+              {/* 기간 만료된 경매 목록 */}
+              <div className="mp-list-section mp-expired-sales-section">
+                 <h3>기간 만료된 경매</h3>
+                 <div className="mp-list">
                    {soldPosts.length > 0 ? (
                      soldPosts.map((item) => (
                        <div
-                         key={item.tradeId} // tradeId 사용
-                         className="mp-item data sold" // 판매 완료 상태 클래스 추가
-                         onClick={() => handleCardClick(item.postId)} // postId로 이동
+                         key={item.tradeId}
+                         className={`mp-item data ${item.bidderId ? 'sold' : 'failed'}`}
+                         onClick={() => handleCardClick(item.postId)}
                          style={{ cursor: "pointer" }}
                        >
-                          <div className="mp-item-thumbnail"> {/* 썸네일 */}
+                          <div className="mp-item-thumbnail">
                             {item.postImage ? (
                               <img
                                 src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
                                 alt={item.postTitle || "Artwork"}
                               />
                             ) : (
-                              <div className="mp-no-image-placeholder-small">🖼️</div> // 이미지 없을 때
+                              <div className="mp-no-image-placeholder-small">🖼️</div>
                             )}
                           </div>
-                          <div className="mp-item-details"> {/* 상세 정보 */}
+                          <div className="mp-item-details">
                             <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
-                             {/* ✅ 판매 완료 시에는 판매가 (highestBid) 표시 */}
-                            <div className="mp-item-price">판매가: {item.highestBid != null ? item.highestBid.toLocaleString() : "가격 정보 없음"}원</div> {/* 판매 완료 시 낙찰가 */}
+                            <div className="mp-item-price">
+                              {item.bidderId ? (
+                                <>판매가: {item.highestBid != null ? item.highestBid.toLocaleString() : "가격 정보 없음"}원</>
+                              ) : (
+                                <>최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</>
+                              )}
+                            </div>
                             <div className="mp-item-time">
-                              판매 완료 시간:{" "}
-                              {item.lastBidTime // 판매 완료 시에는 end_time이 lastBidTime 역할
-                                ? new Date(item.lastBidTime).toLocaleString()
-                                : "시간 정보 없음"}
+                              {item.bidderId ? (
+                                item.bidderNickname ? `구매자: ${item.bidderNickname}` : '구매자 정보 없음'
+                              ) : (
+                                item.lastBidTime
+                                  ? "경매 종료 시간: " + new Date(item.lastBidTime).toLocaleString()
+                                  : "시간 정보 없음"
+                              )}
                             </div>
                           </div>
-                           <div className="mp-item-status-container"> {/* 상태 및 버튼 컨테이너 */}
-                             <div className="mp-item-status sold">판매 완료</div> {/* 판매 완료 상태 표시 */}
-                             {/* 다운로드 버튼 */}
-                              <button
-                                className="mp-download-button"
-                                onClick={(e) => handleDownloadOriginal(e, item)}
-                                title="원본 이미지 다운로드"
-                              >
-                                ⬇️
-                              </button>
+                           <div className="mp-item-status-container">
+                             <div className={`mp-item-status ${item.bidderId ? 'sold' : 'failed'}`}>
+                               {item.bidderId ? "판매 완료" : "유찰"}
+                             </div>
+                             {/* 판매자가 올린 글이므로 다운로드 버튼 제거 */}
                            </div>
                        </div>
                      ))
                    ) : (
-                     <div className="mp-no-bids">판매 완료된 경매가 없습니다.</div> // 내용 없을 때
+                     <div className="mp-no-bids">기간 만료된 경매가 없습니다.</div>
                    )}
                  </div>
               </div>
             </div>
           )
-        ) : ( // userId가 없을 때
+        ) : (
            <p>로그인이 필요합니다.</p>
         )
       )}

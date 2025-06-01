@@ -591,6 +591,7 @@ body {
   justify-content: center;
   align-items: center;
   background-color: #2a2a2a; /* 배경 색상 */
+  position: relative; /* ✅ 워터마크 위치 기준을 위해 추가 */
 }
 
 .main-artwork-image {
@@ -729,4 +730,31 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 워터마크 오버레이 스타일 */
+.art-detail-watermark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  font-family: 'NanumSquareNeo', sans-serif;
+  font-weight: 800; /* ✅ 폰트 굵기 증가 */
+  color: rgba(220, 220, 220, 0.5); /* ✅ 연한 회색 및 투명도 0.5 */
+  user-select: none;
+  z-index: 10;
+}
+
+.art-detail-watermark-overlay-main { /* 메인 이미지 워터마크 스타일 */
+  font-size: 5vw; /* ✅ 글자 크기 5vw로 감소 */
+  letter-spacing: 2px;
+}
+
+.art-detail-watermark-overlay-thumbnail { /* 썸네일 워터마크 스타일 */
+  font-size: 2vw; /* ✅ 글자 크기 2vw로 감소 */
 }

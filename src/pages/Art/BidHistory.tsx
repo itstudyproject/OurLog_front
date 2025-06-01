@@ -17,10 +17,12 @@ interface PurchaseOrBidEntry {
   bidderId?: number; // 현재 최고 입찰자 ID
   bidderNickname?: string; // 현재 최고 입찰자 닉네임
   // 추가 필드 (예: 게시글 제목, 이미지 경로 등)가 필요하다면 여기에 추가
-  postTitle?: string; // 게시글 제목 (백엔드 API에 추가 필요)
-  postImage?: string; // 게시글 대표 이미지 경로 (백엔드 API에 추가 필요)
-  startBidTime?: string; // 경매 시작 시간 (백엔드에서 추가)
-  sellerId?: number; // 판매자 ID (백엔드에서 추가)
+  postTitle?: string; // 게시글 제목
+  postImage?: string; // 게시글 대표 이미지 경로
+  startBidTime?: string; // 경매 시작 시간
+  sellerId?: number; // 판매자 ID
+  buyerId?: number; // 구매자 ID (낙찰된 경우)
+  buyerNickname?: string; // 구매자 닉네임 (낙찰된 경우)
 }
 
 // userId prop을 받도록 수정
@@ -94,6 +96,7 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
         return;
       }
 
+      // 구매/입찰 목록을 가져오는 API 엔드포인트 수정
       console.log(
         "Calling API:",
         `http://localhost:8080/ourlog/profile/purchases/${currentUserId}`
@@ -126,10 +129,39 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
         data.wonTrades &&
         Array.isArray(data.wonTrades)
       ) {
-        setCurrentBids(data.currentBids);
-        setWonTrades(data.wonTrades);
-        console.log("State updated - currentBids:", data.currentBids);
-        console.log("State updated - wonTrades:", data.wonTrades);
+        // 현재 입찰 중인 목록과 낙찰된 목록 분리
+        // 판매자가 아닌 구매자/입찰자 관점에서 필터링
+        const currentBidsList = data.currentBids.filter((item: PurchaseOrBidEntry) => 
+          item.tradeStatus === false && item.bidderId === currentUserId && item.sellerId !== currentUserId
+        );
+
+        // 낙찰된 목록 필터링 조건 수정
+        console.log("Before filtering wonTrades:", data.wonTrades);
+        const wonTradesList = data.wonTrades.filter((item: PurchaseOrBidEntry) => {
+          console.log("Checking won trade item:", {
+            tradeId: item.tradeId,
+            tradeStatus: item.tradeStatus,
+            buyerId: item.buyerId,
+            currentUserId: currentUserId,
+            sellerId: item.sellerId
+          });
+          
+          // 낙찰된 경매는 다음 조건을 모두 만족해야 함:
+          // 1. 거래가 완료된 상태
+          // 2. 현재 사용자가 판매자가 아님
+          // 3. 현재 사용자가 구매자이거나 최고 입찰자
+          return (
+            item.tradeStatus === true && // 거래 완료
+            item.sellerId !== currentUserId && // 판매자가 아님
+            (item.buyerId === currentUserId || item.bidderId === currentUserId) // 구매자이거나 최고 입찰자
+          );
+        });
+        console.log("After filtering wonTrades:", wonTradesList);
+
+        setCurrentBids(currentBidsList);
+        setWonTrades(wonTradesList);
+        console.log("State updated - currentBids:", currentBidsList);
+        console.log("State updated - wonTrades:", wonTradesList);
       } else {
         console.error("Unexpected API response structure:", data);
         alert("구매 및 입찰 목록 데이터 형식이 올바르지 않습니다.");

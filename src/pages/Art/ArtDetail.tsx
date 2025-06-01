@@ -171,6 +171,10 @@ const ArtDetail = () => {
   };
 
   const handleBuyNow = () => {
+    if (isSeller) {
+      alert("자신이 판매하는 상품은 구매할 수 없습니다.");
+      return;
+    }
     const confirmBuy = window.confirm("정말 즉시 구매하시겠습니까?");
     if (!confirmBuy) return;
     if (
@@ -778,6 +782,9 @@ const ArtDetail = () => {
               ) : (
                 <div className="no-image-placeholder main">이미지 없음</div>
               )}
+              {mainImagePicture && (
+                <div className="art-detail-watermark-overlay art-detail-watermark-overlay-main">OurLog</div>
+              )}
             </div>
 
             {post?.pictureDTOList && post.pictureDTOList.length > 1 && (
@@ -796,7 +803,7 @@ const ArtDetail = () => {
                         key={picture.uuid || index}
                         className="thumbnail-item"
                         onClick={() => handleImageClick(picture)}
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", position: "relative" }}
                       >
                         <img
                           src={imageUrl}
@@ -805,6 +812,7 @@ const ArtDetail = () => {
                           }`}
                           className="thumbnail-image"
                         />
+                        <div className="art-detail-watermark-overlay art-detail-watermark-overlay-thumbnail">OurLog</div>
                       </div>
                     );
                   })}
