@@ -34,7 +34,7 @@ const PostRegister = () => {
     content: "",
     images: [],
     fileName: null,
-    category: initialCategory,
+    category: initialCategory === "새소식" ? "자유게시판" : initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
@@ -359,6 +359,8 @@ const PostRegister = () => {
             value={formData.category}
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
+            {/* '새소식' 옵션 추가 */}
+            {/* <option value="새소식">새소식</option> */}
             <option value="자유게시판">자유게시판</option>
             <option value="홍보게시판">홍보게시판</option>
             <option value="요청게시판">요청게시판</option>
@@ -396,7 +398,7 @@ const PostRegister = () => {
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
                   <div
-                    className="image-grid"
+                    className="post-image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
@@ -411,9 +413,9 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${snapshot.isDragging ? "dragging" : ""
+                            className={`post-image-item ${snapshot.isDragging ? "dragging" : ""
                               } ${formData.fileName === image.id
-                                ? "thumbnail-selected"
+                                ? "post-thumbnail-selected"
                                 : ""
                               }`}
                           >
@@ -423,24 +425,24 @@ const PostRegister = () => {
                               className="preview-img"
                               onClick={() => handleThumbnailSelect(image.id)}
                             />
-                            <div className="image-overlay">
+                            <div className="post-image-overlay">
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(image.id)}
-                                className="remove-image-btn"
+                                className="post-remove-image-btn"
                                 aria-label="이미지 삭제"
                               >
                                 ×
                               </button>
                               {formData.fileName === image.id ? (
-                                <span className="thumbnail-badge">썸네일</span>
+                                <span className="post-thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() =>
                                     handleThumbnailSelect(image.id)
                                   }
-                                  className="thumbnail-button"
+                                  className="post-thumbnail-button"
                                 >
                                   썸네일로 설정
                                 </button>

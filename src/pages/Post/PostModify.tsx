@@ -408,7 +408,7 @@ const PostModify = () => {
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
                   <div
-                    className="image-grid"
+                    className="post-image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
@@ -423,11 +423,11 @@ const PostModify = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${
+                            className={`post-image-item ${
                               snapshot.isDragging ? "dragging" : ""
                             } ${
                               formData.thumbnailId === image.picName
-                                ? "thumbnail-selected"
+                                ? "post-thumbnail-selected"
                                 : ""
                             }`}
                           >
@@ -439,17 +439,17 @@ const PostModify = () => {
                                 handleThumbnailSelect(image.picName)
                               }
                             />
-                            <div className="image-overlay">
+                            <div className="post-image-overlay">
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(image.id)}
-                                className="remove-image-btn"
+                                className="post-remove-image-btn"
                                 aria-label="이미지 삭제"
                               >
                                 ×
                               </button>
                               {formData.thumbnailId === image.picName ? (
-                                <span className="thumbnail-badge">썸네일</span>
+                                <span className="post-thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
                                   type="button"
