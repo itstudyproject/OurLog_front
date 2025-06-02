@@ -193,7 +193,14 @@ const ArtDetail = () => {
   const handleOpenChat = () => {
     const confirmChat = window.confirm("채팅을 시작하시겠습니까?");
     if (confirmChat) {
-      window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
+      if (post?.userId !== undefined && post.userId !== null) {
+        // 작가의 userId를 navigate의 state로 전달합니다.
+        navigate("/chat", { state: { targetUserId: String(post.userId) } });
+      } else {
+        alert("작가 정보를 찾을 수 없어 채팅을 시작할 수 없습니다.");
+        console.warn("🔴 Artist userId is null or undefined, cannot start chat.");
+        // window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
+      }
     }
   };
   const handleBidHistory = () => {

@@ -193,7 +193,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
             >
               취소
             </button>
-            <button type="submit" className="save-button">
+            <button type="submit" className="pe-save-button">
               변경사항 저장
             </button>
           </div>

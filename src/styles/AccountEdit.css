@@ -3,7 +3,7 @@
 
 /* 전체 레이아웃 */
 .account-edit-container {
-  min-height: 100vh;
+  min-height: 50vh;
   background-color: #1a1a1a;    /* ProfileEdit & BidHistory 와 동일 */
   color: #ccc;                  /* 기본 텍스트 색 */
   font-family: Arial, sans-serif;
@@ -31,24 +31,34 @@
   margin: 0;
 }
 
-/* 뒤로 가기 버튼 (필요하다면) */
-.back-button {
-  background: none;
-  border: none;
-  color: #f8c147;               /* 강조색으로 통일 */
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.ae-update-button {
+  background-color: #f8c147;
+  color: #111;
 }
-.back-button:hover {
+
+.ae-back-button {
+  background-color: #444;
+  color: #fff;
+}
+
+/* 뒤로 가기 버튼 (필요하다면) */
+.ae-back-button,
+.ae-update-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.ae-back-button:hover {
   text-decoration: underline;
 }
 
-
 /* 폼 그리드 */
-.form-grid {
+.ae-form-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
@@ -56,26 +66,26 @@
 }
 
 /* 각 폼 그룹 */
-.form-group {
+.ae-form-group {
   flex: 1 1 45%;
   display: flex;
   flex-direction: column;
 }
 
-.form-group.full-width {
+.ae-form-group.full-width {
   flex: 1 1 100%;
 }
 
-.form-group label {
+.ae-form-group label {
   font-size: 14px;
   color: #999;
   margin-bottom: 6px;
 }
 
 /* 입력창 */
-.form-group input,
-.form-group textarea,
-.form-group select {
+.ae-form-group input,
+.ae-form-group textarea,
+.ae-form-group select {
   width: 100%;
   padding: 10px 12px;
   font-size: 14px;
@@ -86,9 +96,9 @@
   transition: border-color .2s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
+.ae-form-group input:focus,
+.ae-form-group textarea:focus,
+.ae-form-group select:focus {
   outline: none;
   border-color: #f8c147;        /* 강조 포커스 색 */
 }
@@ -122,6 +132,8 @@
 .secondary-button:hover {
   background-color: #444;
 }
+
+
 
 /* 안내 메시지 */
 .message {

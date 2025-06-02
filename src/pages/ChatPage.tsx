@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/ChatPage.css";
 import { getToken } from "../utils/auth";
 import SendbirdChat from '@sendbird/chat';
-import { GroupChannelHandler, GroupChannelModule, GroupChannel, GroupChannelListQuery, PublicGroupChannelListQuery, MessageCollection, MessageCollectionInitPolicy, MessageCollectionEventHandler, GroupChannelEventContext } from '@sendbird/chat/groupChannel';
+import { GroupChannelHandler, GroupChannelModule, GroupChannel, GroupChannelListQuery, PublicGroupChannelListQuery, MessageCollection, MessageCollectionInitPolicy, MessageCollectionEventHandler, GroupChannelEventContext, MessageFilter } from '@sendbird/chat/groupChannel';
 import { UserMessage, BaseMessage, MessageListParams, UserMessageCreateParams, UserMessageUpdateParams } from '@sendbird/chat/message';
 import { OpenChannelModule } from '@sendbird/chat/openChannel';
 import { BaseChannel } from '@sendbird/chat';
@@ -47,6 +47,7 @@ const APP_ID = 'C13DF699-49C2-474D-A2B4-341FBEB354EE';
 
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isSendbirdInitialized, setIsSendbirdInitialized] = useState(false);
   const [isChatModalVisible, setIsChatModalVisible] = useState(false);
@@ -57,6 +58,9 @@ const ChatPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [cardNumber, setCardNumber] = useState<string>("");
   const [channels, setChannels] = useState<GroupChannel[]>([]);
+
+  // ✅ URL state에서 전달받은 targetUserId를 저장할 상태 추가
+  const [initialTargetUserId, setInitialTargetUserId] = useState<string | null>(null);
 
   // 공개 채널 목록 상태 추가
   const [publicChannels, setPublicChannels] = useState<GroupChannel[]>([]);
@@ -165,12 +169,6 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     const initializeAndConnectSendbird = async () => {
-      if (isSendbirdInitialized) {
-        console.log("Sendbird already initialized. Skipping.");
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       setError(null);
 
@@ -409,11 +407,45 @@ const ChatPage: React.FC = () => {
           console.log("MessageCollection disposed on unmount.");
       }
     };
-  }, [navigate]);
+  }, [navigate, location]);
+
+  // ✅ 컴포넌트 마운트 시 location.state에서 targetUserId를 읽어와 상태에 저장하고 state 초기화
+  useEffect(() => {
+    const state = location.state as { targetUserId?: string } | undefined;
+    if (state?.targetUserId) {
+      console.log(`Detected targetUserId in state: ${state.targetUserId}. Setting initialTargetUserId state.`);
+      setInitialTargetUserId(state.targetUserId);
+      // state 사용 후 초기화하여 새로고침 시 중복 실행 방지
+      navigate(location.pathname, { replace: true, state: {} });
+    } else {
+       console.log("No targetUserId found in location state on mount.");
+       setInitialTargetUserId(null); // 혹시 모를 잔여 상태 초기화
+    }
+    // 이 useEffect는 컴포넌트 마운트 시 한 번만 실행되도록 의존성 배열을 비웁니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // location, navigate는 내부적으로 안정적이므로 의존성에 추가하지 않아도 됩니다.
+
+  // ✅ Sendbird 초기화 및 사용자 연결 상태, 그리고 initialTargetUserId 상태 변경 감지 후 채팅 시작
+  useEffect(() => {
+    console.log("Checking conditions for starting chat from initialTargetUserId state...");
+    console.log("initialTargetUserId:", initialTargetUserId);
+    console.log("isSendbirdInitialized:", isSendbirdInitialized);
+    console.log("currentUser:", currentUser);
+
+    if (isSendbirdInitialized && currentUser && initialTargetUserId) {
+      console.log(`Conditions met: isSendbirdInitialized=${isSendbirdInitialized}, currentUser=${!!currentUser}, initialTargetUserId=${initialTargetUserId}. Attempting to start chat.`);
+      handleStartNewChat(initialTargetUserId);
+      // 채팅 시작 후 initialTargetUserId 상태 초기화하여 중복 실행 방지
+      setInitialTargetUserId(null);
+    } else {
+       console.log("Conditions not met for starting chat from initialTargetUserId state.", { isSendbirdInitialized, currentUser: !!currentUser, initialTargetUserId });
+    }
+
+  }, [isSendbirdInitialized, currentUser, initialTargetUserId]); // 의존성 배열에 상태들 추가 (navigate, location.state 불필요)
 
   useEffect(() => {
       const fetchOtherUserProfile = async () => {
-          if (currentChannel && currentChannel.isGroupChannel && (currentChannel as GroupChannel).members && currentUser) {
+          if (currentChannel && (currentChannel as GroupChannel).members && currentUser) {
                const groupChannel = currentChannel as GroupChannel;
                if (groupChannel.memberCount === 2) {
                     const otherUser = groupChannel.members.find(member => member.userId !== currentUser.userId);
@@ -472,7 +504,7 @@ const ChatPage: React.FC = () => {
   }, [isSendbirdInitialized]);
 
 
-  const handleOpenChatModal = async (channelUrl: string) => {
+  const handleOpenChatModal = async (channelUrl: string): Promise<void> => {
     console.log("채널 선택:", channelUrl);
     if (sbInstance.current) {
       try {
@@ -492,190 +524,52 @@ const ChatPage: React.FC = () => {
 
         const collection = channel.createMessageCollection({
           limit: 100,
+          startingPoint: 0,   // 또는 0으로 전체 로드
         });
 
-        const collectionHandler: MessageCollectionEventHandler = {
-          onMessagesAdded: (context, channel, messages) => {
-            console.log(`[${channel.url}] MessageCollection: Messages added`, messages);
-            const formattedMessages = messages.map(msg => {
-              const baseMessage: ChatMessage = {
-                sender: (msg as UserMessage).sender?.userId || 'Unknown',
-                message: (msg as UserMessage).message || '',
-                messageId: msg.messageId,
-                createdAt: msg.createdAt,
-                messageType: msg.messageType,
-                customType: msg.customType,
-                data: msg.data,
-              };
-              try {
-                if (msg.customType === 'payment_request' && msg.data) {
-                  const customData = JSON.parse(msg.data);
-                   if (customData.paymentInfo) {
-                    baseMessage.paymentInfo = customData.paymentInfo;
-                   }
-                   if (customData.isPaymentComplete !== undefined) {
-                      baseMessage.isPaymentComplete = customData.isPaymentComplete;
-                   }
-                   if (customData.isPaymentFormVisible !== undefined) {
-                      baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                   }
-                }
-              } catch (e) {
-                console.error("Failed to parse message data in collection handler:", e);
-              }
-              return baseMessage;
-            });
+        return new Promise<void>((resolve, reject) => {
 
-            setMessagesByUser(prev => ({
-              ...prev,
-              [channel.url]: [...(prev[channel.url] || []), ...formattedMessages].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
-            }));
-             console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 추가 완료.`, messagesByUser);
-          },
-          onMessagesUpdated: (context, channel, messages) => {
-            console.log(`[${channel.url}] MessageCollection: Messages updated`, messages);
-             const formattedMessages = messages.map(msg => {
-                const baseMessage: ChatMessage = {
-                  sender: (msg as UserMessage).sender?.userId || 'Unknown',
-                  message: (msg as UserMessage).message || '',
-                  messageId: msg.messageId,
-                  createdAt: msg.createdAt,
-                  messageType: msg.messageType,
-                  customType: msg.customType,
-                  data: msg.data,
-                };
-                try {
-                  if (msg.customType === 'payment_request' && msg.data) {
-                    const customData = JSON.parse(msg.data);
-                     if (customData.paymentInfo) {
-                      baseMessage.paymentInfo = customData.paymentInfo;
-                     }
-                     if (customData.isPaymentComplete !== undefined) {
-                        baseMessage.isPaymentComplete = customData.isPaymentComplete;
-                     }
-                     if (customData.isPaymentFormVisible !== undefined) {
-                        baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                     }
-                  }
-                } catch (e) {
-                  console.error("Failed to parse updated message data in collection handler:", e);
-                }
-                return baseMessage;
-              });
-
-
-            setMessagesByUser(prev => ({
-              ...prev,
-              [channel.url]: (prev[channel.url] || []).map(msg => {
-                 const updatedMsg = formattedMessages.find(updated => updated.messageId === msg.messageId);
-                 return updatedMsg ? updatedMsg : msg;
-              }),
-            }));
-             console.log(`[${channel.url}] MessageCollection: messagesByUser 상태 업데이트 완료.`, messagesByUser);
-          },
-          onMessagesDeleted: (context, channel, messageIds) => {
-            console.log(`[${channel.url}] MessageCollection: Messages deleted`, messageIds);
-            setMessagesByUser(prev => ({
-              ...prev,
-              [channel.url]: (prev[channel.url] || []).filter(msg => {
-                const messageIdToRemove = msg.messageId!;
-                return !messageIds.map(String).includes(String(messageIdToRemove));
-              }),
-            }));
-             console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에서 삭제 완료.`, messagesByUser);
-          },
-          onChannelUpdated: (context: GroupChannelEventContext, channel: GroupChannel) => {
-            console.log(`[${channel.url}] MessageCollection: Channel updated`, channel);
-             setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? channel : ch));
-          },
-          onChannelDeleted: (context: GroupChannelEventContext, channelUrl: string) => {
-            console.log(`[${channelUrl}] MessageCollection: Channel deleted`, channelUrl);
-          }
-        };
-
-        collection.setMessageCollectionHandler(collectionHandler);
-
-        collection.initialize(MessageCollectionInitPolicy.CACHE_AND_REPLACE_BY_API)
-          .onCacheResult((messages, error) => {
-            console.log(`[${channel.url}] MessageCollection: Initial messages from cache`, messages, error);
-             if (Array.isArray(messages) && messages.length > 0) {
-                 const formattedMessages = messages.map(msg => {
-                  const baseMessage: ChatMessage = {
-                    sender: (msg as UserMessage).sender?.userId || 'Unknown',
-                    message: (msg as UserMessage).message || '',
-                    messageId: msg.messageId,
-                    createdAt: msg.createdAt,
-                    messageType: msg.messageType,
-                    customType: msg.customType,
-                    data: msg.data,
-                  };
-                  try {
-                    if (msg.customType === 'payment_request' && msg.data) {
-                      const customData = JSON.parse(msg.data);
-                       if (customData.paymentInfo) {
+           const collectionHandler: MessageCollectionEventHandler = {
+             onMessagesAdded: (context, channel, messages) => {
+               console.log(`[${channel.url}] MessageCollection: Messages added`, messages);
+               const formattedMessages = messages.map(msg => {
+                 const baseMessage: ChatMessage = {
+                   sender: (msg as UserMessage).sender?.userId || 'Unknown',
+                   message: (msg as UserMessage).message || '',
+                   messageId: msg.messageId,
+                   createdAt: msg.createdAt,
+                   messageType: msg.messageType,
+                   customType: msg.customType,
+                   data: msg.data,
+                 };
+                 try {
+                   if (msg.customType === 'payment_request' && msg.data) {
+                     const customData = JSON.parse(msg.data);
+                      if (customData.paymentInfo) {
                         baseMessage.paymentInfo = customData.paymentInfo;
-                       }
-                       if (customData.isPaymentComplete !== undefined) {
-                          baseMessage.isPaymentComplete = customData.isPaymentComplete;
-                       }
-                       if (customData.isPaymentFormVisible !== undefined) {
-                          baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                       }
-                    }
-                  } catch (e) {
-                    console.error("Failed to parse cached message data:", e);
-                  }
-                  return baseMessage;
-                });
-                setMessagesByUser(prev => ({ ...prev, [channel.url]: formattedMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) }));
-                 console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 캐시 메시지 설정 완료.`, messagesByUser);
-             } else if (Array.isArray(messages)) { // 캐시 결과가 없거나 비어있는 경우에도 상태를 초기화합니다.
-                 setMessagesByUser(prev => ({ ...prev, [channel.url]: [] }));
-                 console.log(`[${channel.url}] MessageCollection: 캐시 메시지 없음 또는 비어있음. 상태 초기화.`, messagesByUser);
-             }
-          })
-          .onApiResult((messages, error) => {
-            if (error && (error instanceof Error || (typeof error === 'object' && error !== null && 'message' in error))) {
-              console.error(`[${channel.url}] MessageCollection: Error loading messages from API`, error);
-              setError(`채널 메시지 로딩 실패: ${error.message || '알 수 없는 API 오류 발생'}`);
-            } else if (Array.isArray(messages) && messages.length >= 0) { // API 결과가 메시지 배열인 경우 (비어 있을 수도 있음)
-                console.log(`[${channel.url}] MessageCollection: API returned ${messages.length} messages successfully.`);
+                      }
+                      if (customData.isPaymentComplete !== undefined) {
+                         baseMessage.isPaymentComplete = customData.isPaymentComplete;
+                      }
+                      if (customData.isPaymentFormVisible !== undefined) {
+                         baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
+                      }
+                   }
+                 } catch (e) {
+                   console.error("Failed to parse message data in collection handler:", e);
+                 }
+                 return baseMessage;
+               });
+
+               setMessagesByUser(prev => ({
+                 ...prev,
+                 [channel.url]: [...(prev[channel.url] || []), ...formattedMessages].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
+               }));
+                console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 추가 완료.`, messagesByUser);
+             },
+             onMessagesUpdated: (context, channel, messages) => {
+               console.log(`[${channel.url}] MessageCollection: Messages updated`, messages);
                 const formattedMessages = messages.map(msg => {
-                  const baseMessage: ChatMessage = {
-                    sender: (msg as UserMessage).sender?.userId || 'Unknown',
-                    message: (msg as UserMessage).message || '',
-                    messageId: msg.messageId,
-                    createdAt: msg.createdAt,
-                    messageType: msg.messageType,
-                    customType: msg.customType,
-                    data: msg.data,
-                  };
-                  try {
-                    if (msg.customType === 'payment_request' && msg.data) {
-                      const customData = JSON.parse(msg.data);
-                       if (customData.paymentInfo) {
-                        baseMessage.paymentInfo = customData.paymentInfo;
-                       }
-                       if (customData.isPaymentComplete !== undefined) {
-                          baseMessage.isPaymentComplete = customData.isPaymentComplete;
-                       }
-                       if (customData.isPaymentFormVisible !== undefined) {
-                          baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
-                       }
-                    }
-                  } catch (e) {
-                    console.error("Failed to parse API message data in collection handler:", e);
-                  }
-                  return baseMessage;
-                });
-                setMessagesByUser(prev => ({
-                    ...prev,
-                    [channel.url]: formattedMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
-                }));
-                console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 API 메시지 설정 완료.`, messagesByUser);
-            } else if (Array.isArray(error) && error.length > 0) { // error 객체에 메시지 배열이 담겨온 경우 처리
-                console.log(`[${channel.url}] MessageCollection: API returned ${error.length} messages unexpectedly in error parameter. Processing.`);
-                 const formattedMessages = error.map((msg: BaseMessage) => { // error 배열의 요소가 메시지 타입인지 확인
                    const baseMessage: ChatMessage = {
                      sender: (msg as UserMessage).sender?.userId || 'Unknown',
                      message: (msg as UserMessage).message || '',
@@ -699,34 +593,194 @@ const ChatPage: React.FC = () => {
                         }
                      }
                    } catch (e) {
-                     console.error("Failed to parse API message data in collection handler (error param):", e);
+                     console.error("Failed to parse updated message data in collection handler:", e);
                    }
                    return baseMessage;
                  });
-                  setMessagesByUser(prev => ({
-                     ...prev,
-                     [channel.url]: formattedMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
-                 }));
-                 console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 API 메시지 (오류 매개변수) 설정 완료.`, messagesByUser);
-            }
-            else { // 그 외 예상치 못한 경우
-              console.log(`[${channel.url}] MessageCollection: Received unexpected API result. Messages: ${messages}, Error: ${error}`);
-              // 필요에 따라 여기서 추가 오류 처리 또는 로깅 가능
-            }
-          });
 
 
-        messageCollectionRef.current = collection;
+               setMessagesByUser(prev => ({
+                 ...prev,
+                 [channel.url]: (prev[channel.url] || []).map(msg => {
+                    const updatedMsg = formattedMessages.find(updated => updated.messageId === msg.messageId);
+                    return updatedMsg ? updatedMsg : msg;
+                 }),
+               }));
+                console.log(`[${channel.url}] MessageCollection: messagesByUser 상태 업데이트 완료.`, messagesByUser);
+             },
+             onMessagesDeleted: (context, channel, messageIds) => {
+               console.log(`[${channel.url}] MessageCollection: Messages deleted`, messageIds);
+               setMessagesByUser(prev => ({
+                 ...prev,
+                 [channel.url]: (prev[channel.url] || []).filter(msg => {
+                   const messageIdToRemove = msg.messageId!;
+                   return !messageIds.map(String).includes(String(messageIdToRemove));
+                 }),
+               }));
+                console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에서 삭제 완료.`, messagesByUser);
+             },
+             onChannelUpdated: (context: GroupChannelEventContext, channel: GroupChannel) => {
+               console.log(`[${channel.url}] MessageCollection: Channel updated`, channel);
+                setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? channel : ch));
+             },
+             onChannelDeleted: (context: GroupChannelEventContext, channelUrl: string) => {
+               console.log(`[${channelUrl}] MessageCollection: Channel deleted`, channelUrl);
+             }
+           };
+
+           collection.setMessageCollectionHandler(collectionHandler);
+
+           collection.initialize(MessageCollectionInitPolicy.CACHE_AND_REPLACE_BY_API)
+             .onCacheResult((messages, error) => {
+               console.log(`[${channel.url}] MessageCollection: Initial messages from cache`, messages, error);
+                if (Array.isArray(messages) && messages.length > 0) {
+                    const formattedMessages = messages.map(msg => {
+                     const baseMessage: ChatMessage = {
+                       sender: (msg as UserMessage).sender?.userId || 'Unknown',
+                       message: (msg as UserMessage).message || '',
+                       messageId: msg.messageId,
+                       createdAt: msg.createdAt,
+                       messageType: msg.messageType,
+                       customType: msg.customType,
+                       data: msg.data,
+                     };
+                     try {
+                       if (msg.customType === 'payment_request' && msg.data) {
+                         const customData = JSON.parse(msg.data);
+                          if (customData.paymentInfo) {
+                            baseMessage.paymentInfo = customData.paymentInfo;
+                          }
+                          if (customData.isPaymentComplete !== undefined) {
+                             baseMessage.isPaymentComplete = customData.isPaymentComplete;
+                          }
+                          if (customData.isPaymentFormVisible !== undefined) {
+                             baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
+                          }
+                       }
+                     } catch (e) {
+                       console.error("Failed to parse cached message data:", e);
+                     }
+                     return baseMessage;
+                   });
+                   setMessagesByUser(prev => ({ ...prev, [channel.url]: formattedMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) }));
+                    console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 캐시 메시지 설정 완료.`, messagesByUser);
+                } else if (Array.isArray(messages)) { // 캐시 결과가 없거나 비어있는 경우에도 상태를 초기화합니다.
+                    setMessagesByUser(prev => ({ ...prev, [channel.url]: [] }));
+                    console.log(`[${channel.url}] MessageCollection: 캐시 메시지 없음 또는 비어있음. 상태 초기화.`, messagesByUser);
+                }
+             })
+             .onApiResult((messages, error) => {
+               // ✅ API 결과로 받은 메시지 목록과 error 매개변수를 출력하는 로그 추가
+               console.log(`[${channel.url}] MessageCollection: Initial API load result - messages:`, messages, "error:", error);
+
+               // ✅ 오류 판단 로직 개선: error가 실제 Sendbird 오류 객체 형태인지 확인.
+               // Sendbird 오류 객체는 일반적으로 code(number)와 message(string) 속성을 가집니다.
+               const isSendbirdError = (err: any): boolean => {
+                   return typeof err === 'object' && err !== null && typeof err.code === 'number' && typeof err.message === 'string';
+               };
+
+               if (error && isSendbirdError(error)) { // error가 존재하고 실제 Sendbird 오류 객체 형태인 경우
+                   console.error(`[${channel.url}] MessageCollection: Initial API load failed with Sendbird Error. Rejecting Promise.`, error);
+                   reject(error); // 실제 오류이므로 Promise reject
+               } else { // 실제 Sendbird 오류가 아닌 경우 (메시지 목록이 error로 온 경우 포함)
+                   let apiMessages: BaseMessage[] = []; // API 결과를 저장할 배열 초기화
+
+                   if (Array.isArray(messages) && messages.length > 0) {
+                       // 메시지 목록이 messages 매개변수에 정상적으로 전달된 경우
+                        console.log(`[${channel.url}] MessageCollection: API loaded messages found in messages parameter.`, messages);
+                        apiMessages = messages;
+                   } else if (messages === null && Array.isArray(error)) {
+                       // messages가 null이고 error가 배열인 경우 (Sendbird 버그 가능성)
+                        // error가 메시지 목록일 가능성이 높다고 판단 (로그에서 확인된 패턴 기반)
+                        // error 배열의 첫 번째 요소가 메시지 객체의 형태인지 추가 확인
+                       const looksLikeMessage = error.length > 0 &&
+                           typeof (error[0] as any)?.messageId !== 'undefined' &&
+                           typeof (error[0] as any)?.message !== 'undefined';
+
+                       if (looksLikeMessage) {
+                            console.log(`[${channel.url}] MessageCollection: API loaded messages found in error parameter. Using error as messages.`, error);
+                             // error를 BaseMessage 배열로 타입 단언하여 사용
+                            apiMessages = error as BaseMessage[];
+                       } else if (error.length > 0) {
+                            // error가 배열이지만 메시지 형태가 아닌 다른 정보일 경우 (예: 사용자 목록)
+                            console.info(`[${channel.url}] MessageCollection: onApiResult received non-message array in error parameter. Ignoring as messages.`, error);
+                       }
+                   } else if (messages !== null && !Array.isArray(messages)) {
+                         // messages 매개변수가 null도 아니고 배열도 아닌 경우 (예상치 못한 상황)
+                         console.warn(`[${channel.url}] MessageCollection: Initial API load result messages parameter is not an array or null.`, messages);
+                   }
+                   // messages 배열이 비어있는 경우는 apiMessages가 빈 배열로 유지됨.
+
+                   // ✅ apiMessages 배열이 유효하다면 onMessagesAdded와 유사하게 상태 업데이트를 시도
+                    if (apiMessages.length > 0) {
+                        console.log(`[${channel.url}] MessageCollection: Processing API loaded messages (${apiMessages.length} messages). Manually adding to state.`);
+                        const formattedMessages = apiMessages.map(msg => {
+                            const baseMessage: ChatMessage = {
+                              sender: (msg as UserMessage).sender?.userId || 'Unknown',
+                              message: (msg as UserMessage).message || '',
+                              messageId: msg.messageId,
+                              createdAt: msg.createdAt,
+                              messageType: msg.messageType,
+                              customType: msg.customType,
+                              data: msg.data,
+                            };
+                            try {
+                              if (msg.customType === 'payment_request' && msg.data) {
+                                const customData = JSON.parse(msg.data);
+                                 if (customData.paymentInfo) {
+                                   baseMessage.paymentInfo = customData.paymentInfo;
+                                 }
+                                 if (customData.isPaymentComplete !== undefined) {
+                                    baseMessage.isPaymentComplete = customData.isPaymentComplete;
+                                 }
+                                 if (customData.isPaymentFormVisible !== undefined) {
+                                    baseMessage.isPaymentFormVisible = customData.isPaymentFormVisible;
+                                 }
+                              } else if (msg.customType === 'system_message') {
+                                  // 시스템 메시지 처리 로직 추가 (필요하다면)
+                                  console.log("Received system message:", msg.message);
+                              }
+                            } catch (e) {
+                              console.error("Failed to parse API loaded message data:", e);
+                            }
+                            return baseMessage;
+                          });
+                          // 기존 메시지 위에 API 로드 메시지를 추가/정렬 (onMessagesAdded와 동일하게 처리)
+                          // onCacheResult에서 이미 메시지를 설정했을 수 있으므로, 기존 메시지와 합쳐서 중복 제거 및 정렬
+                          setMessagesByUser(prev => {
+                              const existingMessages = prev[channel.url] || [];
+                              const allMessages = [...existingMessages, ...formattedMessages];
+                              // messageId를 기준으로 중복 제거 (고유한 메시지만 남김)
+                              const uniqueMessages = Array.from(new Map(allMessages.map(item => [item.messageId, item])).values());
+                              // 생성 시간 순으로 정렬
+                              return { ...prev, [channel.url]: uniqueMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) };
+                          });
+                           console.log(`[${channel.url}] MessageCollection: messagesByUser 상태에 API 로드 메시지 추가/업데이트 및 정렬 완료.`);
+
+                    } else { // apiMessages 배열이 비어있는 경우
+                        console.log(`[${channel.url}] MessageCollection: Initial API load resulted in no messages.`);
+                    }
 
 
-      } catch (messageError: any) {
-        console.error('Failed to get channel or initialize MessageCollection:', messageError);
-         setError(`채널 메시지 로딩 실패: ${messageError.message || '알 수 없는 오류 발생'}`);
-         if (messageCollectionRef.current) {
-             messageCollectionRef.current.dispose();
-             messageCollectionRef.current = null;
-             console.log("MessageCollection disposed due to error.");
-         }
+                    resolve(); // 실제 오류가 아니므로 Promise resolve.
+               }
+             });
+
+           messageCollectionRef.current = collection;
+
+         });
+
+      } catch (err: any) {
+        console.error('handleOpenChatModal failed to get channel or initialize MessageCollection:', err);
+        const errorMessage = err?.message || (typeof err === 'string' ? err : JSON.stringify(err)) || '알 수 없는 오류';
+        setError(`채널 메시지 로딩 실패: ${errorMessage}`);
+        if (messageCollectionRef.current) {
+          messageCollectionRef.current.dispose();
+          messageCollectionRef.current = null;
+          console.log("MessageCollection disposed due to error.");
+        }
+        // Promise를 reject하여 handleStartNewChat의 catch 블록으로 오류 전달
+        throw err; // 오류를 다시 던져서 상위 catch에서 처리되게 함
       }
     } else {
       console.error('Sendbird SDK not initialized.');
@@ -989,35 +1043,48 @@ const ChatPage: React.FC = () => {
         isDistinct: true,
       };
 
+      // 채널 생성 또는 가져오기 (여기서는 완료될 때까지 기다립니다)
        const newChannel: GroupChannel = await sbInstance.current.groupChannel.createChannel(params);
 
       console.log('Channel created or retrieved successfully:', newChannel);
 
+      // 채널 목록 상태 업데이트
       setChannels(prevChannels => {
           if (!prevChannels.find(ch => ch.url === newChannel.url)) {
+              // 새 채널을 목록 맨 앞으로 추가
               return [newChannel, ...prevChannels];
           }
-          return prevChannels;
+          // 이미 목록에 있는 채널이면 순서만 맨 앞으로 이동 (선택 사항)
+          return [newChannel, ...prevChannels.filter(ch => ch.url !== newChannel.url)];
       });
 
-      // 새 채널 생성 또는 조회 후 해당 채널의 상대방 프로필 가져오기
+      // 새 채널 생성 또는 조회 후 해당 채널의 상대방 프로필 가져오기 (비동기 처리, 결과 기다리지 않음)
+      // 새 채널이 GroupChannel이고 멤버가 있을 때만 처리
       if (newChannel.isGroupChannel && (newChannel as GroupChannel).members && currentUser) {
-         const groupChannel = newChannel as GroupChannel; // Cast to GroupChannel
-         if (groupChannel.memberCount === 2) { // Now safe to access memberCount
-            const otherUser = groupChannel.members.find(member => member.userId !== currentUser.userId);
-         if (otherUser && !userProfiles[otherUser.userId]) {
-              const backendUserId = parseInt(otherUser.userId, 10);
-             if (!isNaN(backendUserId)) {
-                 fetchProfile(backendUserId)
-                    .then(profile => setUserProfiles(prev => ({ ...prev, [otherUser.userId]: profile })))
-                    .catch(profileError => console.error(`Failed to fetch profile for user ${otherUser.userId} after starting chat:`, profileError));
-             }
-         }
-      }
+          const groupChannel = newChannel as GroupChannel; // Cast to GroupChannel
+          if (groupChannel.memberCount === 2) { // Now safe to access memberCount
+             const otherUser = groupChannel.members.find(member => member.userId !== currentUser.userId);
+             if (otherUser) {
+                 const backendUserId = parseInt(otherUser.userId, 10);
+                if (!isNaN(backendUserId)) {
+                    fetchProfile(backendUserId)
+                       .then(profile => setUserProfiles(prev => ({ ...prev, [otherUser.userId]: profile })))
+                       .catch(profileError => console.error(`Failed to fetch profile for user ${otherUser.userId} after starting chat:`, profileError));
+                }
+            }
+          }
       }
 
+      // ✅ 채널 객체를 상태에 설정합니다.
+      setCurrentChannel(newChannel);
 
+      // ✅ handleOpenChatModal의 비동기 작업이 완료될 때까지 기다립니다.
       await handleOpenChatModal(newChannel.url);
+      console.log(`handleOpenChatModal completed for channel: ${newChannel.url}. Proceeding with navigation.`);
+
+      // targetUserId 사용 후 state 클리어
+      // 네비게이션 히스토리를 오염시키지 않기 위해 replace 사용
+      navigate(location.pathname, { replace: true, state: {} });
 
     } catch (e: any) {
       console.error("Failed to create or get channel:", e);
@@ -1106,6 +1173,58 @@ const ChatPage: React.FC = () => {
        } finally {
            setLoading(false);
        }
+  };
+
+  // ✅ 채널 닫기 (삭제) 처리 함수 추가
+  const handleCloseChannel = async (channelUrl: string) => {
+      if (!sbInstance.current || !currentUser) {
+          console.error("Cannot close channel: SDK not initialized or user not found.");
+          setError("채널 닫기 실패: 시스템 오류");
+          return;
+      }
+
+      const channelToClose = channels.find(ch => ch.url === channelUrl);
+
+      // 채널이 존재하고, 현재 사용자가 개설자인지 다시 한번 확인 (UI 표시 조건과 동일하게)
+      if (!channelToClose || !(channelToClose as GroupChannel).creator || (channelToClose as GroupChannel).creator.userId !== currentUser.userId) {
+           console.warn("Attempted to close channel without being the creator or channel not found.");
+           setError("채널 닫기 실패: 채널을 닫을 권한이 없습니다.");
+           return;
+      }
+
+      // 사용자에게 확인 메시지 표시
+      if (!window.confirm(`정말로 채널 "${(channelToClose as GroupChannel).name || channelToClose.url}"을 닫으시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+          console.log("Channel closure cancelled by user.");
+          return; // 사용자가 취소하면 함수 종료
+      }
+
+
+      setLoading(true);
+      setError(null);
+
+      try {
+          console.log(`Attempting to delete channel: ${channelUrl}`);
+          // Sendbird SDK를 사용하여 채널 삭제
+          await sbInstance.current.groupChannel.deleteChannel(channelUrl);
+
+          console.log('Channel deleted successfully:', channelUrl);
+
+          // UI 상태 업데이트: 채널 목록에서 삭제된 채널 제거
+          setChannels(prevChannels => prevChannels.filter(ch => ch.url !== channelUrl));
+
+          // 만약 현재 열려있는 채널이 삭제된 채널이면 모달 닫기
+          if (currentChannel?.url === channelUrl) {
+              handleExitClick(); // MessageCollection dispose 및 모달 상태 초기화 포함
+          }
+
+          alert("채널이 성공적으로 닫혔습니다.");
+
+      } catch (e: any) {
+          console.error('Failed to delete channel:', e);
+          setError(`채널 닫기 실패: ${e.message || '알 수 없는 오류 발생'}`);
+      } finally {
+          setLoading(false);
+      }
   };
 
   return (
@@ -1206,38 +1325,51 @@ const ChatPage: React.FC = () => {
               <h3>내 채팅 목록</h3>
               <ul className="chat-list">
               {channels.map((channel) => {
-                  // Linter Error Fix applied here: ensure currentUser exists and use channel.isGroupChannel directly
-                  const isOneToOne = currentUser && channel.isGroupChannel && (channel as GroupChannel).memberCount === 2;
-                  let otherUser: User | null = null;
-                  let otherUserProfile: UserProfileDTO | undefined = undefined;
+                  // 채널이 GroupChannel인 경우에만 1:1 여부 및 상대방 정보 확인
+                  const isGroup = channel.isGroupChannel;
+                  const isOneToOneChannel = isGroup && (channel as GroupChannel).memberCount === 2 && currentUser;
+                  const otherUser = isOneToOneChannel
+                    ? (channel as GroupChannel).members.find(member => member.userId !== currentUser.userId) || null
+                    : null;
+                  const otherUserProfile = otherUser ? userProfiles[otherUser.userId] : undefined;
 
-                  if (isOneToOne && channel.isGroupChannel && (channel as GroupChannel).members) {
-                    otherUser = (channel as GroupChannel).members.find(
-                      (member) => currentUser && member.userId !== currentUser.userId // Check currentUser existence
-                    ) || null;
-                     // 상대방 사용자의 프로필 정보 가져오기
-                     if(otherUser) {
-                         otherUserProfile = userProfiles[otherUser.userId];
-                     }
-                  }
-
-                  const displayName = otherUser?.nickname || channel.name || channel.url;
+                  // 표시 이름 결정: 1:1 채널이면 상대방 이름, 아니면 채널 이름
+                  const displayName = isOneToOneChannel ? (otherUser?.nickname || otherUser?.userId || '알 수 없는 사용자') : (channel.name || channel.url);
                   // 상대방 프로필 이미지 URL이 있으면 사용, 없으면 Sendbird 프로필 URL 또는 기본 이미지 사용
                   const displayImage = otherUserProfile?.thumbnailImagePath || otherUser?.profileUrl || channel.coverUrl || "/profile-placeholder.jpg";
+
+                  // ✅ 현재 사용자가 채널 생성자인지 확인
+                  const isChannelCreator = currentUser && channel.creator?.userId === currentUser.userId;
 
 
                   return (
                     <li
                       key={channel.url}
-                      onClick={() => handleOpenChatModal(channel.url)}
                     >
-                      <img className="channel-cover-image" src={displayImage} alt={displayName} />
-                      <div className="chat-info">
-                        <strong>{displayName}</strong>
-                        <p>
-                           {channel.lastMessage && (channel.lastMessage as UserMessage).message ? (channel.lastMessage as UserMessage).message : "대화 시작"}
-                        </p>
+                      {/* ✅ 채널 정보 표시 영역 클릭 시 채팅 모달 열기 */}
+                      <div className="channel-info-display" onClick={() => handleOpenChatModal(channel.url)}>
+                         <img className="channel-cover-image" src={displayImage} alt={displayName} />
+                         <div className="chat-info">
+                           <strong>{displayName}</strong>
+                           <p>
+                              {channel.lastMessage && (channel.lastMessage as UserMessage).message ? (channel.lastMessage as UserMessage).message : "대화 시작"}
+                           </p>
+                         </div>
                       </div>
+
+                      {/* ✅ 채널 개설자이고 공개 채널인 경우에만 채널 닫기 버튼 표시 */}
+                      {isChannelCreator && channel.isPublic && ( // isPublic 속성도 확인하여 공개 채널에만 닫기 버튼 표시
+                          <button
+                              className="close-channel-btn"
+                              onClick={(e) => {
+                                  e.stopPropagation(); // <li> 클릭 이벤트 방지
+                                  handleCloseChannel(channel.url);
+                              }}
+                              disabled={loading}
+                          >
+                              채널 닫기
+                          </button>
+                      )}
                     </li>
                   );
                 })}
@@ -1254,10 +1386,10 @@ const ChatPage: React.FC = () => {
             <div className="chat-header">
               <div className="chat-header-left">
                  {/* Linter Error Fix applied here: ensure currentUser exists and use currentChannel.isGroupChannel directly */}
-                 {currentUser && currentChannel.isGroupChannel && (currentChannel as GroupChannel).memberCount === 2 && (currentChannel as GroupChannel).members ? // Check isGroupChannel property
-                   // 현재 채널의 상대방 프로필 정보 가져오기
-                   (currentChannel as GroupChannel).members.find(member => currentUser && member.userId !== currentUser.userId)?.nickname || currentChannel.name || currentChannel.url // Cast to GroupChannel
-                   : currentChannel.name || currentChannel.url
+                 {currentChannel?.isGroupChannel && (currentChannel as GroupChannel).memberCount === 2 && currentUser && (currentChannel as GroupChannel).members ? // 현재 채널이 GroupChannel이고 1:1 채널이며 사용자 정보가 있을 때
+                     // 현재 채널의 상대방 프로필 정보 가져오기
+                     (currentChannel as GroupChannel).members.find(member => member.userId !== currentUser.userId)?.nickname || (currentChannel as GroupChannel).members.find(member => member.userId !== currentUser.userId)?.userId || '알 수 없는 사용자' // 상대방 닉네임 또는 ID
+                     : currentChannel.name || currentChannel.url // 그룹 채널 또는 정보 없을 때 채널 이름/URL
                  }
               </div>
               <button className="main-page-btn" onClick={() => navigate('/')}>

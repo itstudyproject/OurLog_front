@@ -71,8 +71,10 @@ const AccountEdit: React.FC = () => {
 
   return (
     <div className="account-edit-container">
-      <h3>회원 정보 수정</h3>
-      <div className="form-group">
+            <div className="profile-header">
+      <h1 className="header-title">회원 정보 수정</h1>
+      </div>
+      <div className="ae-form-group">
         <label htmlFor='currentPw'>현재 비밀번호</label>
         <input
           type="password"
@@ -81,7 +83,7 @@ const AccountEdit: React.FC = () => {
           onChange={(e) => setCurrentPw(e.target.value)}
         />
       </div>
-      <div className="form-group">
+      <div className="ae-form-group">
         <label htmlFor="new-password">새 비밀번호:</label>
         <input
           type="password"
@@ -90,7 +92,7 @@ const AccountEdit: React.FC = () => {
           onChange={(e) => setNewPw(e.target.value)}
         />
       </div>
-      <div className="form-group">
+      <div className="ae-form-group">
         <label htmlFor="confirm-password">비밀번호 확인:</label>
         <input
           type="password"
@@ -99,8 +101,10 @@ const AccountEdit: React.FC = () => {
           onChange={(e) => setConfirmPw(e.target.value)}
         />
       </div>
-      <button className="update-button" onClick={handlePasswordChange}>비밀번호 변경</button>
-      <button className="back-button" onClick={handleBack}>뒤로가기</button>
+      <div className="action-buttons">
+      <button className="ae-back-button" onClick={handleBack}>취소</button>
+      <button className="ae-update-button" onClick={handlePasswordChange}>비밀번호 변경</button>
+      </div>
     </div>
   );
 };

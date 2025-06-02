@@ -166,10 +166,10 @@
   margin-top: 20px;
 }
 
-.cancel-button,
-.save-button {
+.pe-cancel-button,
+.pe-save-button {
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: 16px;
   border-radius: 8px;
   cursor: pointer;
   border: none;
@@ -196,7 +196,7 @@
   opacity: 0.9;
 }
 
-.save-button {
+.pe-save-button {
   background-color: #f8c147;
   color: #111;
 }

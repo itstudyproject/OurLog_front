@@ -64,7 +64,6 @@
 
 .chat-list li {
   display: flex;
-  align-items: center;
   padding: 12px;
   cursor: pointer;
   border-bottom: 1px solid #333;
@@ -77,7 +76,13 @@
   border-radius: 6px;
 }
 
-.chat-list img {
+.channel-info-display {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.chat-list img.channel-cover-image {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -85,15 +90,22 @@
   object-fit: cover;
 }
 
-.chat-info strong {
+.chat-info {
   display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.chat-info strong {
+  display: block;
   color: var(--text-color);
   font-weight: 600;
+  margin-bottom: 2px;
 }
 
 .chat-info p {
   font-size: 13px;
-  margin: 2px 0;
+  margin: 0;
   color: var(--text-sub);
 }
 
@@ -109,6 +121,7 @@
   display: flex;
   flex-direction: column;
   max-height: 90vh;
+  min-height: 60vh;
   overflow: hidden;
 }
 
@@ -225,10 +238,10 @@
 /* 결제 카드 */
 .payment-card {
   margin-top: 10px;
-  border: 1px solid var(--border-color);
+  /* border: 1px solid var(--border-color); */
   padding: 10px;
   border-radius: 10px;
-  background-color: #1a1a1a;
+  background-color: var(--highlight);
 }
 
 .payment-card img {
@@ -245,10 +258,11 @@
   font-size: 14px;
 }
 
-.payment-btn {
+.payment-btn,
+.complete-payment-btn {
   margin-top: 8px;
-  background-color: var(--highlight);
-  color: #000;
+  background-color: var(--bg-secondary);
+  color: #fff;
   padding: 6px 12px;
   border: none;
   border-radius: 6px;
@@ -257,7 +271,7 @@
 }
 
 .payment-btn:hover {
-  background-color: #ffd05e;
+  background-color: var(--border-color);
 }
 
 /* 결제 입력 폼 */
@@ -279,8 +293,8 @@
 
 .payment-form button {
   padding: 8px;
-  background-color: var(--highlight);
-  color: #000;
+  background-color: var(--bg-secondary);
+  color: #fff;
   border: none;
   border-radius: 6px;
   font-weight: bold;
@@ -326,10 +340,14 @@
   background-color: #444; /* 마이페이지 primary 버튼 호버 색상 */
 }
 
+.complete-payment-btn:hover {
+  background-color: var(--border-color);
+}
+
+
 .search-user-btn,
 .start-chat-btn,
-.send-message-btn,
-.complete-payment-btn {
+.send-message-btn {
   padding: 8px 16px;
   background-color: var(--highlight);
   color: #000;
@@ -342,8 +360,7 @@
 
 .search-user-btn:hover,
 .start-chat-btn:hover,
-.send-message-btn:hover,
-.complete-payment-btn:hover {
+.send-message-btn:hover {
   background-color: #ffd05e;
 }
 
@@ -481,7 +498,7 @@
 
 /* 내 채팅 목록 섹션 */
 .my-chat-list-section {
-  max-height: 200px; /* 적절한 최대 높이 설정 */
+  max-height: 400px; /* 적절한 최대 높이 설정 */
   overflow-y: auto; /* 내용이 넘칠 때 스크롤 */
   margin-top: 20px;
 }

@@ -524,6 +524,14 @@ const MyPage: React.FC = () => {
             >
               회원정보수정
             </button>
+            {userId !== null && (
+              <button
+                className="mp-button primary"
+                onClick={() => navigate("/chat")}
+              >
+                채팅 목록
+              </button>
+            )}
             <button
               className="mp-button danger"
               onClick={() => navigate("/mypage/account/delete")}
