@@ -1,79 +1,100 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuthHeaders, removeToken } from '../utils/auth';
 import '../styles/AccountDelete.css';
 
-const AccountDelete = () => {
-  const [reason, setReason] = useState('');
-  const [customReason, setCustomReason] = useState('');
+interface AccountDeleteProps {
+  // userId: number | null; // ✅ MyPage에서 prop으로 받지 않고 localStorage에서 직접 가져옵니다.
+}
+
+const AccountDelete: React.FC<AccountDeleteProps> = () => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
 
-  const reasons = [
-    '기록 삭제하고 싶어요',
-    '이용이 불편하고 장애가 많아요',
-    '마음에 드는 콘텐츠가 없어요',
-    '사용빈도가 낮아요',
-    '기타',
-  ];
+   // ✅ localStorage에서 userId를 직접 가져옵니다.
+  const stored = localStorage.getItem("user");
+  const userId = stored ? (JSON.parse(stored).userId as number) : null;
 
-  const handleDelete = () => {
-    // 탈퇴 처리 로직 (API 연동 등)
-    alert('회원 탈퇴가 처리되었습니다.');
+  const handleDeleteAccount = async () => {
+    if (userId === null) {
+        alert("로그인이 필요합니다.");
+        navigate("/login");
+        return;
+    }
+    if (!password) {
+      alert('비밀번호를 입력해주세요.');
+      return;
+    }
+
+    const confirmDelete = window.confirm('정말로 회원 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+    if (!confirmDelete) return;
+
+    try {
+       const headers = getAuthHeaders();
+       if (!headers) {
+           alert("로그인이 필요합니다.");
+           navigate("/login");
+           return;
+       }
+
+      const response = await fetch(`http://localhost:8080/ourlog/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: password }),
+      });
+
+      if (!response.ok) {
+         const errorText = await response.text();
+         console.error("회원 탈퇴 실패 응답:", errorText);
+         alert(`회원 탈퇴 실패: ${errorText || "서버 오류"}`);
+         return;
+      }
+
+      // 회원 탈퇴 성공 시 로컬 스토리지에서 토큰 및 사용자 정보 제거
+      removeToken();
+      localStorage.removeItem('user');
+
+      alert('회원 탈퇴가 성공적으로 완료되었습니다.');
+      navigate('/'); // 메인 페이지로 이동
+
+    } catch (error) {
+      console.error('회원 탈퇴 요청 중 오류 발생:', error);
+       alert(`회원 탈퇴 요청 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
+
+  const handleBack = () => {
+    navigate('/mypage');
+  };
+
+  // userId가 null이면 로그인 요청 메시지 표시 또는 리다이렉트
+   if (userId === null) {
+       return (
+           <div className="account-delete-container">
+               <p>회원 탈퇴는 로그인 후에 가능합니다.</p>
+               <button onClick={() => navigate("/login")}>로그인 페이지로 이동</button>
+           </div>
+       );
+   }
 
   return (
     <div className="account-delete-container">
-      <h1 className="delete-title">회원 탈퇴</h1>
-      <div className="warning-banner">
-        <span className="icon">⚠️</span>
-        <p><strong>회원 탈퇴</strong>로 삭제된 계정과 이용정보는 다시 복구할 수 없으니 신중하게 결정해주세요.</p>
-      </div>
-
-      <h2 className="section-title">회원 탈퇴 시 유의사항</h2>
-      <ul className="caution-list">
-        <li>계정 및 프로필, 콘텐츠와 수익 내역이 모두 삭제돼요.</li>
-        <li>댓글, 좋아요 등은 ‘탈퇴한 이용자’로 마스킹돼요.</li>
-        <li>팀 채널 글은 삭제되지 않고 소유권이 이전돼요.</li>
-        <li>미정산 수익은 즉시 소멸되며 복구가 불가해요.</li>
-        <li>출금 내역은 확인할 수 없으니 참고해주세요.</li>
-      </ul>
-
-      <h2 className="section-title">회원 탈퇴 사유</h2>
-      <div className="reason-options">
-        {reasons.map((r) => (
-          <label key={r} className="reason-label">
-            <input
-              type="radio"
-              name="reason"
-              value={r}
-              onChange={() => setReason(r)}
-              checked={reason === r}
-            />
-            {r}
-            {r === '기타' && reason === '기타' && (
-              <input
-                type="text"
-                className="custom-reason-input"
-                placeholder="사유를 입력해주세요"
-                value={customReason}
-                onChange={(e) => setCustomReason(e.target.value)}
-              />
-            )}
-          </label>
-        ))}
-      </div>
-
+      <h3>회원 탈퇴</h3>
+      <p>회원 탈퇴를 위해 비밀번호를 입력해주세요.</p>
       <div className="form-group">
-        <label htmlFor="password-input">현재 비밀번호</label>
+        <label htmlFor="password">비밀번호:</label>
         <input
           type="password"
-          className="password-input"
+          id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-
-      <button className="delete-button" onClick={handleDelete}>
-        탈퇴하기
-      </button>
+      <button className="delete-button" onClick={handleDeleteAccount}>회원 탈퇴</button>
+      <button className="back-button" onClick={handleBack}>뒤로가기</button>
     </div>
   );
 };

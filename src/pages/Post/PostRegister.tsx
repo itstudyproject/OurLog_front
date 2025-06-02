@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import "../../styles/PostRegiModi.css";
@@ -17,7 +17,7 @@ interface FormData {
   title: string;
   content: string;
   images: ImageFile[];
-  thumbnailId: string | null;
+  fileName: string | null;
   category: string;
 }
 
@@ -27,18 +27,20 @@ const PostRegister = () => {
   const params = new URLSearchParams(location.search);
   const initialCategory = params.get("category") || "자유게시판";
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
     content: "",
     images: [],
-    thumbnailId: null,
-    category: initialCategory,
+    fileName: null,
+    category: initialCategory === "새소식" ? "자유게시판" : initialCategory,
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [characterCount, setCharacterCount] = useState<number>(0);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>("");
+  const [countdown, setCountdown] = useState<string>("경매 정보 없음");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -100,7 +102,7 @@ const PostRegister = () => {
         filesToProcess.map(async (file) => {
           const error = validateImage(file);
           if (error) throw new Error(error);
-      
+
           const uploaded = await uploadImage(file);
           return {
             file: null,
@@ -119,8 +121,8 @@ const PostRegister = () => {
       setFormData((prev) => ({
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId || (newImages.length > 0 ? newImages[0].id : null),
+        fileName:
+          prev.fileName || (newImages.length > 0 ? newImages[0].id : null),
       }));
     } catch (error) {
       alert(error instanceof Error ? error.message : "이미지 업로드 오류");
@@ -137,12 +139,12 @@ const PostRegister = () => {
       return {
         ...prev,
         images: newImages,
-        thumbnailId:
-          prev.thumbnailId === id
+        fileName:
+          prev.fileName === id
             ? newImages.length > 0
               ? newImages[0].id
               : null
-            : prev.thumbnailId,
+            : prev.fileName,
       };
     });
   };
@@ -150,7 +152,7 @@ const PostRegister = () => {
   const handleThumbnailSelect = (id: string) => {
     setFormData((prev) => ({
       ...prev,
-      thumbnailId: id,
+      fileName: id,
     }));
   };
 
@@ -189,7 +191,7 @@ const PostRegister = () => {
       content: newContent,
     }));
   };
-  
+
   const getBoardNo = (category: string): number => {
     switch (category) {
       case "새소식":
@@ -246,41 +248,23 @@ const PostRegister = () => {
         return;
       }
 
-      // 사용자 정보 조회
-      const userResponse = await fetch("http://localhost:8080/ourlog/user/me", {
-        method: "GET",
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-
-      if (userResponse.status === 403) {
-        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        localStorage.removeItem('token');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user.userId) {
+        alert("로그인이 필요합니다.");
         navigate("/login");
         return;
       }
-
-      if (!userResponse.ok) {
-        throw new Error("사용자 정보를 가져오는데 실패했습니다.");
-      }
-
-      const userData = await userResponse.json();
-      console.log("사용자 정보:", userData); // 디버깅용
 
       const postDTO = {
         title: formData.title,
         content: formData.content,
         boardNo: getBoardNo(formData.category),
-        fileName: formData.thumbnailId,
+        fileName: formData.fileName,
         pictureDTOList: formData.images.map((img) => ({
           picId: img.picId,
           uuid: img.uuid,
           picName: img.picName,
           path: img.path,
-          picDescribe: null,
           downloads: 0,
           tag: null,
           originImagePath: `${img.path}/${img.uuid}_${img.picName}`,
@@ -288,9 +272,8 @@ const PostRegister = () => {
           resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`
         })),
         userDTO: {
-          userId: userData.userId,
-          nickname: userData.nickname,
-          email: userData.email
+          userId: user.userId,
+          nickname: user.nickname || user.email || "익명"
         },
         tag: tags.join(','),
         views: 0,
@@ -299,24 +282,16 @@ const PostRegister = () => {
         replyCnt: 0
       };
 
-      console.log("전송할 데이터:", postDTO); // 디버깅용
+      console.log("전송할 데이터:", postDTO);
 
       const response = await fetch("http://localhost:8080/ourlog/post/register", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           'Authorization': `Bearer ${token}`
         },
-        credentials: 'include',
         body: JSON.stringify(postDTO),
       });
-
-      if (response.status === 403) {
-        alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        localStorage.removeItem('token');
-        navigate("/login");
-        return;
-      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -324,7 +299,7 @@ const PostRegister = () => {
       }
 
       const result = await response.json();
-      console.log("등록 결과:", result); // 디버깅용
+      console.log("등록 결과:", result);
 
       alert("게시물이 성공적으로 등록되었습니다.");
       navigate("/post");
@@ -347,6 +322,34 @@ const PostRegister = () => {
     alert("임시저장 되었습니다.");
   };
 
+  const handleInsertImage = (image: ImageFile) => {
+    const textarea = contentTextareaRef.current;
+    if (!textarea) return;
+
+    const imageUrl = image.preview;
+    const markdownImage = `\\n![${image.picName} 이미지](${imageUrl})\\n`;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = textarea.value;
+
+    const newValue =
+      currentValue.substring(0, start) +
+      markdownImage +
+      currentValue.substring(end);
+
+    setFormData((prev) => ({
+      ...prev,
+      content: newValue,
+    }));
+
+    const newCursorPosition = start + markdownImage.length;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+    }, 0);
+  };
+
   return (
     <div className="post-register-wrapper">
       <div className="post-register-container">
@@ -356,9 +359,11 @@ const PostRegister = () => {
             value={formData.category}
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
+            {/* '새소식' 옵션 추가 */}
+            {/* <option value="새소식">새소식</option> */}
             <option value="자유게시판">자유게시판</option>
-            <option value="요청게시판">요청게시판</option>
             <option value="홍보게시판">홍보게시판</option>
+            <option value="요청게시판">요청게시판</option>
           </select>
         </div>
       </div>
@@ -393,7 +398,7 @@ const PostRegister = () => {
               <Droppable droppableId="images" direction="horizontal">
                 {(provided) => (
                   <div
-                    className="image-grid"
+                    className="post-image-grid"
                     {...provided.droppableProps}
                     ref={provided.innerRef}
                   >
@@ -408,13 +413,11 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`image-item ${
-                              snapshot.isDragging ? "dragging" : ""
-                            } ${
-                              formData.thumbnailId === image.id
-                                ? "thumbnail-selected"
+                            className={`post-image-item ${snapshot.isDragging ? "dragging" : ""
+                              } ${formData.fileName === image.id
+                                ? "post-thumbnail-selected"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <img
                               src={image.preview}
@@ -422,24 +425,24 @@ const PostRegister = () => {
                               className="preview-img"
                               onClick={() => handleThumbnailSelect(image.id)}
                             />
-                            <div className="image-overlay">
+                            <div className="post-image-overlay">
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(image.id)}
-                                className="remove-image-btn"
+                                className="post-remove-image-btn"
                                 aria-label="이미지 삭제"
                               >
                                 ×
                               </button>
-                              {formData.thumbnailId === image.id ? (
-                                <span className="thumbnail-badge">썸네일</span>
+                              {formData.fileName === image.id ? (
+                                <span className="post-thumbnail-badge">썸네일</span>
                               ) : (
                                 <button
                                   type="button"
                                   onClick={() =>
                                     handleThumbnailSelect(image.id)
                                   }
-                                  className="thumbnail-button"
+                                  className="post-thumbnail-button"
                                 >
                                   썸네일로 설정
                                 </button>
@@ -461,44 +464,6 @@ const PostRegister = () => {
             </p>
           </div>
 
-          <DragDropContext onDragEnd={handleContentImageDragEnd}>
-            <Droppable droppableId="content-images" direction="horizontal">
-              {(provided) => (
-                <div
-                  className="content-images"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
-                  {formData.images.map((image, index) => (
-                    <Draggable
-                      key={image.id}
-                      draggableId={`content-${image.id}`}
-                      index={index}
-                    >
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`content-image-wrapper ${
-                            snapshot.isDragging ? "dragging" : ""
-                          }`}
-                        >
-                          <img
-                            src={image.preview}
-                            alt="내용 이미지"
-                            className="content-image"
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-
           <textarea
             name="content"
             value={formData.content}
@@ -506,6 +471,7 @@ const PostRegister = () => {
             placeholder="내용을 입력하세요"
             className="content-textarea"
             rows={8}
+            ref={contentTextareaRef}
           />
           <div className="char-count">{characterCount}자</div>
 

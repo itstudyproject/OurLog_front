@@ -1,0 +1,530 @@
+/* src/styles/MyPage.css */
+
+/* 기본 설정 */
+body {
+  background-color: #1a1a1a; /* 배경색 */
+  color: #ccc; /* 기본 글자색 */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* MyPage 컨테이너 */
+.mp-container {
+  max-width: 800px; /* 원래 이미지 기반 너비 */
+  margin: 0 auto;
+  padding: 20px;
+  color: #ccc; /* 기본 글자색 */
+  font-family: Arial, sans-serif;
+  background-color: #000000; /* 배경색 */
+}
+
+/* 페이지 제목 */
+.mp-page-title {
+  margin-bottom: 30px;
+  /* position: relative;  필요하다면 추가 */
+}
+
+.mp-page-title h2 {
+  font-size: 24px; /* 원래 이미지 기반 크기 */
+  color: #fff;
+  margin: 0 0 10px 0;
+  font-weight: 600;
+  padding-bottom: 5px;
+  display: inline-block;
+  border-bottom: 2px solid #f8c147; /* 하단 강조선 */
+}
+
+/* 프로필 섹션 */
+.mp-profile-section {
+  display: flex;
+  align-items: center;
+  background-color: #232323; /* 배경색 */
+  border-radius: 8px;
+  padding: 20px; /* 원래 이미지 기반 패딩 */
+  margin-bottom: 30px;
+}
+
+/* 프로필 이미지 컨테이너 */
+.mp-profile-image {
+  width: 100px; /* 원래 이미지 기반 크기 */
+  height: 100px;
+  border-radius: 50%; /* 원형 이미지 */
+  overflow: hidden;
+  margin-right: 20px; /* 상세 정보와의 간격 */
+  flex-shrink: 0;
+  background-color: #3a3a3a; /* 이미지 로딩 전 배경 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mp-profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 프로필 상세 정보 */
+.mp-profile-details {
+  flex-grow: 1;
+}
+
+.mp-profile-details h3 {
+  font-size: 18px;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+/* 팔로우/팔로잉 통계 */
+.mp-follow-stats {
+  display: flex; /* 가로 정렬 */
+  gap: 20px; /* 항목 간 간격 */
+  margin-top: 10px; /* 위쪽 마진 */
+  font-size: 14px; /* 글자 크기 */
+  color: #999; /* 글자 색상 */
+}
+
+/* 프로필 관련 버튼 그룹 */
+.mp-profile-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+/* 버튼 기본 스타일 */
+.mp-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.mp-button.primary {
+  background-color: #333;
+  color: #ccc;
+}
+
+.mp-button.primary:hover {
+  background-color: #444;
+}
+
+.mp-button.danger {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.mp-button.danger:hover {
+  background-color: #c0392b;
+}
+
+/* 메뉴 섹션 제목 */
+.mp-section-title {
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.mp-section-title h2 {
+    font-size: 24px;
+    color: #fff;
+    margin: 0;
+    padding-bottom: 5px;
+    display: inline-block;
+    border-bottom: 2px solid #f8c147;
+}
+
+
+/* 서브 탭 네비게이션 */
+.mp-sub-tab-nav {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #444;
+  /* ✅ 탭 너비 및 반응형 조절 */
+  flex-wrap: wrap; /* 공간 부족 시 줄바꿈 */
+  gap: 10px; /* 탭 간 간격 */
+}
+
+.mp-sub-tab {
+  padding: 10px 15px;
+  border: none;
+  background-color: transparent;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out, border-bottom 0.2s ease-in-out;
+  border-bottom: 2px solid transparent;
+  flex-grow: 1; /* 탭 너비 동일하게 분배 */
+  text-align: center;
+  white-space: nowrap; /* 탭 이름 줄바꿈 방지 */
+}
+
+.mp-sub-tab:hover {
+  color: #ccc;
+}
+
+.mp-sub-tab.active {
+  color: #fff;
+  border-bottom-color: #f8c147;
+  font-weight: bold;
+}
+
+/* 서브 페이지 내용 (구매/입찰 목록 등) */
+/* 이 부분은 PurchaseBidPage.css 등에서 스타일링될 것입니다. */
+/* MyPage.css에서는 컨테이너 역할만 하도록 할 수 있습니다. */
+
+/* ✅ 마이페이지 탭 컨텐츠 그리드 스타일 (나의 글/아트, 북마크 탭) */
+/* 기존 worker-gallery 클래스 재활용 */
+.mp-tab-content-grid.worker-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* 반응형 그리드 */
+    gap: 20px; /* 그리드 항목 간 간격 */
+    margin-bottom: 40px;
+}
+
+/* ✅ 마이페이지 카드 스타일 (WorkerPage.css 참고, mp- 접두사 사용) */
+/* 기존 .worker-card 클래스 재활용 및 필요한 mp- 스타일 정의 */
+.mp-card.worker-card {
+  background-color: #232323; /* 배경색 */
+  border-radius: 8px;
+  overflow: hidden; /* 이미지 경계 처리 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  position: relative;
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+}
+
+.mp-card.worker-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mp-card-image-wrapper.worker-card-image-wrapper { /* 이미지 컨테이너 */
+    position: relative; /* 좋아요 버튼 위치 기준 */
+    width: 100%; /* 부모 너비에 맞춤 */
+    padding-top: 100%; /* 1:1 비율 유지 (정사각형) */
+    overflow: hidden;
+    background-color: #3a3a3a; /* 이미지 로딩 전 배경 */
+}
+
+.mp-card-image.worker-card-image { /* 이미지 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지 비율 유지하며 채우기 */
+}
+
+.mp-like-button.worker-like-button { /* 좋아요 버튼 */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  outline: none;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #cccccc;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mp-like-button.worker-like-button.liked {
+  color: #ff6347; /* 주황색 하트 */
+}
+
+.mp-like-button.worker-like-button:hover {
+  background: #777777; /* 호버 시 배경색 */
+  color: #ff8c00; /* 호버 시 색상 */
+}
+
+.mp-card-body.worker-card-body { /* 카드 내용 영역 */
+  padding: 15px;
+  flex-grow: 1; /* 남은 공간 채우기 */
+  display: flex;
+  flex-direction: column;
+}
+
+.mp-card-title.worker-card-title { /* 카드 제목 */
+  font-size: 16px; /* 원래 18px에서 조정 */
+  color: #fff;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ✅ 로딩 및 내용 없음 메시지 스타일 */
+.mp-loading,
+.mp-no-content {
+    text-align: center;
+    font-size: 18px;
+    color: #999;
+    padding: 50px 0;
+}
+
+
+/* ✅ 판매목록/현황 탭 관련 스타일 (BidHistory.css 참고하여 mp- 접두사 사용) */
+.mp-sale-trade-lists-wrapper {
+  display: flex;
+  gap: 40px; /* BidHistory.css의 gap과 유사하게 */
+  margin-top: 20px;
+}
+
+.mp-list-section { /* BidHistory.css의 bh-list-section과 유사 */
+  flex: 1;
+  min-width: 0; /* Flex 아이템이 축소될 수 있도록 */
+}
+
+.mp-list-section h3 { /* BidHistory.css의 bh-list-section h3과 유사 */
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f8c147;
+  padding-bottom: 5px;
+}
+
+.mp-list { /* 목록 컨테이너 스타일 추가 */
+    /* 여기에 목록 아이템들을 감싸는 컨테이너 스타일 추가 (필요시) */
+}
+
+
+/* 목록 아이템 기본 스타일 (BidHistory.css의 bh-item.data와 유사) */
+.mp-item.data {
+  display: flex;
+  align-items: center;
+  background-color: #2a2a2a; /* BidHistory.css와 유사 */
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.mp-item.data:hover {
+  background-color: #333333;
+}
+
+/* 썸네일 스타일 (BidHistory.css의 bh-item-thumbnail과 유사) */
+.mp-item-thumbnail {
+   width: 80px; /* BidHistory보다 약간 작게 */
+   height: 80px; /* BidHistory보다 약간 작게 */
+   border-radius: 4px;
+   overflow: hidden;
+   margin-right: 15px; /* 간격 조정 */
+   flex-shrink: 0;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   background-color: #3a3a3a;
+}
+
+.mp-item-thumbnail img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+}
+
+/* 이미지 없는 경우 placeholder (BidHistory.css의 bh-no-image-placeholder-small과 유사) */
+.mp-no-image-placeholder-small {
+  font-size: 30px; /* BidHistory보다 약간 작게 */
+  color: #cccccc;
+}
+
+/* 아이템 상세 정보 (BidHistory.css의 bh-item-details와 유사) */
+.mp-item-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; /* 텍스트 오버플로우 방지 */
+}
+
+/* 아이템 제목 (BidHistory.css의 bh-item-title와 유사) */
+.mp-item-title {
+   font-size: 16px; /* BidHistory보다 약간 작게 */
+   color: #ffffff;
+   margin-bottom: 4px; /* 간격 조정 */
+   font-weight: 600;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   max-width: 100%;
+}
+
+/* 아이템 가격 (BidHistory.css의 bh-item-price와 유사) */
+.mp-item-price {
+   font-size: 14px; /* BidHistory보다 약간 작게 */
+   color: #f8c147; /* 강조 색상 */
+   font-weight: bold;
+   margin-bottom: 4px; /* 간격 조정 */
+}
+
+/* 아이템 시간 (BidHistory.css의 bh-item-time와 유사) */
+.mp-item-time {
+   font-size: 13px; /* BidHistory보다 약간 작게 */
+   color: #aaaaaa;
+}
+
+/* 상태 표시 (BidHistory.css의 bh-item-status와 유사) */
+.mp-item-status {
+   position: static; /* flexbox 내에서 정상 배치 */
+   margin-left: 15px; /* 간격 조정 */
+   padding: 4px 10px; /* 패딩 조정 */
+   border-radius: 12px; /* 반지름 조정 */
+   font-size: 12px; /* 글자 크기 조정 */
+   font-weight: bold;
+   text-transform: uppercase;
+   color: #1a1a1a;
+   background-color: #cccccc; /* 기본 상태 색상 (판매 중) */
+   flex-shrink: 0;
+}
+
+.mp-item-status.sold { /* 판매 완료 상태 (BidHistory.css의 bh-item-status.won과 유사) */
+  background-color: #2ecc71; /* 녹색 */
+  color: #ffffff;
+}
+
+/* 상태 및 버튼 컨테이너 (판매 완료 항목에 사용, BidHistory.css의 bh-item-status-container와 유사) */
+.mp-item-status-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0; /* 축소 방지 */
+  margin-left: 15px; /* 간격 조정 */
+}
+
+/* 다운로드 버튼 스타일 (BidHistory.css의 bh-download-button과 유사) */
+.mp-download-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.1em; /* 아이콘 크기 */
+  transition: transform 0.2s;
+  color: #f8c147; /* 강조 색상 */
+  display: flex;
+  align-items: center;
+}
+
+.mp-download-button:hover {
+  transform: scale(1.1);
+  color: #ffd700; /* 호버 색상 */
+}
+
+.mp-download-button:active {
+  transform: scale(0.95);
+}
+
+/* 내용 없음 메시지 (BidHistory.css의 bh-no-bids와 유사) */
+.mp-no-bids {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+
+/* 반응형 디자인 (BidHistory.css 참고) */
+@media (max-width: 768px) {
+  .mp-sale-trade-lists-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .mp-list-section {
+    flex: none;
+    width: 100%;
+  }
+
+  .mp-item.data {
+    flex-direction: row; /* 모바일에서 다시 가로 정렬 */
+    align-items: center;
+  }
+
+  .mp-item-thumbnail {
+    margin-right: 15px; /* 간격 유지 */
+    margin-bottom: 0; /* 하단 마진 제거 */
+    width: 80px; /* 크기 유지 */
+    height: 80px; /* 크기 유지 */
+  }
+
+  .mp-item-details {
+    width: auto; /* 자동 너비 */
+    flex-grow: 1; /* 남은 공간 채우기 */
+  }
+
+  .mp-item-status {
+    position: static; /* flexbox 내에서 정상 배치 */
+    margin-left: 15px; /* 간격 유지 */
+    margin-top: 0;
+  }
+
+   .mp-item-status-container {
+     position: static; /* flexbox 내에서 정상 배치 */
+     margin-left: 15px; /* 간격 유지 */
+     margin-top: 0;
+   }
+
+  .mp-page-title h2 {
+    font-size: 22px; /* 모바일에서 약간 줄임 */
+  }
+
+  .mp-sub-tab-nav {
+     gap: 5px; /* 모바일 탭 간격 줄임 */
+  }
+   .mp-sub-tab {
+     padding: 8px 10px; /* 모바일 탭 패딩 조정 */
+     font-size: 14px; /* 모바일 탭 글자 크기 조정 */
+   }
+
+    .mp-profile-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .mp-profile-image {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    .mp-profile-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+     .mp-button {
+        width: 100%; /* 버튼 너비 채우기 */
+        text-align: center;
+     }
+}
+
+/* ✅ 기존 그리드 레이아웃에 영향 가지 않도록 mp-tab-content-grid 관련 스타일 분리 */
+/* mp-tab-content-grid, mp-card, mp-card-image-wrapper, mp-card-image, mp-card-body, mp-card-title, mp-like-button는 기존 스타일 유지 */
+
+/* 기존 WorkerPage.css에서 가져온 스타일 중 마이페이지에서 필요한 것만 MyPage.css에 통합 */
+/* WorkerPage.css에서 필요한 mp- prefixed 스타일은 이미 MyPage.css에 복사됨 */
+
+/* mp-list 클래스는 BidHistory.css의 .bh-list와 유사하게 스타일링 (필요시 추가) */
+/* 현재는 별도 스타일 필요 없어 보이지만, 나중에 flex-direction: column 등을 추가할 수 있음 */
+/* 예를 들어:
+.mp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; // mp-item data 간 간격
+}
+*/ 

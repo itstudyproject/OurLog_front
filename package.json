@@ -13,6 +13,8 @@
     "@fontsource/material-icons": "^5.2.5",
     "@hello-pangea/dnd": "^18.0.1",
     "@radix-ui/react-slot": "^1.1.0",
+    "@sendbird/chat": "^4.18.0",
+    "@sendbird/uikit-react": "^3.16.6",
     "@tailwindcss/postcss": "^4.1.5",
     "@tailwindcss/vite": "^4.1.5",
     "@types/react-datepicker": "^6.2.0",
@@ -28,6 +30,8 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.0",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3",
     "styled-components": "^6.1.17",
     "tailwind-merge": "2.5.4"
   },

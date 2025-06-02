@@ -9,6 +9,20 @@ import { getAuthHeaders, getToken, hasToken, removeToken } from "../utils/auth";
 const originalFaqs: Question[] = [
   {
     questionId: 1,
+    title: "회원가입을 하고 싶어요.",
+    content:
+      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 2,
     title: "로그인이 안 돼요.",
     content:
       "로그인이 안 되는 경우, 아이디와 비밀번호를 다시 한 번 확인해주세요. 계속해서 로그인이 안 되는 경우 고객센터로 문의해주시기 바랍니다.",
@@ -22,24 +36,10 @@ const originalFaqs: Question[] = [
     isOpen: false,
   },
   {
-    questionId: 2,
-    title: "비밀번호를 잊어버렸어요.",
-    content:
-      "로그인 페이지에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 임시 비밀번호를 발송해드립니다.",
-    regDate: "2024-01-20",
-    modDate: "2024-01-20",
-    userDTO: {
-      id: 1,
-      email: "admin@example.com",
-      nickname: "관리자",
-    },
-    isOpen: false,
-  },
-  {
     questionId: 3,
-    title: "회원가입은 어떻게 하나요?",
+    title: "프로필을 수정하고 싶어요.",
     content:
-      "메인 페이지에서 '회원가입' 버튼을 클릭하시면 회원가입 페이지로 이동합니다. 필요한 정보를 입력하시고 '가입하기' 버튼을 클릭하시면 회원가입이 완료됩니다.",
+      "프로필 수정은 로그인 후 [마이페이지]-[프로필수정]을 통해 수정할 수 있습니다.",
     regDate: "2024-01-20",
     modDate: "2024-01-20",
     userDTO: {
@@ -51,9 +51,36 @@ const originalFaqs: Question[] = [
   },
   {
     questionId: 4,
-    title: "회원탈퇴는 어떻게 하나요?",
+    title: "회원탈퇴를 하고 싶어요.",
     content:
       "회원탈퇴는 로그인 후 [마이페이지]-[회원탈퇴]에서 할 수 있습니다. 탈퇴와 동시에 회원님의 개인정보 및 모든 이용정보가 즉시 삭제되며 절대 복구할 수 없으니 탈퇴시 유의해주시기 바랍니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 5,
+    title: "작품을 등록하고 싶어요.",
+    content: "작품등록은 [아트]-[아트등록]에서 작품을 등록할 수 있습니다.",
+    regDate: "2024-01-20",
+    modDate: "2024-01-20",
+    userDTO: {
+      id: 1,
+      email: "admin@example.com",
+      nickname: "관리자",
+    },
+    isOpen: false,
+  },
+  {
+    questionId: 6,
+    title: "제가 관심있는 작가님께 개인적으로 작품을 요청하고 싶어요.",
+    content:
+      "관심있는 작가님의 프로필 또는 작가님의 작품 화면의 [채팅창]을 통해 작품을 요청하거나 대화할 수 있습니다.",
     regDate: "2024-01-20",
     modDate: "2024-01-20",
     userDTO: {
@@ -97,6 +124,10 @@ const CustomerCenter: React.FC = () => {
     {}
   );
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
+
+  // 관리자용 전용 페이지네이션
+  const [adminPage, setAdminPage] = useState(1);
+  const [adminTotalPages, setAdminTotalPages] = useState(1);
 
   // 사용자 권한 확인 함수 추가
   const checkAdminStatus = async () => {
@@ -149,7 +180,7 @@ const CustomerCenter: React.FC = () => {
   }, [isAdmin]);
 
   // 관리자용 전체 질문 목록 가져오기
-  const fetchAllQuestions = async () => {
+  const fetchAllQuestions = async (page: number = 1) => {
     const token = getToken();
     if (!token) {
       console.error("토큰이 없습니다.");
@@ -165,13 +196,13 @@ const CustomerCenter: React.FC = () => {
           credentials: "include",
         }
       );
-      console.log("📥 응답 상태 코드:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("📦 전체 질문 목록 응답 데이터:", data);
         data.dtoList.forEach((q) => console.log(q));
         setAllQuestions(data.dtoList);
+        setAdminPage(data.page);
+        setAdminTotalPages(data.totalPages || 1);
       } else {
         console.error("전체 질문 목록 조회 실패:", response.status);
       }
@@ -202,7 +233,7 @@ const CustomerCenter: React.FC = () => {
         setInquiries(data);
       } else if (response.status === 401) {
         console.error("인증이 만료되었습니다.");
-        removeToken(); // ✅ 유틸 함수 사용
+        removeToken();
       } else {
         console.error("문의 목록 조회 실패:", response.status);
       }
@@ -267,6 +298,7 @@ const CustomerCenter: React.FC = () => {
           content: inquiryForm.content,
         }),
       });
+      setAlertMessage("문의가 수정되었습니다.");
     } else {
       // 등록
       await fetch("http://localhost:8080/ourlog/question/inquiry", {
@@ -277,6 +309,7 @@ const CustomerCenter: React.FC = () => {
           content: inquiryForm.content,
         }),
       });
+      setAlertMessage("문의가 등록되었습니다.");
     }
 
     // 등록/수정 후 내 문의 목록 새로고침
@@ -296,7 +329,7 @@ const CustomerCenter: React.FC = () => {
 
     const token = getToken();
     if (!token) {
-      alert("로그인이 필요합니다.");
+      setAlertMessage("로그인이 필요합니다.");
       return;
     }
 
@@ -315,6 +348,7 @@ const CustomerCenter: React.FC = () => {
         setAlertMessage(`삭제 실패: ${res.status} ${errorText}`);
       } else {
         setShowDeleteModal(false);
+        setAlertMessage("문의가 삭제되었습니다.");
         fetchMyQuestions();
       }
     } catch (e) {
@@ -336,11 +370,6 @@ const CustomerCenter: React.FC = () => {
     questionId: number,
     answerContentValue: string
   ) => {
-    if (!answerContentValue.trim()) {
-      setAlertMessage("답변 내용을 입력하세요.");
-      setShowAlertModal(true);
-      return;
-    }
     const token = getToken();
     if (!token) {
       setAlertMessage("토큰이 없습니다.");
@@ -609,35 +638,64 @@ const CustomerCenter: React.FC = () => {
                       <div className="cc-answer-form">
                         <label>답변</label>
 
-                        <textarea
-                          value={answerContent[question.questionId] || ""}
-                          onChange={(e) =>
-                            setAnswerContent({
-                              ...answerContent,
-                              [question.questionId]: e.target.value,
-                            })
-                          }
-                          placeholder="답변을 입력하세요"
-                          className="cc-admin-answer-textarea"
-                        />
-                        <div className="cc-button-wrapper">
-                          <button
-                            className="cc-action-button"
-                            onClick={() =>
-                              handleAnswerSubmit(
-                                question.questionId,
-                                answerContent[question.questionId] || ""
-                              )
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAnswerSubmit(
+                              question.questionId,
+                              answerContent[question.questionId] || ""
+                            );
+                          }}
+                        >
+                          <textarea
+                            value={answerContent[question.questionId] || ""}
+                            onChange={(e) =>
+                              setAnswerContent({
+                                ...answerContent,
+                                [question.questionId]: e.target.value,
+                              })
                             }
-                          >
-                            답변 등록
-                          </button>
-                        </div>
+                            required
+                            placeholder="답변을 입력하세요"
+                            className="cc-admin-answer-textarea"
+                          />
+                          <div className="cc-button-wrapper">
+                            <button className="cc-action-button" type="submit">
+                              답변 등록
+                            </button>
+                          </div>
+                        </form>
                       </div>
                     )}
                   </div>
                 ))
               )}
+              <div className="cc-pagination">
+                <button
+                  onClick={() => fetchAllQuestions(Math.max(1, adminPage - 1))}
+                  disabled={adminPage === 1}
+                >
+                  &lt;
+                </button>
+                {adminTotalPages > 0 &&
+                  Array.from({ length: adminTotalPages }, (_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => fetchAllQuestions(idx + 1)}
+                      className={adminPage === idx + 1 ? "active" : ""}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                <button
+                  onClick={() =>
+                    fetchAllQuestions(Math.min(adminTotalPages, adminPage + 1))
+                  }
+                  disabled={adminPage === adminTotalPages}
+                >
+                  &gt;
+                </button>
+              </div>
             </section>
           ) : (
             <>
@@ -949,6 +1007,7 @@ const CustomerCenter: React.FC = () => {
                         onChange={(e) =>
                           setEditingAnswerContent(e.target.value)
                         }
+                        required
                       />
                       {isAdmin && (
                         <>

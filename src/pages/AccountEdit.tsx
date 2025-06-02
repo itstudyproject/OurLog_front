@@ -13,13 +13,14 @@ const ArrowLeftIcon = () => (
 const AccountEdit: React.FC = () => {
   const stored = localStorage.getItem("user");
   const userId = stored ? JSON.parse(stored).userId as number : null;
-  const [mobile,    setMobile]    = useState("");
-  const [currentPw,setCurrentPw]= useState("");
-  const [newPw,    setNewPw]    = useState("");
-  const [confirmPw,setConfirmPw]= useState("");
+  const [mobile, setMobile] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const navigate = useNavigate();
 
-useEffect(() => {
+
+  useEffect(() => {
     if (!userId) return;
     fetch(`http://localhost:8080/ourlog/profile/get/${userId}`, {
       headers: getAuthHeaders(),
@@ -29,12 +30,21 @@ useEffect(() => {
       .catch(() => alert("사용자 정보를 불러올 수 없습니다."));
   }, [userId]);
 
-const handlePasswordChange = async () => {
+  const handlePasswordChange = async () => {
+
+    if (!currentPw) {
+      alert("현재 비밀번호를 입력해주세요.");
+      return;
+    }
     if (newPw !== confirmPw) {
       alert("새 비밀번호가 일치하지 않습니다.");
+    }
+    if (newPw.length < 8) {
+      alert("비밀번호는 8자 이상이어야 합니다.");
       return;
     }
     if (!userId) return;
+
     try {
       await updateUserInfo(userId, { password: newPw, mobile: mobile });
       alert("비밀번호가 변경되었습니다.");
@@ -45,14 +55,23 @@ const handlePasswordChange = async () => {
     } catch (e: any) {
       alert("비밀번호 변경 실패: " + (e.message || e));
     }
+  }
+  const handleBack = () => {
+    navigate("/mypage");
   };
+  // userId가 null이면 로그인 요청 메시지 표시 또는 리다이렉트
+  if (userId === null) {
+    return (
+      <div className="account-edit-container">
+        <p>회원 정보를 수정하려면 로그인이 필요합니다.</p>
+        <button onClick={() => navigate("/login")}>로그인 페이지로 이동</button>
+      </div>
+    );
+  }
 
   return (
     <div className="account-edit-container">
-            <div className="account-edit-header">
-        <h1 className="header-title">회원정보수정</h1>
-      </div>
-      {/* 비밀번호 변경 섹션 */}
+      <h3>회원 정보 수정</h3>
       <div className="form-group">
         <label htmlFor='currentPw'>현재 비밀번호</label>
         <input
@@ -63,39 +82,26 @@ const handlePasswordChange = async () => {
         />
       </div>
       <div className="form-group">
-        <label htmlFor='newPw'>새 비밀번호</label>
+        <label htmlFor="new-password">새 비밀번호:</label>
         <input
           type="password"
-          id='newPw'
+          id="newPw"
           value={newPw}
           onChange={(e) => setNewPw(e.target.value)}
         />
       </div>
       <div className="form-group">
-        <label htmlFor="confirmPw">새 비밀번호 확인</label>
+        <label htmlFor="confirm-password">비밀번호 확인:</label>
         <input
           type="password"
+          id="confirm-password"
           value={confirmPw}
-          id="confirmPw"
           onChange={(e) => setConfirmPw(e.target.value)}
         />
       </div>
-
-      {/* 연락처 변경 섹션 */}
-      <div className="form-group">
-        <label htmlFor="mobile">연락처</label>
-        <input
-          type="tel"
-          id="mobile"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-        />
-      </div>
-      <button className="secondary-button" onClick={handlePasswordChange}>
-        변경하기
-      </button>
+      <button className="update-button" onClick={handlePasswordChange}>비밀번호 변경</button>
+      <button className="back-button" onClick={handleBack}>뒤로가기</button>
     </div>
   );
 };
-
-export default AccountEdit;
+export default AccountEdit

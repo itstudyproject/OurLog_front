@@ -25,8 +25,17 @@ export const hasToken = () => {
 
 // API 요청을 위한 기본 헤더 생성
 export const getAuthHeaders = () => {
-  return {
-    Authorization: getToken(),
+  const token = localStorage.getItem("token");
+  const headers: { [key: string]: string } = {
     "Content-Type": "application/json",
   };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // GUID 추가
+  headers['X-Request-ID'] = crypto.randomUUID();
+
+  return headers;
 };

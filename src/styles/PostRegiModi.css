@@ -141,18 +141,17 @@ body {
 }
 
 .button-group button:nth-child(3) {
-  background-color: #1d4ed8;
-  border-color: #1e40af;
+  background-color: #b00;
   color: white;
 }
 
 .button-group button:nth-child(3):hover {
-  background-color: #2563eb;
+  background-color: #f00;
 }
 
-.image-grid {
+.post-image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 12px;
   margin: 16px 0;
   padding: 8px;
@@ -160,7 +159,7 @@ body {
   border-radius: 8px;
 }
 
-.image-item {
+.post-image-item {
   position: relative;
   aspect-ratio: 1;
   border-radius: 6px;
@@ -169,22 +168,22 @@ body {
   cursor: move;
 }
 
-.image-item.dragging {
+.post-image-item.dragging {
   opacity: 0.5;
 }
 
-.image-item img {
+.post-image-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.2s ease-in-out;
 }
 
-.image-item:hover img {
+.post-image-item:hover img {
   transform: scale(1.05);
 }
 
-.image-overlay {
+.post-image-overlay {
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -195,11 +194,11 @@ body {
   transition: opacity 0.2s ease-in-out;
 }
 
-.image-item:hover .image-overlay {
+.post-image-item:hover .post-image-overlay {
   opacity: 1;
 }
 
-.remove-image-btn {
+.post-remove-image-btn {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -217,11 +216,11 @@ body {
   transition: background-color 0.2s ease-in-out;
 }
 
-.remove-image-btn:hover {
+.post-remove-image-btn:hover {
   background-color: #dc2626;
 }
 
-.thumbnail-badge {
+.post-thumbnail-badge {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -232,7 +231,7 @@ body {
   font-size: 14px;
 }
 
-.thumbnail-button {
+.post-thumbnail-button {
   position: absolute;
   bottom: 8px;
   right: 8px;
@@ -246,11 +245,11 @@ body {
   transition: background-color 0.2s ease-in-out;
 }
 
-.thumbnail-button:hover {
+.post-thumbnail-button:hover {
   background-color: gray;
 }
 
-.thumbnail-selected {
+.post-thumbnail-selected {
   border: 2px solid #2563eb;
 }
 
@@ -312,19 +311,13 @@ body {
 }
 
 .tag-pill {
-  display: flex;
   align-items: center;
-  background: #312e81;
   color: #c7d2fe;
   border-radius: 9999px;
   padding: 4px 14px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 500;
   transition: background 0.2s;
-}
-
-.tag-pill:hover {
-  background: #4338ca;
 }
 
 .tag-remove-btn {

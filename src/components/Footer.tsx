@@ -4,6 +4,16 @@ import "../styles/Footer.css";
 const Footer = () => (
   <footer className="footer">
     <div className="footer-container">
+      <div>
+        <h3 className="footer-heading">
+          <img
+            src="/images/Symbol.png"
+            alt="OurLog Symbol"
+            className="footer-symbol"
+          />
+        </h3>
+      </div>
+
       {/* About */}
       <div>
         <h3 className="footer-heading">OurLog</h3>
@@ -47,7 +57,7 @@ const Footer = () => (
     </div>
 
     <div className="footer-bottom">
-      © 2024 OurLog. All rights reserved. | Designed by React Spring Team
+      © 2025 OurLog. All rights reserved. | Designed by React Spring Team
     </div>
   </footer>
 );

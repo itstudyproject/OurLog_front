@@ -1,6 +1,15 @@
 // src/hooks/profileApi.ts
 import { getAuthHeaders } from "../utils/auth";
 
+// 백엔드의 UploadResultDTO에 맞는 타입 정의
+export interface UploadResultDTO {
+  fileName: string;
+  uuid: string;
+  folderPath: string;
+  originImagePath: string; // 백엔드 getImageUrl()에 해당
+  thumbnailImagePath: string; // 백엔드 getThumbnailUrl()에 해당
+}
+
 export interface UserProfileDTO {
   profileId?: number;
   userId: number | { userId: number };
@@ -12,6 +21,7 @@ export interface UserProfileDTO {
   name?: string;
   followCnt?: number;
   followingCnt?: number;
+  isFollowing?: boolean; // ✅ 이 줄이 있어야 함
 }
 
 export const fetchProfile = async (userId: number): Promise<UserProfileDTO> => {
@@ -30,15 +40,14 @@ export const updateProfile = async (
   profile: Partial<UserProfileDTO>
 ): Promise<UserProfileDTO> => {
   const res = await fetch(
-
-    `http://localhost:8080/ourlog/profile/profileEdit/${userId}`,
+    `http://localhost:8080/ourlog/profile/edit/${userId}`,
     {
-      method: "PATCH",
+      method: "PUT",
       headers: {
         ...getAuthHeaders(),
-        "Content-Type": "application/json",                    
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(profile),         
+      body: JSON.stringify(profile),
     }
   );
 
@@ -47,7 +56,6 @@ export const updateProfile = async (
     throw new Error("프로필 수정 실패: " + text);
   }
 
-
   return res.json();
 };
 
@@ -55,11 +63,8 @@ export const updateProfile = async (
 export const createProfile = async (
   profile: UserProfileDTO
 ): Promise<UserProfileDTO> => {
-  // user 필드가 숫자라면 객체로 변환
+  // userId를 객체로 감싸지 않습니다.
   const profileData = { ...profile };
-  if (typeof profileData.userId === 'number') {
-    profileData.userId = { userId: profileData.userId };
-  }
 
   const res = await fetch(`http://localhost:8080/ourlog/profile/create`, {
     method: "POST",
@@ -74,7 +79,7 @@ export const createProfile = async (
 export async function uploadProfileImage(
   userId: number,
   file: File
-): Promise<string> {
+): Promise<UploadResultDTO> { // 반환 타입을 UploadResultDTO로 변경
   const token = localStorage.getItem("token");
   if (!token) throw new Error("로그인이 필요합니다.");
 
@@ -87,6 +92,7 @@ export async function uploadProfileImage(
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        'X-Request-ID': crypto.randomUUID(),
         // Content-Type 는 FormData 쓰면 자동 설정됩니다
       },
       body: formData,
@@ -98,7 +104,7 @@ export async function uploadProfileImage(
     throw new Error("이미지 업로드 실패: " + text);
   }
 
-  const json = (await res.json()) as { imagePath: string };
-  return json.imagePath;
+  // 백엔드 응답 형태 (UploadResultDTO) 그대로 JSON 파싱하여 반환
+  const result: UploadResultDTO = await res.json();
+  return result; // UploadResultDTO 객체를 반환
 }
-

@@ -8,8 +8,8 @@ body {
 }
 
 /* 가운데 정렬된 컨테이너 */
-.bid-history-container {
-  max-width: 800px;
+.bh-container {
+  max-width: 1000px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -17,19 +17,17 @@ body {
 /* 헤더 */
 
 /* 입찰 목록 타이틀 */
-.bid-history-title {
+.bh-page-title {
+  text-align: center;
   margin-bottom: 30px;
-  position: relative;
+  color: #fff;
 }
 
-.bid-history-title h2 {
-  font-size: 24px;
-  color: #fff;
-  margin: 0 0 10px 0;
-  font-weight: 600;
-  padding-bottom: 5px;
-  display: inline-block;
-  border-bottom: 2px solid #f8c147;
+.bh-page-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .bid-date {
@@ -42,128 +40,137 @@ body {
 }
 
 /* 입찰 목록 */
-.bid-list {
-  margin-bottom: 30px;
+.bh-trade-lists-wrapper {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
 }
 
-.bid-item {
+.bh-list-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.bh-list-section h3 {
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f8c147;
+  padding-bottom: 5px;
+}
+
+.bh-item.data {
   display: flex;
   align-items: center;
-  background-color: #232323;
+  background-color: #2a2a2a;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease-in-out;
   position: relative;
+  overflow: hidden;
 }
 
-.bid-item:hover {
-  background-color: #2a2a2a;
+.bh-item.data:hover {
+  background-color: #333333;
 }
 
-.bid-artwork {
-  width: 80px;
-  height: 80px;
+.bh-item-thumbnail {
+  width: 100px;
+  height: 100px;
   border-radius: 4px;
   overflow: hidden;
-  margin-right: 15px;
+  margin-right: 20px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #3a3a3a;
 }
 
-.bid-artwork img {
+.bh-item-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.bid-details {
+.bh-no-image-placeholder-small {
+  font-size: 40px;
+  color: #cccccc;
+}
+
+.bh-item-details {
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.bid-details h3 {
-  font-size: 16px;
-  color: #fff;
-  margin: 0 0 8px 0;
+.bh-item-title {
+  font-size: 17px;
+  color: #ffffff;
+  margin-bottom: 5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.bid-amount {
-  font-size: 18px;
+.bh-item-price {
+  font-size: 15px;
   color: #f8c147;
   font-weight: bold;
-  margin: 0;
+  margin-bottom: 5px;
 }
 
-.bid-status {
-  position: absolute;
-  top: 15px;
-  right: 120px;
+.bh-item-time {
   font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 12px;
+  color: #aaaaaa;
 }
 
-.bid-status.active {
-  background-color: #2ecc71;
-  color: #fff;
-}
-
-.bid-time {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-}
-
-.time-icon {
-  margin-right: 5px;
-  font-size: 16px;
-}
-
-.time-value {
-  font-size: 14px;
-  color: #ccc;
-}
-
-.bid-actions {
-  display: flex;
-}
-
-.detail-button,
-.bid-now-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-}
-
-.detail-button {
-  background-color: #333;
-  color: #ccc;
-}
-
-.detail-button:hover {
-  background-color: #444;
-}
-
-.bid-now-button {
-  background-color: #f8c147;
-  color: #111;
+.bh-item-status {
+  position: static;
+  margin-left: 20px;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
   font-weight: bold;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  background-color: #cccccc;
+  flex-shrink: 0;
 }
 
-.bid-now-button:hover {
-  background-color: #e5b142;
+.bh-item-status.won {
+  background-color: #2ecc71;
+  color: #ffffff;
 }
 
-/* 바닥글 */
-.bid-history-footer {
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
+.bh-item-status.data {
+  /* .bh-item.data의 자식이므로 .bh-item-status는 이 스타일을 상속 */
 }
 
-.back-button {
+/* 목록이 없을 때 메시지 */
+.bh-no-bids {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.bh-no-data-container {
+  text-align: center;
+  padding: 50px 20px;
+  color: #999;
+}
+
+.bh-no-data-container button {
+  margin-top: 20px;
   padding: 10px 20px;
   background-color: #333;
   color: #fff;
@@ -173,8 +180,70 @@ body {
   transition: background-color 0.2s;
 }
 
-.back-button:hover {
+.bh-no-data-container button:hover {
   background-color: #444;
+}
+
+/* 푸터 */
+.bh-history-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.bh-back-button {
+  padding: 12px 25px;
+  background-color: #555;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 16px;
+}
+
+.bh-back-button:hover {
+  background-color: #666;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .bh-trade-lists-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .bh-list-section {
+    flex: none;
+    width: 100%;
+  }
+
+  .bh-item.data {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bh-item-thumbnail {
+    margin-right: 0;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 150px;
+  }
+
+  .bh-item-details {
+    width: 100%;
+  }
+
+  .bh-item-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    margin-left: 0;
+  }
+
+  .bh-page-title h2 {
+    font-size: 24px;
+  }
 }
 
 /* 로딩 화면 */
@@ -189,4 +258,32 @@ body {
 .loading p {
   color: #ccc;
   font-size: 18px;
+}
+
+.bh-item-status-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.bh-download-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1em;
+  transition: transform 0.2s;
+  color: #f8c147;
+  display: flex;
+  align-items: center;
+}
+
+.bh-download-button:hover {
+  transform: scale(1.1);
+  color: #ffd700;
+}
+
+.bh-download-button:active {
+  transform: scale(0.95);
 }

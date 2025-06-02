@@ -8,7 +8,7 @@ const TermsCondition = () => {
       <section className="terms-container section ">
         <h2 className="terms-container h2">제1장 총칙</h2>
         <p className="terms-container p">
-          본 약관은 Ourlog(이하 “회사”라 합니다)가 제공하는 서비스를 이용함에
+          본 약관은 OurLog(이하 “회사”라 합니다)가 제공하는 서비스를 이용함에
           있어 회사와 회원 간의 권리, 의무 및 책임 사항, 서비스의 이용 조건 및
           절차, 기타 제반 사항을 규정함을 목적으로 합니다.
         </p>

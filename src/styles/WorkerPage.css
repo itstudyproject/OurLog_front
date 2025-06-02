@@ -187,7 +187,7 @@
   color: #f8c147;
 }
 
-.like-button {
+.worker-like-button {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -197,22 +197,30 @@
   border-radius: 20px;
   padding: 5px 10px;
   font-size: 14px;
-  color: #fff;
+  color: #cccccc; /* 기본 하트 색상 */
   cursor: pointer;
   z-index: 2;
   transition: background 0.2s ease, color 0.2s ease;
+  display: flex; /* 하트와 숫자 함께 표시 */
+  align-items: center;
+  gap: 4px; /* 하트와 숫자 사이 간격 */
 }
 
-.like-button:hover {
+.worker-like-button.liked {
+  color: #ff6347; /* 좋아요 눌렀을 때 색상 (주황색 계열) */
+}
+
+.worker-like-button:hover {
   background: #777777; /* hover 시 배경 색상 */
-  color: #f8c147; /* 글자 색상 변경 */
+  color: #ff8c00; /* 글자 색상 변경 */
 }
 
-.like-button:focus,
-.like-button:active {
+.worker-like-button:focus,
+.worker-like-button:active {
   outline: none; /* 클릭하거나 탭으로 포커스했을 때 외곽선 제거 */
   box-shadow: none; /* 브라우저 기본 클릭 효과 제거 (특히 Safari, Firefox 대비용) */
 }
+
 /* 배지 */
 .badge {
   position: absolute;

@@ -11,6 +11,8 @@
   background-color: var(--bg-main);
   color: var(--text-color);
   min-height: 100vh;
+  max-width: 55%;
+  margin: 0 auto;
   font-family: "Segoe UI", sans-serif;
   padding: 16px;
 }
@@ -29,23 +31,29 @@
   justify-content: center;
 }
 
-/* 채팅 리스트 모달 */
-.chat-list-modal {
-  background-color: var(--bg-secondary);
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-  border: 1px solid var(--border-color);
-}
-
 .chat-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
   color: var(--highlight);
+  font-size: 20px;
   font-weight: bold;
+}
+
+.exit-btn {
+  background-color: transparent;
+  border: 1px solid var(--highlight);
+  color: var(--highlight);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.exit-btn:hover {
+  background-color: var(--highlight);
+  color: #000;
 }
 
 .chat-list {
@@ -60,6 +68,7 @@
   padding: 12px;
   cursor: pointer;
   border-bottom: 1px solid #333;
+  border-top: 1px solid #333;
   transition: background-color 0.2s;
 }
 
@@ -73,11 +82,13 @@
   height: 42px;
   border-radius: 50%;
   margin-right: 12px;
+  object-fit: cover;
 }
 
 .chat-info strong {
-  display: block;
+  display: flex;
   color: var(--text-color);
+  font-weight: 600;
 }
 
 .chat-info p {
@@ -88,10 +99,6 @@
 
 /* 채팅 모달 */
 .chat-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: var(--bg-secondary);
   color: var(--text-color);
   border: 2px solid var(--border-color);
@@ -99,33 +106,12 @@
   width: 90%;
   max-width: 500px;
   padding: 18px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
+  overflow: hidden;
 }
 
-.go-to-payment {
-  padding: 8px 16px;
-  background-color: var(--highlight) !important; /* 검정색으로 설정 */
-  color: #000 !important; /* 텍스트는 흰색 */
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: bold;
-}
-
-.go-to-payment:hover {
-  background-color: #e6b43e !important; /* hover시 어두운 회색 */
-}
-
-.go-to-payment:disabled {
-  background-color: #555; /* 비활성화된 버튼 색상 */
-  cursor: not-allowed;
-}
-
-/* 헤더 */
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -138,165 +124,368 @@
   align-items: center;
 }
 
-.chat-header img {
+.chat-header-left img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   margin-right: 10px;
 }
 
-/* 나가기 버튼 */
-.exit-btn {
-  background-color: transparent;
-  color: var(--text-sub);
-  border: 1px solid var(--border-color);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
+.chat-header-left span {
+  font-weight: bold;
+  color: var(--highlight);
 }
 
-.exit-btn:hover {
-  background-color: var(--highlight);
-  color: #111;
-}
-
-/* 메시지 영역 */
-.messages {
-  flex-grow: 1;
+.chat-messages {
+  flex: 1;
   overflow-y: auto;
   margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding-right: 4px;
+  min-height: 0;
 }
 
+/* 메시지 행 */
 .message-row {
   display: flex;
-  align-items: flex-end;
-}
-
-.message-row.you {
-  flex-direction: column;
-  align-items: flex-start;
+  margin-bottom: 10px;
 }
 
 .message-row.me {
   justify-content: flex-end;
 }
 
-.profile-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  margin-bottom: 4px;
+.message-row.you {
+  justify-content: flex-start;
 }
 
+.profile-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/* 메시지 박스 */
 .message {
+  max-width: 70%;
   padding: 10px 14px;
   border-radius: 12px;
-  max-width: 70%;
+  font-size: 14px;
+  line-height: 1.5;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .me-message {
-  background-color: transparent;
-  border: 1px solid var(--highlight);
-  color: var(--highlight);
+  background-color: var(--highlight);
+  color: #000;
+  border-bottom-right-radius: 2px;
 }
 
 .you-message {
-  background-color: #333;
-  color: var(--text-color);
-}
-
-/* 입력창 */
-.chat-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.chat-footer textarea {
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
   background-color: #222;
-  color: white;
-  resize: none;
-  min-height: 50px;
+  color: var(--text-color);
+  border-bottom-left-radius: 2px;
 }
 
-.chat-footer button {
+/* 채팅 입력 */
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chat-input-area textarea {
+  flex: 1;
+  resize: none;
+  height: 50px;
   padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: #1a1a1a;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.chat-input-area button {
+  padding: 10px 16px;
   background-color: var(--highlight);
+  color: #000;
   border: none;
-  color: #111;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-input-area button:hover {
+  background-color: #ffd05e;
+}
+
+/* 결제 카드 */
+.payment-card {
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #1a1a1a;
+}
+
+.payment-card img {
+  width: 100%;
+  height: auto;
+  max-height: 160px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  object-fit: cover;
+}
+
+.payment-card p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.payment-btn {
+  margin-top: 8px;
+  background-color: var(--highlight);
+  color: #000;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.payment-btn:hover {
+  background-color: #ffd05e;
+}
+
+/* 결제 입력 폼 */
+.payment-form {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.payment-form input {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: #111;
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+.payment-form button {
+  padding: 8px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
 }
 
-.chat-footer button:hover {
-  background-color: #e6b43e;
-}
-
-/* 안전결제 안내 */
-.secure-payment-box {
-  margin-top: 12px;
-  padding: 12px;
-  border-top: 1px solid var(--border-color);
-  background-color: #1f1f1f;
-  border-radius: 6px;
-  text-align: center;
-  color: var(--text-sub);
-}
-
-.secure-payment-link {
+.payment-complete-msg {
+  margin-top: 8px;
   color: var(--highlight);
-  text-decoration: underline;
-  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.secure-payment-link:hover {
-  color: #ffd670;
-}
-
-/* 애니메이션 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* 결제 요청 메시지 */
-.payment-request-message {
-  text-align: center;
-  margin: 10px 0;
-}
-
-.payment-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.payment-buttons button {
+.secure-payment-btn {
+  background-color: transparent; /* 배경색 없애기 */
+  color: gray;
+  border: 2px solid rgba(255, 203, 5, 0.5); /* 테두리선 색에 투명도 추가 */
   padding: 6px 12px;
-  background-color: var(--highlight);
-  color: #111;
-  border: none;
-  cursor: pointer;
   border-radius: 4px;
   font-weight: bold;
+  cursor: pointer;
 }
 
-.payment-buttons button:hover {
-  background-color: #e6b43e;
+.secure-payment-btn:hover {
+  background-color: #f0b800; /* 호버 시 배경색 추가 */
+  border-color: #f0b800; /* 호버 시 테두리 색상 변경 */
+}
+
+/* 메인 페이지로 이동 버튼 스타일 (마이페이지 버튼 스타일 참조) */
+.chat-modal .chat-header .main-page-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease-in-out;
+  background-color: #333; /* 마이페이지 primary 버튼 배경색 */
+  color: #ccc; /* 마이페이지 primary 버튼 글자색 */
+  margin-right: 10px; /* '나가기' 버튼과의 간격 */
+}
+
+.chat-modal .chat-header .main-page-btn:hover {
+  background-color: #444; /* 마이페이지 primary 버튼 호버 색상 */
+}
+
+.search-user-btn,
+.start-chat-btn,
+.send-message-btn,
+.complete-payment-btn {
+  padding: 8px 16px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-user-btn:hover,
+.start-chat-btn:hover,
+.send-message-btn:hover,
+.complete-payment-btn:hover {
+  background-color: #ffd05e;
+}
+
+.search-user-btn:disabled,
+.start-chat-btn:disabled,
+.send-message-btn:disabled,
+.complete-payment-btn:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 새로운 채널 생성 버튼 스타일 */
+.create-channel-button {
+  padding: 6px 12px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.create-channel-button:hover {
+  background-color: #ffd05e;
+}
+
+.create-channel-button:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 채널 생성 모달 버튼 스타일 */
+.create-channel-modal button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.create-channel-submit-button {
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+}
+
+.create-channel-submit-button:hover {
+  background-color: #ffd05e;
+}
+
+.create-channel-submit-button:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.create-channel-cancel-button {
+  background-color: #555; /* 회색 */
+  color: var(--text-color);
+  border: none;
+}
+
+.create-channel-cancel-button:hover {
+  background-color: #666;
+}
+
+/* 공개 채널 참여 버튼 스타일 */
+.join-channel-btn {
+  padding: 6px 12px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.join-channel-btn:hover {
+  background-color: #ffd05e;
+}
+
+.join-channel-btn:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 공개 채널 목록 섹션 */
+.public-channels-section {
+  max-height: 500px; /* 적절한 최대 높이 설정 */
+  overflow-y: auto; /* 내용이 넘칠 때 스크롤 */
+}
+
+.public-channels-section h3 {
+  margin-bottom: 10px;
+}
+
+.public-channels-section .channel-list {
+  display: flex; /* 자식 요소들을 가로로 나열 */
+  gap: 15px; /* 항목 간 간격 */
+  overflow-x: auto; /* 가로 스크롤 */
+  padding-bottom: 10px; /* 스크롤바 때문에 잘리지 않도록 여백 추가 */
+}
+
+.public-channels-section .channel-list li {
+  flex-shrink: 0; /* 항목들이 줄어들지 않도록 설정 */
+  width: 150px; /* 항목의 너비 고정 (예시 값) */
+  display: flex; /* 내부 요소를 정렬하기 위해 flex 적용 */
+  flex-direction: column; /* 내부 요소는 세로로 정렬 */
+  align-items: center; /* 내부 요소 가운데 정렬 */
+  text-align: center; /* 텍스트 가운데 정렬 */
+}
+
+.public-channels-section .channel-list li img {
+  margin-right: 0; /* 기존 마진 제거 */
+  margin-bottom: 5px; /* 이미지 하단 간격 */
+}
+
+.public-channels-section .channel-list li .channel-info {
+    /* channel-info 내부 정렬을 위해 flexbox 사용 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.channel-cover-image {
+  height: 100px;
+  width: 100px;
+}
+
+/* 내 채팅 목록 섹션 */
+.my-chat-list-section {
+  max-height: 200px; /* 적절한 최대 높이 설정 */
+  overflow-y: auto; /* 내용이 넘칠 때 스크롤 */
+  margin-top: 20px;
+}
+
+.my-chat-list-section h3 {
+  margin-bottom: 10px;
 }
