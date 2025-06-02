@@ -49,9 +49,8 @@ const Footer = () => (
       <div>
         <h4 className="footer-heading">Contact</h4>
         <p className="footer-text">
-          Email: contact@ourlog.com
-          <br />
-          Tel: 0687-5640
+          ✉ Email: contact@ourlog.com
+          <br />☎ Tel: 0687-5640
         </p>
       </div>
     </div>
