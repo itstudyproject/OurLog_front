@@ -6,8 +6,8 @@ export interface UploadResultDTO {
   fileName: string;
   uuid: string;
   folderPath: string;
-  imageURL: string; // 백엔드 getImageUrl()에 해당
-  thumbnailURL: string; // 백엔드 getThumbnailUrl()에 해당
+  originImagePath: string; // 백엔드 getImageUrl()에 해당
+  thumbnailImagePath: string; // 백엔드 getThumbnailUrl()에 해당
 }
 
 export interface UserProfileDTO {

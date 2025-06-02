@@ -63,8 +63,8 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({
         // 백엔드 응답 객체의 imageURL과 thumbnailURL을 사용하여 상태 업데이트
         setProfileData((prev) => ({
           ...prev,
-          originImagePath: uploadResult.imageURL, // originImagePath 업데이트
-          thumbnailImagePath: uploadResult.thumbnailURL, // thumbnailImagePath 업데이트
+          originImagePath: uploadResult.originImagePath, // originImagePath 업데이트
+          thumbnailImagePath: uploadResult.thumbnailImagePath, // thumbnailImagePath 업데이트
         }));
       } catch (err: any) {
         alert("이미지 업로드 실패: " + (err.message || err));
