@@ -4,6 +4,7 @@ import "../styles/ChatPage.css";
 import { getToken } from "../utils/auth";
 import SendbirdChat from '@sendbird/chat';
 import { GroupChannelHandler, GroupChannelModule, GroupChannel, GroupChannelListQuery, PublicGroupChannelListQuery, MessageCollection, MessageCollectionInitPolicy, MessageCollectionEventHandler, GroupChannelEventContext, MessageFilter } from '@sendbird/chat/groupChannel';
+import { PushTriggerOption } from '@sendbird/chat'; // PushTriggerOption을 @sendbird/chat에서 import
 import { UserMessage, BaseMessage, MessageListParams, UserMessageCreateParams, UserMessageUpdateParams } from '@sendbird/chat/message';
 import { OpenChannelModule } from '@sendbird/chat/openChannel';
 import { BaseChannel } from '@sendbird/chat';
@@ -22,6 +23,13 @@ type SendbirdChatInstanceType = SendbirdChat & {
   groupChannel: GroupChannelModule;
   openChannel: OpenChannelModule;
   createApplicationUserListQuery: (params?: any) => any; // UserListQuery 대신 any 사용
+  // SendbirdChat instance itself has deleteChannel method for group channels in v4
+  // ✅ deleteChannel 메소드는 groupChannel 모듈에 있습니다. GroupChannelModule 타입 정의에 추가되었는지 확인합니다.
+  // GroupChannelModule 타입 정의에는 deleteChannel이 없으므로, GroupChannelModule을 통해 호출해야 합니다.
+  // 따라서 이 라인은 제거하거나, GroupChannelModule에 deleteChannel이 있다면 유지해야 합니다.
+  // Sendbird SDK 문서 확인 결과, deleteChannel은 SendbirdChat 인스턴스에 직접 있는 것이 아니라 groupChannel 모듈에 있습니다.
+  // 이 라인은 제거하는 것이 맞습니다.
+  // deleteChannel: (channelUrl: string) => Promise<void>; // <-- 이 라인은 제거합니다.
 };
 
 interface ChatMessage {
@@ -70,6 +78,12 @@ const ChatPage: React.FC = () => {
   // 채널 생성 모달 상태 추가
   const [isCreateChannelModalVisible, setIsCreateChannelModalVisible] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
+
+  // ✅ 사이드 메뉴 가시성 관리를 위한 상태 추가 (열려있는 채널 URL 저장)
+  const [openMenuChannelUrl, setOpenMenuChannelUrl] = useState<string | null>(null);
+
+  // ✅ 메뉴 위치 상태 추가 (이전 단계에서 복원됨)
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
 
 
   const [currentChannel, setCurrentChannel] = useState<GroupChannel | null>(null);
@@ -205,7 +219,8 @@ const ChatPage: React.FC = () => {
 
         // 채널 목록 로드 후 각 채널의 상대방 프로필 정보를 가져옵니다.
         const profilePromises = channels.map(async channel => {
-             if (channel.isGroupChannel && channel.members && user) {
+             // ✅ channel.isGroupChannel() 함수 호출
+             if (channel.isGroupChannel() && (channel as GroupChannel).members && user) {
                 const groupChannel = channel as GroupChannel; // Cast to GroupChannel
                 if (groupChannel.memberCount === 2) {
                     const otherUser = groupChannel.members.find(member => member.userId !== user.userId);
@@ -245,7 +260,8 @@ const ChatPage: React.FC = () => {
         const channelHandler = new GroupChannelHandler({
             onMessageReceived: (channel: BaseChannel, message: BaseMessage) => {
                 console.log('Message received:', channel, message);
-                 if (channel.isGroupChannel) {
+                 // ✅ channel.isGroupChannel() 함수 호출
+                 if (channel.isGroupChannel()) {
                   const groupChannel = channel as GroupChannel;
                   if (message.messageType === 'user') {
                     const userMessage = message as UserMessage;
@@ -297,7 +313,8 @@ const ChatPage: React.FC = () => {
               },
               onChannelChanged: (channel: BaseChannel) => {
                 console.log('Channel changed:', channel);
-                 if (channel.isGroupChannel) {
+                 // ✅ channel.isGroupChannel() 함수 호출
+                 if (channel.isGroupChannel()) {
                      const groupChannel = channel as GroupChannel;
                      setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? groupChannel : ch));
                      if (groupChannel.memberCount === 2 && groupChannel.members && currentUser) {
@@ -317,23 +334,17 @@ const ChatPage: React.FC = () => {
                 console.log(`Channel deleted: ${channelUrl} (${channelType})`);
                 setChannels(prevChannels => prevChannels.filter(ch => ch.url !== channelUrl));
                 if (currentChannel?.url === channelUrl) {
-                    setCurrentChannel(null);
-                    setIsChatModalVisible(false);
-                    setMessagesByUser(prev => {
-                      const newState = { ...prev };
-                      delete newState[channelUrl];
-                      return newState;
-                    });
-                     if (messageCollectionRef.current?.channel.url === channelUrl) {
-                        messageCollectionRef.current.dispose();
-                        messageCollectionRef.current = null;
-                        console.log(`MessageCollection disposed for deleted channel: ${channelUrl}`);
-                    }
+                    handleExitClick(); // MessageCollection dispose 및 모달 상태 초기화 포함
+                }
+                 // ✅ 삭제된 채널의 사이드 메뉴가 열려있었다면 닫기
+                if (openMenuChannelUrl === channelUrl) {
+                   setOpenMenuChannelUrl(null);
                 }
               },
                onMessageUpdated: (channel: BaseChannel, message: BaseMessage) => {
                    console.log('Message updated:', channel, message);
-                    if (channel.isGroupChannel) {
+                   // ✅ channel.isGroupChannel() 함수 호출
+                    if (channel.isGroupChannel()) {
                      const groupChannel = channel as GroupChannel;
                      if (message.messageType === 'user') {
                        const userMessage = message as UserMessage;
@@ -406,6 +417,8 @@ const ChatPage: React.FC = () => {
           messageCollectionRef.current = null;
           console.log("MessageCollection disposed on unmount.");
       }
+       // 컴포넌트 언마운트 시 document 이벤트 리스너 제거 (메뉴 닫기 핸들러)
+       document.removeEventListener('click', handleDocumentClick);
     };
   }, [navigate, location]);
 
@@ -445,7 +458,8 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
       const fetchOtherUserProfile = async () => {
-          if (currentChannel && (currentChannel as GroupChannel).members && currentUser) {
+           // ✅ currentChannel이 GroupChannel인지 확인 후 members 속성 접근
+          if (currentChannel?.isGroupChannel() && (currentChannel as GroupChannel).members && currentUser) {
                const groupChannel = currentChannel as GroupChannel;
                if (groupChannel.memberCount === 2) {
                     const otherUser = groupChannel.members.find(member => member.userId !== currentUser.userId);
@@ -519,6 +533,9 @@ const ChatPage: React.FC = () => {
 
         setCurrentChannel(channel);
         setIsChatModalVisible(true);
+        // ✅ 채팅 모달 열 때 사이드 메뉴 닫기
+        setOpenMenuChannelUrl(null);
+
 
         console.log('Initializing MessageCollection for channel:', channelUrl);
 
@@ -622,6 +639,7 @@ const ChatPage: React.FC = () => {
              onChannelUpdated: (context: GroupChannelEventContext, channel: GroupChannel) => {
                console.log(`[${channel.url}] MessageCollection: Channel updated`, channel);
                 setChannels(prevChannels => prevChannels.map(ch => ch.url === channel.url ? channel : ch));
+                 // ✅ 채널 이름이 변경되었다면 UI에도 반영되도록 추가 처리 (channels 상태 업데이트로 자동 반영됨)
              },
              onChannelDeleted: (context: GroupChannelEventContext, channelUrl: string) => {
                console.log(`[${channelUrl}] MessageCollection: Channel deleted`, channelUrl);
@@ -688,7 +706,8 @@ const ChatPage: React.FC = () => {
                    if (Array.isArray(messages) && messages.length > 0) {
                        // 메시지 목록이 messages 매개변수에 정상적으로 전달된 경우
                         console.log(`[${channel.url}] MessageCollection: API loaded messages found in messages parameter.`, messages);
-                        apiMessages = messages;
+                         // messages를 BaseMessage 배열로 타입 단언하여 사용
+                        apiMessages = messages as BaseMessage[];
                    } else if (messages === null && Array.isArray(error)) {
                        // messages가 null이고 error가 배열인 경우 (Sendbird 버그 가능성)
                         // error가 메시지 목록일 가능성이 높다고 판단 (로그에서 확인된 패턴 기반)
@@ -1060,7 +1079,8 @@ const ChatPage: React.FC = () => {
 
       // 새 채널 생성 또는 조회 후 해당 채널의 상대방 프로필 가져오기 (비동기 처리, 결과 기다리지 않음)
       // 새 채널이 GroupChannel이고 멤버가 있을 때만 처리
-      if (newChannel.isGroupChannel && (newChannel as GroupChannel).members && currentUser) {
+       // ✅ newChannel.isGroupChannel() 함수 호출
+      if (newChannel.isGroupChannel() && (newChannel as GroupChannel).members && currentUser) {
           const groupChannel = newChannel as GroupChannel; // Cast to GroupChannel
           if (groupChannel.memberCount === 2) { // Now safe to access memberCount
              const otherUser = groupChannel.members.find(member => member.userId !== currentUser.userId);
@@ -1175,7 +1195,7 @@ const ChatPage: React.FC = () => {
        }
   };
 
-  // ✅ 채널 닫기 (삭제) 처리 함수 추가
+  // 채널 닫기 (삭제) 처리 함수
   const handleCloseChannel = async (channelUrl: string) => {
       if (!sbInstance.current || !currentUser) {
           console.error("Cannot close channel: SDK not initialized or user not found.");
@@ -1186,7 +1206,9 @@ const ChatPage: React.FC = () => {
       const channelToClose = channels.find(ch => ch.url === channelUrl);
 
       // 채널이 존재하고, 현재 사용자가 개설자인지 다시 한번 확인 (UI 표시 조건과 동일하게)
-      if (!channelToClose || !(channelToClose as GroupChannel).creator || (channelToClose as GroupChannel).creator.userId !== currentUser.userId) {
+      // channelToClose가 GroupChannel 타입인지 확인하고 creator 속성에 접근
+      // ✅ creator?.userId 로 안전하게 접근
+      if (!channelToClose || !(channelToClose as GroupChannel).creator || (channelToClose as GroupChannel).creator?.userId !== currentUser.userId) {
            console.warn("Attempted to close channel without being the creator or channel not found.");
            setError("채널 닫기 실패: 채널을 닫을 권한이 없습니다.");
            return;
@@ -1205,6 +1227,7 @@ const ChatPage: React.FC = () => {
       try {
           console.log(`Attempting to delete channel: ${channelUrl}`);
           // Sendbird SDK를 사용하여 채널 삭제
+          // ✅ groupChannel 모듈에서 deleteChannel 메소드 사용
           await sbInstance.current.groupChannel.deleteChannel(channelUrl);
 
           console.log('Channel deleted successfully:', channelUrl);
@@ -1217,6 +1240,11 @@ const ChatPage: React.FC = () => {
               handleExitClick(); // MessageCollection dispose 및 모달 상태 초기화 포함
           }
 
+          // ✅ 삭제된 채널의 사이드 메뉴가 열려있었다면 닫기
+           if (openMenuChannelUrl === channelUrl) {
+             setOpenMenuChannelUrl(null);
+           }
+
           alert("채널이 성공적으로 닫혔습니다.");
 
       } catch (e: any) {
@@ -1226,6 +1254,257 @@ const ChatPage: React.FC = () => {
           setLoading(false);
       }
   };
+
+    // ✅ 사이드 메뉴 토글 함수 수정 (이전 단계에서 수정됨)
+    const toggleSideMenu = (channelUrl: string, event: React.MouseEvent) => {
+        event.stopPropagation(); // 부모 요소 클릭 이벤트 방지
+
+        if (openMenuChannelUrl === channelUrl) {
+            // 이미 열려있는 메뉴를 다시 클릭하면 닫기
+            console.log(`Closing menu for channel: ${channelUrl}`); // 디버그 로그
+            setOpenMenuChannelUrl(null);
+            setMenuPosition(null); // 위치 상태도 초기화
+        } else {
+            // 다른 메뉴를 클릭하면 해당 메뉴 열기 및 위치 설정
+            console.log(`Opening menu for channel: ${channelUrl}`); // 디버그 로그
+            setOpenMenuChannelUrl(channelUrl);
+
+            // 클릭된 버튼의 화면상 위치 정보 가져오기
+            const buttonRect = event.currentTarget.getBoundingClientRect();
+            console.log("Button position:", buttonRect); // 디버그 로그
+
+            // 메뉴가 나타날 위치 계산
+            // 버튼의 오른쪽 상단에 메뉴의 왼쪽 상단을 맞추도록 설정
+            const position = {
+                top: buttonRect.top, // 버튼의 상단 Y 좌표
+                left: buttonRect.right, // 버튼의 오른쪽 X 좌표
+                // 필요에 따라 스크롤 위치 보정: window.scrollY + buttonRect.top
+            };
+            setMenuPosition(position);
+            console.log("Setting menu position:", position); // 디버그 로그
+        }
+    };
+
+    // ✅ 메뉴 외부 클릭 시 메뉴 닫기 핸들러 수정 (이전 단계에서 개선됨)
+    const handleDocumentClick = (event: MouseEvent) => {
+        // 클릭된 요소가 메뉴 자체인지 확인
+        const menuElement = document.querySelector('.channel-side-menu.menu-open');
+        // 클릭된 요소가 메뉴 버튼인지 확인
+        const menuButtonElement = (event.target as HTMLElement).closest('.channel-menu-button');
+
+        // 만약 클릭된 요소가 메뉴 버튼이라면, 메뉴를 닫지 않고 바로 종료
+        if (menuButtonElement) {
+            console.log("Click originated from menu button. Not closing menu."); // 디버그 로그
+            return;
+        }
+
+        // 열려있는 메뉴가 있고, 열린 메뉴 요소가 존재하며, 클릭된 요소가 메뉴 내부가 아닌 경우 닫기
+        if (openMenuChannelUrl && menuElement && !menuElement.contains(event.target as Node)) {
+            console.log("Click outside menu detected. Closing menu."); // 디버그 로그
+            setOpenMenuChannelUrl(null);
+            setMenuPosition(null);
+        } else {
+             // 메뉴가 닫혀있거나 (openMenuChannelUrl), 열린 메뉴 요소가 없거나 (menuElement),
+             // 클릭이 메뉴 버튼에서 시작되었거나 (menuButtonElement, 위에서 처리됨),
+             // 클릭된 요소가 메뉴 내부인 경우 (menuElement.contains)
+            console.log("Click inside menu or menu is closed."); // 디버그 로그
+        }
+    };
+
+    // ✅ 메뉴 상태 변경 시 document에 클릭 이벤트 리스너 추가/제거
+    useEffect(() => {
+        if (openMenuChannelUrl) {
+            // 메뉴가 열렸을 때만 리스너 추가
+            document.addEventListener('click', handleDocumentClick);
+        } else {
+            // 메뉴가 닫혔을 때 리스너 제거
+            document.removeEventListener('click', handleDocumentClick);
+        }
+
+        // 클린업 함수: 컴포넌트 언마운트 시 리스너 제거
+        return () => {
+            document.removeEventListener('click', handleDocumentClick);
+        };
+    }, [openMenuChannelUrl]); // openMenuChannelUrl 상태가 변경될 때마다 실행
+
+    // ✅ 채널 나가기 함수 (Sendbird SDK groupChannel.leave() 사용)
+    const handleLeaveChannel = async (channelUrl: string) => {
+        if (!sbInstance.current || !currentUser) {
+            console.error("Cannot leave channel: SDK not initialized or user not found.");
+            setError("채널 나가기 실패: 시스템 오류");
+            return;
+        }
+
+        const channelToLeave = channels.find(ch => ch.url === channelUrl);
+
+        if (!channelToLeave) {
+            console.warn("Attempted to leave channel that does not exist in state:", channelUrl);
+            setError("채널 나가기 실패: 채널을 찾을 수 없습니다.");
+            return;
+        }
+
+         // 사용자에게 확인 메시지 표시
+        if (!window.confirm(`정말로 채널 "${(channelToLeave as GroupChannel).name || channelToLeave.url}"에서 나가시겠습니까?`)) {
+            console.log("Channel leaving cancelled by user.");
+            return; // 사용자가 취소하면 함수 종료
+        }
+
+        setLoading(true);
+        setError(null);
+        setOpenMenuChannelUrl(null); // 메뉴 닫기
+
+        try {
+            console.log(`Attempting to leave channel: ${channelUrl}`);
+            await (channelToLeave as GroupChannel).leave(); // GroupChannel 객체에 leave 메소드 사용
+
+            console.log('Successfully left channel:', channelUrl);
+
+            // UI 상태 업데이트: 채널 목록에서 나간 채널 제거
+            setChannels(prevChannels => prevChannels.filter(ch => ch.url !== channelUrl));
+
+             // 만약 현재 열려있는 채널이 나간 채널이면 모달 닫기
+            if (currentChannel?.url === channelUrl) {
+                handleExitClick(); // MessageCollection dispose 및 모달 상태 초기화 포함
+            }
+
+            alert("채널에서 성공적으로 나왔습니다.");
+
+        } catch (e: any) {
+            console.error('Failed to leave channel:', e);
+            setError(`채널 나가기 실패: ${e.message || '알 수 없는 오류 발생'}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ✅ 채널 알림 설정 토글 함수 (Sendbird SDK groupChannel.setMyPushTriggerOption() 사용)
+    const handleToggleMuteNotifications = async (channelUrl: string) => {
+         if (!sbInstance.current || !currentUser) {
+             console.error("Cannot toggle notifications: SDK not initialized or user not found.");
+             setError("알림 설정 변경 실패: 시스템 오류");
+             return;
+         }
+
+         const channelToToggle = channels.find(ch => ch.url === channelUrl);
+
+         if (!channelToToggle) {
+             console.warn("Attempted to toggle notifications for channel that does not exist in state:", channelUrl);
+             setError("알림 설정 변경 실패: 채널을 찾을 수 없습니다.");
+             return;
+         }
+
+         setLoading(true);
+         setError(null);
+         setOpenMenuChannelUrl(null); // 메뉴 닫기
+
+
+         try {
+             console.log(`Attempting to toggle notifications for channel: ${channelUrl}`);
+             const groupChannel = channelToToggle as GroupChannel; // GroupChannel으로 캐스팅
+
+             // 현재 알림 설정 상태 가져오기
+             const currentOption = groupChannel.myPushTriggerOption;
+             // ✅ PushTriggerOption enum 값을 사용하도록 수정
+             const newOption = currentOption === PushTriggerOption.DEFAULT || currentOption === PushTriggerOption.ALL ? PushTriggerOption.OFF : PushTriggerOption.DEFAULT;
+
+             console.log(`Current push trigger option: ${currentOption}. Setting to: ${newOption}`);
+
+             await groupChannel.setMyPushTriggerOption(newOption);
+
+             console.log('Successfully toggled notifications for channel:', channelUrl, 'New option:', newOption);
+
+             // UI 상태 업데이트 (channels 목록 업데이트) - Sendbird 핸들러에 의해 자동 업데이트될 가능성이 높지만,
+             // 명시적으로 업데이트하는 경우 아래와 같이 할 수 있습니다.
+             // setChannels(prevChannels => prevChannels.map(ch => ch.url === channelUrl ? { ...ch, myPushTriggerOption: newOption } as GroupChannel : ch));
+
+
+             alert(`채널 알림 설정이 "${newOption === PushTriggerOption.OFF ? '꺼짐' : '켜짐'}"으로 변경되었습니다.`);
+
+         } catch (e: any) {
+             console.error('Failed to toggle notifications:', e);
+             setError(`알림 설정 변경 실패: ${e.message || '알 수 없는 오류 발생'}`);
+         } finally {
+             setLoading(false);
+         }
+    };
+
+    // ✅ 채널 이름 바꾸기 함수 (Sendbird SDK groupChannel.updateChannel() 사용)
+    // 이 함수는 이름을 입력받는 별도의 모달이나 인라인 폼을 통해 호출되어야 합니다.
+    const handleRenameChannel = async (channelUrl: string) => {
+        if (!sbInstance.current || !currentUser) {
+             console.error("Cannot rename channel: SDK not initialized or user not found.");
+             setError("채널 이름 변경 실패: 시스템 오류");
+             return;
+        }
+
+        const channelToRename = channels.find(ch => ch.url === channelUrl);
+
+        // 채널이 존재하고, 현재 사용자가 개설자인지 다시 한번 확인 (UI 표시 조건과 동일하게)
+         // channelToRename가 GroupChannel 타입인지 확인하고 creator 속성에 접근
+        // ✅ creator?.userId 로 안전하게 접근
+        if (!channelToRename || !(channelToRename as GroupChannel).creator || (channelToRename as GroupChannel).creator?.userId !== currentUser.userId) {
+            console.warn("Attempted to rename channel without being the creator or channel not found.");
+            setError("채널 이름 변경 실패: 채널 이름을 변경할 권한이 없습니다.");
+            return;
+        }
+
+        setOpenMenuChannelUrl(null); // 메뉴 닫기
+
+        // 사용자로부터 새 이름을 입력받는 로직 추가 (여기서는 prompt 사용 예시)
+        const newName = prompt("새 채널 이름을 입력하세요:");
+
+        if (!newName || newName.trim() === "") {
+            console.log("Channel rename cancelled or new name is empty.");
+            return; // 사용자가 취소하거나 빈 문자열 입력 시 종료
+        }
+
+         setLoading(true);
+         setError(null);
+
+
+         try {
+             console.log(`Attempting to rename channel: ${channelUrl} to "${newName}"`);
+             const groupChannel = channelToRename as GroupChannel; // GroupChannel으로 캐스팅
+
+             const params = {
+                 name: newName,
+                 // 다른 업데이트 가능한 속성들도 필요하다면 포함
+             };
+
+             // updateChannel 메소드를 사용하여 채널 정보 업데이트
+             const updatedChannel = await groupChannel.updateChannel(params);
+
+             console.log('Successfully renamed channel:', channelUrl, 'New name:', updatedChannel.name);
+
+              // UI 상태 업데이트 (channels 목록 업데이트)
+              // updateChannel 호출 시 onChannelChanged 핸들러가 호출되어 자동으로 channels 상태 업데이트될 가능성 있음
+              // 하지만 명시적으로 업데이트하는 것이 더 확실할 수 있음
+              setChannels(prevChannels => prevChannels.map(ch => ch.url === channelUrl ? updatedChannel : ch));
+
+             alert(`채널 이름이 "${updatedChannel.name}"으로 변경되었습니다.`);
+
+         } catch (e: any) {
+             console.error('Failed to rename channel:', e);
+             setError(`채널 이름 변경 실패: ${e.message || '알 수 없는 오류 발생'}`);
+         } finally {
+             setLoading(false);
+         }
+    };
+
+    // ✅ 메뉴 항목 표시 여부를 결정하는 헬퍼 함수 (가독성 향상)
+    const showRenameAndDeleteMenu = (channel: GroupChannel | null, user: User | null): boolean => {
+         // 채널이 있고 GroupChannel이며 사용자가 채널 생성자이고 1:1 채널이 아닐 때 true 반환
+         // channel?.isGroupChannel() 로 안전하게 접근
+        return !!(channel?.isGroupChannel() && (channel as GroupChannel).creator?.userId === user?.userId && (channel as GroupChannel).memberCount !== 2);
+    };
+
+     // ✅ 채널 나가기 메뉴 표시 여부를 결정하는 헬퍼 함수
+    const showLeaveMenu = (channel: GroupChannel | null, user: User | null): boolean => {
+        // 채널이 있고 GroupChannel이며 1:1 채널이 아닐 때 true 반환
+        // channel?.isGroupChannel() 로 안전하게 접근
+        return !!(channel?.isGroupChannel() && (channel as GroupChannel).memberCount !== 2);
+    };
+
 
   return (
     <div className="chat-page">
@@ -1303,18 +1582,20 @@ const ChatPage: React.FC = () => {
               <ul className="channel-list"> {/* 기존 .chat-list와 구분 */}
                   {publicChannels.map(channel => (
                        // 이미 참여한 채널은 목록에 표시하지 않거나 비활성화
-                      <li key={channel.url} className={channels.some(ch => ch.url === channel.url) ? 'joined' : ''}>
+                       // ✅ channel.isGroupChannel() 함수 호출
+                      <li key={channel.url} className={(channel.isGroupChannel() && channels.some(ch => ch.url === channel.url)) ? 'joined' : ''}>
                            {/* 공개 채널 커버 이미지 또는 기본 이미지 표시 */}
                           <img className="channel-cover-image" src={channel.coverUrl || "/profile-placeholder.jpg"} alt={channel.name || channel.url} />
                           <div className="channel-info">
                               <strong>{channel.name || channel.url}</strong>
-                              <p>{channel.memberCount} 명 참여 중</p>
+                              <p>{(channel as GroupChannel).memberCount} 명 참여 중</p> {/* memberCount는 GroupChannel에만 있음 */}
                           </div>
-                           {channels.some(ch => ch.url === channel.url) ? (
+                           {/* ✅ channel.isGroupChannel() 함수 호출 후 채널 참여 로직 실행 */}
+                           {(channel.isGroupChannel() && channels.some(ch => ch.url === channel.url)) ? (
                                <button className="join-channel-btn" disabled>참여함</button>
-                           ) : (
-                               <button className="join-channel-btn" onClick={() => handleJoinPublicChannel(channel)} disabled={loading}>참여</button>
-                           )}
+                           ) : ( channel.isGroupChannel() && ( // GroupChannel만 참여 가능하도록 조건 추가
+                               <button className="join-channel-btn" onClick={() => handleJoinPublicChannel(channel as GroupChannel)} disabled={loading}>참여</button>
+                           ))}
                       </li>
                   ))}
               </ul>
@@ -1326,9 +1607,10 @@ const ChatPage: React.FC = () => {
               <ul className="chat-list">
               {channels.map((channel) => {
                   // 채널이 GroupChannel인 경우에만 1:1 여부 및 상대방 정보 확인
-                  const isGroup = channel.isGroupChannel;
+                  // ✅ channel.isGroupChannel() 함수 호출
+                  const isGroup = channel.isGroupChannel();
                   const isOneToOneChannel = isGroup && (channel as GroupChannel).memberCount === 2 && currentUser;
-                  const otherUser = isOneToOneChannel
+                  const otherUser = isOneToOneChannel && (channel as GroupChannel).members // members 속성 안전 접근
                     ? (channel as GroupChannel).members.find(member => member.userId !== currentUser.userId) || null
                     : null;
                   const otherUserProfile = otherUser ? userProfiles[otherUser.userId] : undefined;
@@ -1338,16 +1620,24 @@ const ChatPage: React.FC = () => {
                   // 상대방 프로필 이미지 URL이 있으면 사용, 없으면 Sendbird 프로필 URL 또는 기본 이미지 사용
                   const displayImage = otherUserProfile?.thumbnailImagePath || otherUser?.profileUrl || channel.coverUrl || "/profile-placeholder.jpg";
 
-                  // ✅ 현재 사용자가 채널 생성자인지 확인
-                  const isChannelCreator = currentUser && channel.creator?.userId === currentUser.userId;
+                  // ✅ 현재 사용자가 채널 생성자인지 확인 (GroupChannel 타입에만 creator 속성 있음)
+                  // ✅ creator?.userId 로 안전하게 접근
+                  const isChannelCreator = currentUser && isGroup && (channel as GroupChannel).creator?.userId === currentUser.userId;
 
+                  // ✅ 1:1 채널에서는 이름 바꾸기 및 채널 닫기 메뉴를 표시하지 않음 - 헬퍼 함수 사용
+                  const canShowRenameAndDeleteMenu = showRenameAndDeleteMenu(channel, currentUser);
+                  // ✅ 1:1 채널에서는 나가기 메뉴를 표시하지 않음 - 헬퍼 함수 사용
+                  const canShowLeaveMenu = showLeaveMenu(channel, currentUser);
 
                   return (
                     <li
                       key={channel.url}
+                      onClick={() => handleOpenChatModal(channel.url)} // li 클릭 시 메뉴가 닫히고 채팅방 열리도록 유지
+                       className={openMenuChannelUrl === channel.url ? 'menu-open' : ''} // 메뉴 열림 상태 클래스 추가
                     >
                       {/* ✅ 채널 정보 표시 영역 클릭 시 채팅 모달 열기 */}
-                      <div className="channel-info-display" onClick={() => handleOpenChatModal(channel.url)}>
+                      {/* 전체 li 대신 정보 영역만 클릭 가능하게 수정 */}
+                      <div className="channel-info-display"> {/* onClick 제거 */}
                          <img className="channel-cover-image" src={displayImage} alt={displayName} />
                          <div className="chat-info">
                            <strong>{displayName}</strong>
@@ -1357,19 +1647,16 @@ const ChatPage: React.FC = () => {
                          </div>
                       </div>
 
-                      {/* ✅ 채널 개설자이고 공개 채널인 경우에만 채널 닫기 버튼 표시 */}
-                      {isChannelCreator && channel.isPublic && ( // isPublic 속성도 확인하여 공개 채널에만 닫기 버튼 표시
-                          <button
-                              className="close-channel-btn"
-                              onClick={(e) => {
-                                  e.stopPropagation(); // <li> 클릭 이벤트 방지
-                                  handleCloseChannel(channel.url);
-                              }}
-                              disabled={loading}
-                          >
-                              채널 닫기
-                          </button>
+                       {/* ✅ 사이드 메뉴 버튼 추가 */}
+                      {/* GroupChannel인 경우에만 메뉴 버튼 표시 */}
+                      {isGroup && (
+                           <button className="channel-menu-button" onClick={(e) => toggleSideMenu(channel.url, e)}>
+                               ⋮ {/* 점 3개 아이콘 (Unicode) 또는 이미지 사용 */}
+                           </button>
                       )}
+
+
+                       {/* ✅ 사이드 메뉴 렌더링은 아래에서 단일 요소로 처리 */}
                     </li>
                   );
                 })}
@@ -1386,7 +1673,8 @@ const ChatPage: React.FC = () => {
             <div className="chat-header">
               <div className="chat-header-left">
                  {/* Linter Error Fix applied here: ensure currentUser exists and use currentChannel.isGroupChannel directly */}
-                 {currentChannel?.isGroupChannel && (currentChannel as GroupChannel).memberCount === 2 && currentUser && (currentChannel as GroupChannel).members ? // 현재 채널이 GroupChannel이고 1:1 채널이며 사용자 정보가 있을 때
+                 {/* ✅ currentChannel?.isGroupChannel() 함수 호출 */}
+                 {(currentChannel as GroupChannel)?.isGroupChannel() && (currentChannel as GroupChannel).memberCount === 2 && currentUser && (currentChannel as GroupChannel).members ? // 현재 채널이 GroupChannel이고 1:1 채널이며 사용자 정보가 있을 때
                      // 현재 채널의 상대방 프로필 정보 가져오기
                      (currentChannel as GroupChannel).members.find(member => member.userId !== currentUser.userId)?.nickname || (currentChannel as GroupChannel).members.find(member => member.userId !== currentUser.userId)?.userId || '알 수 없는 사용자' // 상대방 닉네임 또는 ID
                      : currentChannel.name || currentChannel.url // 그룹 채널 또는 정보 없을 때 채널 이름/URL
@@ -1492,6 +1780,67 @@ const ChatPage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ✅ 여기에 단 하나의 메뉴 요소를 렌더링합니다 */}
+      {/* 메뉴가 열려있고, 메뉴 위치 정보가 있을 때만 렌더링 (currentChannel 조건 제거) */}
+      {/* 메뉴 항목 표시 여부는 openMenuChannelUrl을 사용하여 해당 채널 정보로 결정 */}
+      {openMenuChannelUrl && menuPosition && (
+          <> {/* React Fragment를 사용하여 여러 요소를 반환 */}
+            {console.log(`Rendering menu for channel: ${openMenuChannelUrl} at top: ${menuPosition.top}, left: ${menuPosition.left}`)} {/* 디버그 로그 */}
+            <ul
+                className="channel-side-menu menu-open" // 열려있는 메뉴에 menu-open 클래스 추가
+                style={{
+                    position: 'fixed', // 뷰포트 기준으로 고정
+                    top: menuPosition.top,
+                    left: menuPosition.left,
+                    // 필요에 따라 메뉴 너비만큼 왼쪽으로 조정
+                    // transform: 'none', // 이전 변형 제거
+                }}
+                // 외부 클릭 감지를 위해 onBlur 등을 사용하거나 document 클릭 핸들러에서 메뉴 요소 참조
+            >
+                {/* 메뉴 항목들은 openMenuChannelUrl을 사용하여 결정 */}
+                {/* openMenuChannelUrl에 해당하는 채널 정보를 찾아서 사용 */}
+                {/* findChannelByUrl 헬퍼 함수를 사용하여 채널 찾기 */}
+                 {(() => {
+                      const targetChannel = channels.find(ch => ch.url === openMenuChannelUrl) || null;
+                      if (!targetChannel) {
+                          console.warn(`Could not find channel with URL: ${openMenuChannelUrl} to render menu items.`); // 디버그 로그
+                          return null; // 채널을 찾을 수 없으면 메뉴 항목을 렌더링하지 않음
+                      }
+                      const canShowLeave = showLeaveMenu(targetChannel, currentUser);
+                      const canShowRenameAndDelete = showRenameAndDeleteMenu(targetChannel, currentUser);
+
+                      return (
+                          <>
+                              {/* 채널 나가기 메뉴: 1:1 채널이 아닐 때 표시 */}
+                              {canShowLeave && (
+                                  <li onClick={() => handleLeaveChannel(openMenuChannelUrl)}>
+                                      채널 나가기
+                                  </li>
+                              )}
+                               {/* 알림 끄기/켜기 메뉴: 모든 GroupChannel에서 표시 */}
+                              <li onClick={() => handleToggleMuteNotifications(openMenuChannelUrl)}>
+                                   {/* 알림 상태는 해당 채널을 찾아서 확인 */}
+                                  알림 {(targetChannel as GroupChannel)?.myPushTriggerOption === PushTriggerOption.OFF ? '켜기' : '끄기'}
+                              </li>
+                               {/* 채널 이름 바꾸기 메뉴: 내가 개설자인 GroupChannel에서 표시 (1:1 채널 제외) */}
+                              {canShowRenameAndDelete && (
+                                 <li onClick={() => handleRenameChannel(openMenuChannelUrl)}>
+                                     채널 이름 바꾸기
+                                 </li>
+                              )}
+                              {/* 채널 닫기 (삭제) 메뉴: 내가 개설자인 GroupChannel에서 표시 (1:1 채널 제외) */}
+                              {canShowRenameAndDelete && (
+                                  <li onClick={() => handleCloseChannel(openMenuChannelUrl)}>
+                                      채널 닫기
+                                  </li>
+                              )}
+                          </>
+                      );
+                 })()}
+            </ul>
+          </>
       )}
     </div>
   );
