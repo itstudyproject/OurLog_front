@@ -30,7 +30,7 @@ const ArtworkSlider: React.FC = () => {
   const [artists, setArtists] = useState<Artwork[]>([]);
   const [artistIndexes, setArtistIndexes] = useState<number[]>([]);
 
-  // 랜덤 인덱스 생성 함수 (중복 제거 + 개수 제한)
+  // 랜덤 인덱스 생성 함수
   const getRandomIndexes = (length: number, count: number): number[] => {
     const indexes: number[] = [];
     const maxCount = Math.min(count, length);
@@ -46,25 +46,22 @@ const ArtworkSlider: React.FC = () => {
   useEffect(() => {
     const fetchArtworks = async () => {
       try {
-        const token = localStorage.getItem('token'); // 토큰 가져오기
+        const token = localStorage.getItem("token");
         const res = await fetch(VIEWS_API_URL, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
         const data = await res.json();
         const mapped = data.map((item: any) => ({
           title: item.title,
           artist: item.nickname || "unknown",
           highestBid:
-            item.tradeDTO &&
-            item.tradeDTO.highestBid &&
+            item.tradeDTO?.highestBid &&
             !isNaN(Number(item.tradeDTO.highestBid)) &&
             Number(item.tradeDTO.highestBid) > 0
               ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
@@ -101,31 +98,28 @@ const ArtworkSlider: React.FC = () => {
         setArtworkIndexes(getRandomIndexes(mapped.length, 3));
       } catch (e) {
         console.error("인기 작품 불러오기 실패", e);
-        setArtworks([]); // 에러 시 빈 배열로 설정
+        setArtworks([]);
       }
     };
 
     const fetchArtists = async () => {
       try {
-        const token = localStorage.getItem('token'); // 토큰 가져오기
+        const token = localStorage.getItem("token");
         const res = await fetch(FOLLOWERS_API_URL, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
         const data = await res.json();
         const mapped = data.map((item: any) => ({
           title: item.title || "대표작 없음",
           artist: item.nickname || "unknown",
           highestBid:
-            item.tradeDTO &&
-            item.tradeDTO.highestBid &&
+            item.tradeDTO?.highestBid &&
             !isNaN(Number(item.tradeDTO.highestBid)) &&
             Number(item.tradeDTO.highestBid) > 0
               ? `₩${Number(item.tradeDTO.highestBid).toLocaleString()}`
@@ -158,11 +152,17 @@ const ArtworkSlider: React.FC = () => {
           pictureDTOList: item.pictureDTOList,
         }));
 
-        setArtists(mapped);
-        setArtistIndexes(getRandomIndexes(mapped.length, 3));
+        // 🎯 작가 중복 제거
+        const uniqueArtists = mapped.filter(
+          (artist, index, self) =>
+            index === self.findIndex((a) => a.link === artist.link)
+        );
+
+        setArtists(uniqueArtists);
+        setArtistIndexes(getRandomIndexes(uniqueArtists.length, 3));
       } catch (e) {
         console.error("주요 아티스트 불러오기 실패", e);
-        setArtists([]); // 에러 시 빈 배열로 설정
+        setArtists([]);
       }
     };
 
