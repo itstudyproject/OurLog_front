@@ -1504,7 +1504,7 @@ const ChatPage: React.FC = () => {
   const showLeaveMenu = (channel: GroupChannel | null, user: User | null): boolean => {
     // 채널이 있고 GroupChannel이며 1:1 채널이 아닐 때 true 반환
     // channel?.isGroupChannel() 로 안전하게 접근
-    return !!(channel?.isGroupChannel() && (channel as GroupChannel).memberCount !== 2);
+    return !!(channel?.isGroupChannel());
   };
 
 
