@@ -9,9 +9,11 @@ import { PictureDTO } from "../../types/pictureTypes";
 
 // ✅ 이미지 서빙을 위한 백엔드 베이스 URL 추가
 const imageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 예시 경로, 실제 백엔드 경로에 맞게 수정 필요
+const profileImageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 프로필 이미지용 베이스 URL 추가
 
 interface PostDetailWithLike extends PostDTO {
   liked?: boolean;
+  writerId?: number;
 }
 
 // ✅ 조회수 증가 함수를 fetchArtworkDetail 밖으로 이동
@@ -342,6 +344,14 @@ const ArtDetail = () => {
 
       const data = await response.json();
       const postData = data.postDTO;
+      
+      // 프로필 이미지 관련 데이터 로깅
+      console.log('작품 상세 데이터:', {
+        postId: postData.postId,
+        userId: postData.userId,
+        profileImage: postData.profileImage,
+        userProfile: postData.userProfile
+      });
 
       // ✅ 로그인된 사용자의 좋아요 상태를 추가로 가져옴
       let userLiked = false;
@@ -434,21 +444,12 @@ const ArtDetail = () => {
       setBidAmount(Number(postData?.tradeDTO?.highestBid || 0) + 1000);
       setLoading(false);
 
-      if (
-        postData?.pictureDTOList &&
-        postData.pictureDTOList.length > 0
-      ) {
-        const thumbnail = postData.pictureDTOList.find(
-          (pic: PictureDTO) => pic.uuid === postData.fileName
-        );
-        if (thumbnail) {
-          setMainImagePicture(thumbnail);
-        } else {
-          setMainImagePicture(postData.pictureDTOList[0]);
-        }
-      } else {
-        setMainImagePicture(null);
-      }
+      // ✅ 썸네일 이미지를 찾습니다. postData.fileName이 있으면 해당 uuid를 가진 이미지를 찾고, 없으면 첫 번째 이미지를 사용합니다.
+      const thumbnailPicture = Array.isArray(postData?.pictureDTOList)
+        ? postData.pictureDTOList.find(pic => pic.uuid === postData?.fileName) || (postData.pictureDTOList.length > 0 ? postData.pictureDTOList[0] : null)
+        : null;
+
+      setMainImagePicture(thumbnailPicture);
 
       // 경매 정보가 있고 종료 시간이 지났으면 상태 업데이트 요청
       if (postData?.tradeDTO && postData.tradeDTO.lastBidTime) {
@@ -859,12 +860,35 @@ const ArtDetail = () => {
               {post.profileImage ? (
                 <img
                   src={
-                    post.profileImage.startsWith('/ourlog')
-                      ? `http://localhost:8080${post.profileImage}`
-                      : `${imageBaseUrl}${post.profileImage}`
+                    (() => {
+                      if (post.profileImage.startsWith('/ourlog')) {
+                        return `http://localhost:8080${post.profileImage}`;
+                      } else if (post.profileImage.startsWith('http')) {
+                        return post.profileImage;
+                      } else {
+                        return `${imageBaseUrl}${post.profileImage}`;
+                      }
+                    })()
                   }
                   alt={`${post.nickname || "알 수 없는 작가"} 프로필`}
                   className="artist-profile-image"
+                  onLoad={(e) => {
+                    console.log('프로필 이미지 로드 성공:', e.currentTarget.src);
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    console.error('프로필 이미지 로드 실패:', {
+                      attemptedUrl: target.src,
+                      originalUrl: post.profileImage,
+                      postData: {
+                        postId: post.postId,
+                        userId: post.userId,
+                        nickname: post.nickname
+                      }
+                    });
+                    target.onerror = null;
+                    target.src = "/default-profile.png";
+                  }}
                 />
               ) : (
                 <div className="default-avatar">👤</div>

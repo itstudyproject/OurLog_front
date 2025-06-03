@@ -172,7 +172,7 @@ const ArtList = () => {
             }
 
             // 사용자의 좋아요 상태 가져오기 (로그인된 경우)
-            if (!isNaN(loggedInUserId) && loggedInUserId !== null && loggedInUserId > 0) {
+            if (loggedInUserId !== null && loggedInUserId > 0) {
               try {
                 const likeStatusResponse = await fetch(
                   `http://localhost:8080/ourlog/favorites/${loggedInUserId}/${artwork.postId}`,
@@ -442,8 +442,13 @@ const ArtList = () => {
       <div className="art-list-grid">
         {filteredArtworks.map((artwork) => {
           // ✅ 백엔드에서 originImagePath를 제대로 내려주면 이 부분이 작동합니다.
-          const imageUrl = artwork.pictureDTOList && artwork.pictureDTOList.length > 0 && artwork.pictureDTOList[0].originImagePath
-            ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}` // 백엔드 전체 URL 포함
+          // 썸네일 이미지를 찾습니다. artwork.fileName이 있으면 해당 uuid를 가진 이미지를 찾고, 없으면 첫 번째 이미지를 사용합니다.
+          const thumbnailPicture = Array.isArray(artwork.pictureDTOList)
+            ? artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName) || (artwork.pictureDTOList.length > 0 ? artwork.pictureDTOList[0] : null)
+            : null;
+
+          const imageUrl = thumbnailPicture?.originImagePath
+            ? `http://localhost:8080/ourlog/picture/display/${thumbnailPicture.originImagePath}` // 백엔드 전체 URL 포함
             : null;
 
           console.log("Artwork TradeDTO:", artwork.tradeDTO);

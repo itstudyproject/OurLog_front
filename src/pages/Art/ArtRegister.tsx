@@ -583,8 +583,16 @@ const ArtRegister = () => {
             imageFiles.map(imageFile => uploadImageFile(imageFile.file))
           );
 
-          const thumbnailImageFile = imageFiles.find(img => img.id === postData.selectedThumbnailId);
-          const thumbnailPictureDTO = uploadedPictureDTOs.find(pic => pic.uuid === (thumbnailImageFile?.id || (uploadedPictureDTOs.length > 0 ? uploadedPictureDTOs[0].uuid : "")));
+          const selectedImageFile = imageFiles.find(img => img.id === postData.selectedThumbnailId);
+          let thumbnailPictureDTO = null;
+          if (selectedImageFile) {
+              const selectedIndex = imageFiles.indexOf(selectedImageFile);
+              if (selectedIndex !== -1 && selectedIndex < uploadedPictureDTOs.length) {
+                  thumbnailPictureDTO = uploadedPictureDTOs[selectedIndex];
+              }
+          } else if (uploadedPictureDTOs.length > 0) {
+              thumbnailPictureDTO = uploadedPictureDTOs[0];
+          }
 
           const currentStartTime = new Date();
 
