@@ -182,9 +182,16 @@ const ArtPayment = () => {
           console.log("결제 성공 응답:", successMessage);
 
           alert("결제가 완료되었습니다!");
-          // 결제 완료 후 입찰 기록 페이지로 이동
-          // tradeId를 URL 파라미터로 전달할 필요 없음
-          navigate(`/Art/bidhistory`);
+          // 결제 완료 후 BidHistory 페이지로 이동
+          // userId를 URL 파라미터로 전달
+          const stored = localStorage.getItem("user");
+          const userId = stored ? JSON.parse(stored).userId : null;
+          if (userId) {
+            navigate(`/Art/bidhistory/${userId}`);
+          } else {
+            alert("사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+            navigate("/login");
+          }
 
       } catch (error) {
           console.error("결제 요청 중 오류 발생:", error);

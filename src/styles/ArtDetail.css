@@ -758,3 +758,31 @@ body {
 .art-detail-watermark-overlay-thumbnail { /* 썸네일 워터마크 스타일 */
   font-size: 2vw; /* ✅ 글자 크기 2vw로 감소 */
 }
+
+.art-tags {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.art-tags .tag-pill {
+  background-color: #2a2a2a;
+  color: #f8c147;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #f8c147;
+}
+
+.art-tags .tag-pill:hover {
+  background-color: #f8c147;
+  color: #1a1a1a;
+}
+
+.art-tags .tag-pill:active {
+  transform: scale(0.98);
+  background-color: #e6b03f;
+}

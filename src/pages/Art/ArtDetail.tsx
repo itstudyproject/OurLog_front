@@ -831,6 +831,21 @@ const ArtDetail = () => {
             <div className="description-content">
               <p>{post.content || "설명 없음"}</p>
             </div>
+
+            {/* 태그 섹션 추가 */}
+            {post.tag && (
+              <div className="art-tags">
+                {post.tag.split(",").map((tag) => (
+                  <span
+                    key={tag}
+                    className="tag-pill"
+                    onClick={() => navigate(`/Art?type=t&keyword=${encodeURIComponent(tag.trim())}`)}
+                  >
+                    #{tag.trim()}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

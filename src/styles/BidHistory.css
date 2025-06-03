@@ -373,3 +373,26 @@ body {
   color: #ccc;
   font-size: 18px;
 }
+
+.bh-main-button {
+  padding: 10px 20px;
+  background-color: #2a2a2a;
+  color: #f8c147;
+  border: 1px solid #f8c147;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.bh-main-button:hover {
+  background-color: #f8c147;
+  color: #1a1a1a;
+}
+
+.bh-main-button:active {
+  background-color: #e6b03f;
+  color: #1a1a1a;
+}
+
+/* 기존 bh-back-button 스타일은 유지하되 사용하지 않음 */

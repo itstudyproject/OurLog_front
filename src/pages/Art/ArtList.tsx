@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "../../styles/ArtList.css";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
 import { PostDTO } from '../../types/postTypes';
@@ -11,6 +11,8 @@ interface ArtworkWithLike extends PostDTO {
 
 const ArtList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [artworks, setArtworks] = useState<ArtworkWithLike[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
@@ -46,6 +48,17 @@ const ArtList = () => {
       localStorage.removeItem('artworkListPage');
     }
   }, []);
+
+  // URL에서 검색 파라미터 추출
+  useEffect(() => {
+    const keywordFromUrl = searchParams.get("keyword");
+    const typeFromUrl = searchParams.get("type");
+    if (keywordFromUrl) {
+      setSearchInput(keywordFromUrl);
+      setSearchTerm(keywordFromUrl);
+      setCurrentPage(1);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const fetchArtworks = async () => {

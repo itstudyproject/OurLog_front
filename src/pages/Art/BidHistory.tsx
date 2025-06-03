@@ -29,22 +29,22 @@ interface PurchaseOrBidEntry {
 }
 
 // userId prop을 받도록 수정
-const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
+const BidHistory: React.FC<{ userId?: number }> = ({ userId: propUserId }) => {
   const navigate = useNavigate();
-  // tradeId 대신 사용자 ID가 필요
-  // const { tradeId } = useParams<{ tradeId?: string }>(); // tradeId useParams 제거
+  const { userId: paramUserId } = useParams<{ userId?: string }>();
   const [currentBids, setCurrentBids] = useState<PurchaseOrBidEntry[]>([]);
-  // ✅ wonTrades 대신 completedTrades로 변경하여 낙찰/즉시구매 모두 포함
   const [completedTrades, setCompletedTrades] = useState<PurchaseOrBidEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentTime, setCurrentTime] = useState(new Date()); // LocalDateTime 대신 Date 객체 사용
-  // const [artTitle, setArtTitle] = useState<string>(''); // 게시글 제목은 목록별로 달라짐
-  // const [tradeInfo, setTradeInfo] = useState<TradeInfo | null>(null); // 단일 거래 정보 제거
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // userId 결정 로직
+  const userId = propUserId || (paramUserId ? parseInt(paramUserId) : null);
 
   useEffect(() => {
-    fetchUserTrades();
-    // 의존성 배열을 빈 배열[]로 변경하여 마운트 시 1회 실행 보장
-  }, [userId]); // userId를 의존성 배열에 추가하여 prop 변경 시 재실행
+    if (userId) {
+      fetchUserTrades();
+    }
+  }, [userId]);
 
   // 남은 시간 표시를 위한 현재 시간 업데이트
   useEffect(() => {
@@ -58,8 +58,8 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
     }
   }, [currentBids]); // currentBids 목록이 변경될 때마다 타이머 재설정
 
-  const handleGoBack = () => {
-    navigate(-1);
+  const handleGoToMain = () => {
+    navigate('/');
   };
 
   // 작품 상세 페이지로 이동 함수 (게시글 ID 사용)
@@ -143,7 +143,6 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
     setLoading(true);
 
     // 사용자 로그인 상태 확인 및 userId 가져오기
-    // userId는 props로 받으므로 여기서 다시 localStorage에서 가져올 필요 없음
     const currentUserId = userId;
 
     if (!currentUserId) {
@@ -295,7 +294,9 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
         {" "}
         {/* 클래스 이름 변경 */}
         <p>구매 및 입찰 내역이 없습니다.</p>
-        <button onClick={handleGoBack}>뒤로 가기</button>
+        <button onClick={handleGoToMain} className="bh-main-button">
+          메인으로 이동
+        </button>
       </div>
     );
   }
@@ -501,8 +502,8 @@ const BidHistory: React.FC<{ userId: number }> = ({ userId }) => {
       <div className="bh-history-footer">
         {" "}
         {/* 푸터 */}
-        <button onClick={handleGoBack} className="bh-back-button">
-          뒤로 가기
+        <button onClick={handleGoToMain} className="bh-main-button">
+          메인으로 이동
         </button>
       </div>
     </div>
