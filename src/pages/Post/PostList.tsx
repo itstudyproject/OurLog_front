@@ -114,7 +114,7 @@ const PostList = () => {
           const postId = item.postId || item.id;
           // 썸네일 이미지 정보 찾기
           const thumbnailPic = item.pictureDTOList?.find(
-            (pic: any) => pic.picName === item.fileName
+            (pic: any) => pic.uuid === item.fileName
           );
 
           if (!postMap.has(postId)) {
@@ -124,8 +124,8 @@ const PostList = () => {
               author: item.nickname || "익명", // nickname 필드 사용
               createdAt: item.regDate || item.createdAt || "",
               thumbnail:
-                thumbnailPic && thumbnailPic.uuid && thumbnailPic.path
-                  ? `http://localhost:8080/ourlog/picture/display/${thumbnailPic.path}/s_${thumbnailPic.uuid}_${thumbnailPic.picName}` // 찾은 pictureDTO 정보 사용
+                thumbnailPic && thumbnailPic.originImagePath
+                  ? `http://localhost:8080/ourlog/picture/display/${thumbnailPic.originImagePath}`
                   : "",
               boardId: item.boardNo || item.boardId,
             });

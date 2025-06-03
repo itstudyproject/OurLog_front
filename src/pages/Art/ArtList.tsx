@@ -68,15 +68,26 @@ const ArtList = () => {
       const params = new URLSearchParams({
         page: String(pageNumber),
         size: String(artworksPerPage),
-        boardNo: "5",
-        type: "t",
-        keyword: searchTerm
+        boardNo: "5"  // boardNo는 항상 포함
       });
 
+      // 검색어가 있는 경우에만 검색 파라미터 추가
+      if (searchTerm) {
+        params.append('type', 't');
+        params.append('keyword', searchTerm);
+      }
+
       try {
-        const response = await fetch(`http://localhost:8080/ourlog/post/list?${params.toString()}`, {
+        // 모든 요청에 대해 동일한 엔드포인트 사용
+        const url = `http://localhost:8080/ourlog/post/list/popular?${params.toString()}`;
+
+        const headers = getAuthHeaders();
+        console.log('Request headers:', headers);
+
+        const response = await fetch(url, {
           method: 'GET',
-          headers: getAuthHeaders()
+          headers: headers,
+          credentials: 'include'
         });
 
         if (response.status === 403) {
@@ -92,13 +103,12 @@ const ArtList = () => {
         }
 
         const data = await response.json();
+        console.log('서버 응답 데이터:', data);
         
-        if (!data.pageResultDTO) {
-          throw new Error("잘못된 응답 형식");
-        }
-
-        const { pageResultDTO } = data;
-        let initialArtworks: ArtworkWithLike[] = (pageResultDTO.dtoList || []).map((item: any) => ({
+        const dtoList = data.dtoList || [];
+        const totalPage = data.totalPage || 1;
+        
+        let initialArtworks: ArtworkWithLike[] = dtoList.map((item: any) => ({
           postId: item.postId || item.id,
           boardNo: item.boardNo || item.boardId,
           title: item.title,
@@ -110,7 +120,7 @@ const ArtList = () => {
           thumbnailImagePath: item.thumbnailImagePath || null,
           followers: item.followers || null,
           downloads: item.downloads || null,
-          favoriteCnt: item.favoriteCnt || item.likeCount || 0, // 초기값 사용
+          favoriteCnt: item.favoriteCnt || item.likeCount || 0,
           tradeDTO: item.tradeDTO ? {
             tradeId: item.tradeDTO.tradeId,
             postId: item.tradeDTO.postId,
@@ -121,7 +131,7 @@ const ArtList = () => {
             highestBid: item.tradeDTO.highestBid || null,
             bidAmount: item.tradeDTO.bidAmount || null,
             nowBuy: item.tradeDTO.nowBuy,
-            tradeStatus: item.tradeDTO.tradeStatus, // true/false 또는 0/1
+            tradeStatus: item.tradeDTO.tradeStatus,
             startBidTime: item.tradeDTO.startBidTime || null,
             lastBidTime: item.tradeDTO.lastBidTime || null
           } : null,
@@ -130,21 +140,21 @@ const ArtList = () => {
           replyCnt: item.replyCnt || null,
           regDate: item.regDate || item.createdAt || null,
           modDate: item.modDate || item.updatedAt || null,
-          liked: false, // 초기값 false, 아래에서 업데이트
+          liked: false,
         }));
 
-        setTotalPages(pageResultDTO.totalPage || 1);
+        setTotalPages(totalPage);
 
-        // ✅ 각 게시글의 최신 좋아요 수와 사용자의 좋아요 상태를 병렬로 가져옵니다.
+        // 각 게시글의 최신 좋아요 수와 사용자의 좋아요 상태를 병렬로 가져옵니다.
         const artworksWithLatestData = await Promise.all(
           initialArtworks.map(async (artwork) => {
             if (artwork.postId === undefined || artwork.postId === null) {
               console.warn("❌ Artwork without postId:", artwork);
-              return artwork; // postId 없는 경우 건너뛰기
+              return artwork;
             }
 
-            let latestFavoriteCnt = artwork.favoriteCnt; // 초기값
-            let userLiked = false; // 초기값
+            let latestFavoriteCnt = artwork.favoriteCnt;
+            let userLiked = false;
 
             try {
               // 최신 좋아요 수 가져오기
@@ -158,9 +168,9 @@ const ArtList = () => {
               if (countResponse.ok) {
                 const countData = await countResponse.json();
                 if (typeof countData === "number") {
-                  latestFavoriteCnt = countData; // 최신 좋아요 수 반영
-                } else if (countData && typeof countData.count === "number") { // 응답 형태가 { count: number } 인 경우
-                    latestFavoriteCnt = countData.count;
+                  latestFavoriteCnt = countData;
+                } else if (countData && typeof countData.count === "number") {
+                  latestFavoriteCnt = countData.count;
                 }
               } else {
                 console.warn(
@@ -184,7 +194,7 @@ const ArtList = () => {
 
                 if (likeStatusResponse.ok) {
                   const statusData = await likeStatusResponse.json();
-                  userLiked = statusData === true; // API 응답 형태에 따라 조정
+                  userLiked = statusData === true;
                 } else {
                   console.warn(
                     `❌ 사용자 좋아요 상태 불러오기 실패 (${likeStatusResponse.status}) for postId ${artwork.postId}`
@@ -199,7 +209,7 @@ const ArtList = () => {
           })
         );
 
-        setArtworks(artworksWithLatestData); // 최신 데이터로 artworks 상태 업데이트
+        setArtworks(artworksWithLatestData);
 
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
@@ -211,15 +221,15 @@ const ArtList = () => {
     };
 
     fetchArtworks();
-  }, [currentPage, searchTerm, navigate, loggedInUserId]); // loggedInUserId를 의존성 배열에 추가
+  }, [currentPage, searchTerm, navigate, loggedInUserId, sortType]);
 
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
     if (sortType === 'popular') {
-      // favoriteCnt가 null일 경우 0으로 간주하여 정렬
-      return [...artworks].sort((a, b) => (b.favoriteCnt ?? 0) - (a.favoriteCnt ?? 0));
+      // 인기순은 백엔드에서 처리되므로 그대로 반환
+      return [...artworks];
     }
-    // tradeDTO나 startBidTime이 null일 경우 유효한 시간으로 간주하여 정렬 (예: 아주 오래된 시간)
+    // 최신순 정렬만 프론트엔드에서 처리
     return [...artworks].sort((a, b) => {
       const timeA = a.tradeDTO?.startBidTime ? new Date(a.tradeDTO.startBidTime).getTime() : 0;
       const timeB = b.tradeDTO?.startBidTime ? new Date(b.tradeDTO.startBidTime).getTime() : 0;
@@ -234,7 +244,9 @@ const ArtList = () => {
     return onlyArt.filter(
       art =>
         art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (art.nickname && art.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
+        (art.nickname && art.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (art.content && art.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (art.tag && art.tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [sortedArtworks, searchTerm]);
 
@@ -338,40 +350,53 @@ const ArtList = () => {
 
       if (!result.ok) throw new Error("서버 응답 오류");
 
-      const data = await result.json();
+      // 좋아요 토글 후 데이터를 다시 불러옴
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        size: String(artworksPerPage),
+        boardNo: "5"
+      });
 
-      // 백엔드 응답으로 최종 상태 업데이트
-      if (typeof data.favoriteCount === "number") {
-        setArtworks((prev) =>
-          prev.map((artwork) =>
-            artwork.postId === artworkId
-              ? {
-                ...artwork,
-                liked: data.favorited,
-                favoriteCnt: data.favoriteCount,
-              }
-              : artwork
-          )
-        );
+      const url = `http://localhost:8080/ourlog/post/list/popular?${params.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error("데이터 새로고침 실패");
       }
+
+      const data = await response.json();
+      const dtoList = data.dtoList || [];
+      
+      // 새로운 데이터로 상태 업데이트
+      setArtworks(dtoList.map((item: any) => ({
+        postId: item.postId || item.id,
+        boardNo: item.boardNo || item.boardId,
+        title: item.title,
+        content: item.content || '',
+        nickname: item.nickname || item.userName || item.author || item.writer || '',
+        fileName: item.fileName,
+        views: item.views || item.viewCount || 0,
+        tag: item.tag,
+        thumbnailImagePath: item.thumbnailImagePath || null,
+        followers: item.followers || null,
+        downloads: item.downloads || null,
+        favoriteCnt: item.favoriteCnt || item.likeCount || 0,
+        tradeDTO: item.tradeDTO,
+        pictureDTOList: item.pictureDTOList || null,
+        profileImage: item.profileImage || item.userProfileImage || null,
+        replyCnt: item.replyCnt || null,
+        regDate: item.regDate || item.createdAt || null,
+        modDate: item.modDate || item.updatedAt || null,
+        liked: false,
+      })));
+
     } catch (error) {
       console.error(`좋아요 처리 실패: ${artworkId}`, error);
-
-      // 실패 시 optimistic rollback
-      setArtworks((prev) =>
-        prev.map((artwork) => {
-          if (artwork.postId === artworkId) {
-            const rolledBackLiked = !(artwork.liked ?? false); // optimistic update 이전 상태
-            const rolledBackFavoriteCnt = (artwork.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1); // optimistic update 이전 상태
-            return {
-              ...artwork,
-              liked: rolledBackLiked,
-              favoriteCnt: rolledBackFavoriteCnt,
-            };
-          }
-          return artwork;
-        })
-      );
       alert("좋아요 처리에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -441,17 +466,20 @@ const ArtList = () => {
 
       <div className="art-list-grid">
         {filteredArtworks.map((artwork) => {
-          // ✅ 백엔드에서 originImagePath를 제대로 내려주면 이 부분이 작동합니다.
-          // 썸네일 이미지를 찾습니다. artwork.fileName이 있으면 해당 uuid를 가진 이미지를 찾고, 없으면 첫 번째 이미지를 사용합니다.
-          const thumbnailPicture = Array.isArray(artwork.pictureDTOList)
-            ? artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName) || (artwork.pictureDTOList.length > 0 ? artwork.pictureDTOList[0] : null)
-            : null;
-
-          const imageUrl = thumbnailPicture?.originImagePath
-            ? `http://localhost:8080/ourlog/picture/display/${thumbnailPicture.originImagePath}` // 백엔드 전체 URL 포함
+          const imageUrl = artwork.pictureDTOList
+            ? artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName)?.originImagePath 
+              ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName)?.originImagePath}`
+              : artwork.pictureDTOList[0]?.originImagePath 
+                ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}`
+                : null
             : null;
 
           console.log("Artwork TradeDTO:", artwork.tradeDTO);
+          console.log("Thumbnail info:", {
+            fileName: artwork.fileName,
+            pictureDTOList: artwork.pictureDTOList,
+            imageUrl
+          });
 
           const timeInfo = getTimeLeft(artwork.tradeDTO?.lastBidTime || null);
 
@@ -464,7 +492,7 @@ const ArtList = () => {
               <div className="art-list-item-image">
                 {imageUrl ? (
                   <img
-                    src={imageUrl} // 수정된 URL 사용
+                    src={imageUrl}
                     alt={artwork.title}
                     className="art-list-item-thumbnail"
                   />
@@ -474,7 +502,7 @@ const ArtList = () => {
                 <div
                   className={`art-list-like-button ${artwork.liked ? 'liked' : ''}`}
                   onClick={(e) => {
-                    e.stopPropagation(); // 부모 div의 클릭 이벤트 방지
+                    e.stopPropagation();
                     handleLikeToggle(artwork.postId);
                   }}
                 >
@@ -484,21 +512,18 @@ const ArtList = () => {
               <div className="art-list-item-info">
                 <h3 className="art-list-item-title">{artwork.title}</h3>
                 <p className="art-list-item-author">{artwork.nickname}</p>
-                {/* ✅ tradeDTO가 있을 때만 경매 정보 표시 */}
                 <p className="art-list-item-price">
                   {artwork.tradeDTO
                     ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
                     : "경매 정보 없음"}
                 </p>
-                {/* ✅ tradeDTO와 lastBidTime이 있을 때만 남은 시간 표시 */}
                 {artwork.tradeDTO ? (
-                  artwork.tradeDTO.tradeStatus ? ( // 경매 종료 시
+                  artwork.tradeDTO.tradeStatus ? (
                     <span className="auction-time-left" style={{ color: 'red' }}>경매 종료</span>
-                  ) : ( // 경매 진행 중
+                  ) : (
                     artwork.tradeDTO.lastBidTime && (
                       <span
                         className="auction-time-left"
-                        // ✅ 남은 시간에 따라 스타일 및 텍스트 변경
                         style={{ color: timeInfo.isEndingSoon ? 'red' : 'inherit' }}
                       >
                         {timeInfo.text}
@@ -506,7 +531,7 @@ const ArtList = () => {
                       </span>
                     )
                   )
-                ) : ( // tradeDTO 없음
+                ) : (
                   <span className="auction-time-left">경매 정보 없음</span>
                 )}
               </div>

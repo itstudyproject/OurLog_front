@@ -80,9 +80,9 @@ const BulletinBoard: React.FC = () => {
                 date: formatDate(item),
                 category,
                 thumbnail: item.pictureDTOList?.find(
-                  (pic: any) => pic.picName === item.fileName
-                )
-                  ? `http://localhost:8080/ourlog/picture/display/${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).path}/s_${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).uuid}_${item.pictureDTOList.find((pic: any) => pic.picName === item.fileName).picName}`
+                  (pic: any) => pic.uuid === item.fileName
+                )?.originImagePath
+                  ? `http://localhost:8080/ourlog/picture/display/${item.pictureDTOList.find((pic: any) => pic.uuid === item.fileName).originImagePath}`
                   : "",
               })
             );
