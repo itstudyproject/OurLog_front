@@ -598,3 +598,162 @@
     width: 42px;
     height: 42px;
 }
+
+
+/* ✅ 채팅 알림 스타일 (로그인 알림 참고) */
+.chat-notification {
+  position: fixed;
+  top: 80px; /* 헤더 높이를 고려하여 조정 */
+  right: 20px;
+  z-index: 1000;
+  width: 320px;
+  background-color: rgba(35, 35, 35, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slide-in 0.5s ease-out;
+  border-left: 4px solid #5ac8fa; /* 채팅 느낌에 맞게 색상 변경 */
+  cursor: pointer; /* 클릭 가능하도록 커서 변경 */
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.chat-notification .notification-content {
+  display: flex;
+  padding: 15px;
+  position: relative;
+  align-items: center;
+}
+
+.chat-notification .notification-profile {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #5ac8fa; /* 알림 테두리 색상 맞춤 */
+  background-color: #444;
+}
+
+.chat-notification .notification-text {
+  flex-grow: 1;
+  color: #fff;
+}
+
+.chat-notification .notification-welcome {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #5ac8fa; /* 알림 제목 색상 맞춤 */
+}
+
+.chat-notification .notification-info {
+  font-size: 14px;
+  margin: 4px 0;
+  color: #ccc;
+}
+
+.chat-notification .notification-label {
+  font-weight: bold;
+  color: #fff;
+}
+
+.chat-notification .notification-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.chat-notification .notification-close:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 반응형 스타일: 채팅 알림 */
+@media (max-width: 768px) {
+  .chat-notification {
+    width: 90%;
+    top: 100px; /* 헤더 높이 고려 */
+    right: 5%;
+    left: 5%;
+  }
+}
+
+/* 보류 중인 작업 버튼 컨테이너 */
+.action-buttons {
+  display: flex;
+  gap: 8px; /* 버튼 사이 간격 */
+  align-items: center;
+  margin-left: auto; /* 오른쪽 정렬 */
+}
+
+/* 보류 중인 작업 - 확인 버튼 */
+.chat-action-confirm-button {
+  padding: 6px 12px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-action-confirm-button:hover {
+  background-color: #ffd05e;
+}
+
+.chat-action-confirm-button:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 보류 중인 작업 - 취소 버튼 */
+.chat-action-cancel-button {
+  padding: 6px 12px;
+  background-color: #555; /* 회색 */
+  color: var(--text-color);
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chat-action-cancel-button:hover {
+  background-color: #666;
+}
+
+.chat-action-cancel-button:disabled {
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+/* 보류 중인 작업 상태일 때 li 스타일 */
+.chat-list li.pending-action {
+  /* 필요시 스타일 추가 */
+}

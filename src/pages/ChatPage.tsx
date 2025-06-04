@@ -100,6 +100,17 @@ const ChatPage: React.FC = () => {
   // 사용자 ID별 프로필 정보를 저장할 상태 추가
   const [userProfiles, setUserProfiles] = useState<{ [userId: string]: UserProfileDTO }>({});
 
+  // ✅ 인앱 알림 상태 추가
+  const [showChatNotification, setShowChatNotification] = useState(false);
+  const [chatNotification, setChatNotification] = useState<{
+      senderId: string;
+      senderNickname: string;
+      senderProfileImage: string;
+      message: string;
+      channelUrl: string;
+      channelName: string;
+  } | null>(null);
+
 
   const channelHandlerId = useRef<string>(`CHANNEL_HANDLER_ID_${Date.now()}`).current;
 
@@ -210,6 +221,14 @@ const ChatPage: React.FC = () => {
 
         setIsSendbirdInitialized(true);
 
+        // ✅ Sendbird 연결 성공 후 알림 권한 요청
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            console.log('Requesting notification permission...');
+            Notification.requestPermission().then(permission => {
+                console.log('Notification permission status:', permission);
+            });
+        }
+
         console.log('Fetching channel list');
         const channelListQuery: GroupChannelListQuery = sbInstance.current.groupChannel.createMyGroupChannelListQuery({
           limit: 100,
@@ -295,6 +314,62 @@ const ChatPage: React.FC = () => {
                   }
                 } catch (e) {
                   console.error("Failed to parse message data:", e);
+                }
+
+                // ✅ 새 메시지 수신 시 브라우저 알림 표시 로직 추가
+                // 현재 사용자가 보낸 메시지가 아니고, 알림 권한이 허용되었으며, 현재 채널이 수신된 메시지의 채널이 아닌 경우
+                // if (userMessage.sender?.userId !== currentUser?.userId && Notification.permission === 'granted' && currentChannel?.url !== groupChannel.url) {
+                //    const senderNickname = userProfiles[userMessage.sender?.userId || '']?.nickname || userMessage.sender?.nickname || userMessage.sender?.userId || '알 수 없는 사용자';
+                //    const notificationTitle = `${senderNickname} (${groupChannel.name || '새 메시지'})`;
+                //    const notificationBody = userMessage.message;
+
+                //    try {
+                //        const notification = new Notification(notificationTitle, {
+                //            body: notificationBody,
+                //            // icon: userProfiles[userMessage.sender?.userId || '']?.thumbnailImagePath || userMessage.sender?.profileUrl || '/profile-placeholder.jpg', // 상대방 프로필 이미지
+                //            // 클릭 시 해당 채널로 이동하는 로직은 추가 구현 필요
+                //        });
+
+                //        // 알림 클릭 시 이벤트 리스너 (선택 사항)
+                //        // notification.onclick = () => {
+                //        //   // TODO: 해당 채널로 이동하는 로직 구현
+                //        //   // window.focus(); // 브라우저 창 활성화
+                //        //   // navigate('/chat', { state: { channelUrl: groupChannel.url } }); // 예시: 채널 URL을 state로 전달하여 페이지 이동
+                //        // };
+
+                //    } catch (e) {
+                //        console.error("Failed to show browser notification:", e);
+                //    }
+                // } else {
+                //     console.log("Notification conditions not met:", {
+                //         isSenderCurrentUser: userMessage.sender?.userId === currentUser?.userId,
+                //         notificationPermission: Notification.permission,
+                //         isCurrentChannelSame: currentChannel?.url === groupChannel.url,
+                //         channelUrl: groupChannel.url,
+                //         currentChannelUrl: currentChannel?.url
+                //     });
+                // }
+
+                // ✅ 인앱 알림 표시 로직으로 대체
+                if (userMessage.sender?.userId !== currentUser?.userId && currentChannel?.url !== groupChannel.url) {
+                    const senderProfile = userProfiles[userMessage.sender?.userId || ''];
+                    const senderNickname = senderProfile?.nickname || userMessage.sender?.nickname || userMessage.sender?.userId || '알 수 없는 사용자';
+                    const channelName = groupChannel.name || '새 메시지';
+
+                    setChatNotification({
+                        senderId: userMessage.sender?.userId || 'Unknown',
+                        senderNickname: senderNickname,
+                        senderProfileImage: senderProfile?.thumbnailImagePath || userMessage.sender?.profileUrl || '/profile-placeholder.jpg',
+                        message: userMessage.message,
+                        channelUrl: groupChannel.url,
+                        channelName: channelName,
+                    });
+                    setShowChatNotification(true);
+
+                    // 5초 후 알림 숨기기
+                    setTimeout(() => {
+                        setShowChatNotification(false);
+                    }, 5000);
                 }
 
               } else {
@@ -1513,6 +1588,37 @@ const ChatPage: React.FC = () => {
       {loading && <div className="loading">Sendbird 로딩 중...</div>}
       {error && <div className="error">오류: {error}</div>}
 
+      {/* ✅ 채팅 알림 UI */}
+      {showChatNotification && chatNotification && (
+        <div className="chat-notification" onClick={() => handleOpenChatModal(chatNotification.channelUrl)}>
+            <div className="notification-content">
+                <img
+                    src={chatNotification.senderProfileImage}
+                    alt="프로필"
+                    className="notification-profile"
+                />
+                <div className="notification-text">
+                    <p className="notification-welcome">새 메시지 도착!</p>
+                    <p className="notification-info">
+                         <span className="notification-label">채널:</span> {chatNotification.channelName}
+                    </p>
+                    <p className="notification-info">
+                        <span className="notification-label">{chatNotification.senderNickname}:</span> {chatNotification.message}
+                    </p>
+                </div>
+                <button
+                    className="notification-close"
+                    onClick={(e) => {
+                        e.stopPropagation(); // 클릭 이벤트가 부모로 전파되지 않도록 방지
+                        setShowChatNotification(false);
+                    }}
+                >
+                    ✕
+                </button>
+            </div>
+        </div>
+      )}
+
       {/* 채팅 목록 섹션 - 항상 표시 */}
       {!loading && !error && (
         <div className="chat-list-section"> {/* 기존 chat-list-modal 클래스명 변경 */}
@@ -1660,7 +1766,8 @@ const ChatPage: React.FC = () => {
                     {/* ✅ 알림 상태 아이콘 추가 (GroupChannel인 경우에만 표시) - 메뉴 버튼 옆으로 이동 */}
                     {isGroup && !isPending && (
                       <span className="notification-status-icon" title={isNotificationsMuted ? '알림 꺼짐' : '알림 켜짐'}>
-                        {isNotificationsMuted ? '🔕' : '🔔'} {/* 임시 아이콘 */}
+                        {/* 알림 꺼짐 상태일 때만 이미지 표시 */}
+                        {isNotificationsMuted && <img src="/images/chat-muted.png" alt="알림 꺼짐" style={{ width: '25px', height: '25px', marginRight: '5px' }} />} {/* 이미지 경로 및 스타일 조정 */}
                       </span>
                     )}
 
@@ -1670,8 +1777,8 @@ const ChatPage: React.FC = () => {
                         // 보류 중인 작업이 있을 때 확인/취소 버튼 표시
                         <div className="action-buttons">
                           {/* 작업 유형에 따라 표시 텍스트 변경 가능 (선택 사항) */}
-                          <button className="action-confirm-button" onClick={handleConfirmAction} disabled={loading}>확인</button>
-                          <button className="action-cancel-button" onClick={handleCancelAction} disabled={loading}>취소</button>
+                          <button className="chat-action-confirm-button" onClick={handleConfirmAction} disabled={loading}>확인</button>
+                          <button className="chat-action-cancel-button" onClick={handleCancelAction} disabled={loading}>취소</button>
                         </div>
                       ) : (
                         // 보류 중인 작업이 없을 때 메뉴 버튼 표시
@@ -1733,7 +1840,7 @@ const ChatPage: React.FC = () => {
                       <div
                         className={`message ${msg.sender === currentUser.userId ? 'me-message' : 'you-message'}`}
                       >
-                        {msg.message?.split("\n").map((line, i) => (
+                        {msg.message?.split("\\n").map((line, i) => (
                           <div key={i}>{line}</div>
                         ))}
 
