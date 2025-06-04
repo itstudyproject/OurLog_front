@@ -317,13 +317,24 @@ body {
   background-color: #333333;
 }
 
+/* ✅ 썸네일과 다운로드 버튼을 감싸는 컨테이너 추가 (판매 목록용) */
+.mp-item-thumbnail-wrapper {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: center;
+  margin-right: 15px; /* 상세 정보와의 간격 */
+  flex-shrink: 0;
+  width: 80px; /* 썸네일 크기에 맞춤 */
+}
+
+
 /* 썸네일 스타일 (BidHistory.css의 bh-item-thumbnail과 유사) */
 .mp-item-thumbnail {
    width: 80px; /* BidHistory보다 약간 작게 */
    height: 80px; /* BidHistory보다 약간 작게 */
    border-radius: 4px;
    overflow: hidden;
-   margin-right: 15px; /* 간격 조정 */
+   /* margin-right: 15px; 제거됨 */
    flex-shrink: 0;
    display: flex;
    justify-content: center;
@@ -343,6 +354,12 @@ body {
   font-size: 30px; /* BidHistory보다 약간 작게 */
   color: #cccccc;
 }
+
+/* ✅ 썸네일 아래 다운로드 버튼 스타일 (판매 목록 > 판매 완료 항목용) */
+/* MyPage에서는 판매 완료 항목의 다운로드 버튼은 판매자가 올린 글에 대한 것이므로 제거했습니다. */
+/* 따라서 이 스타일은 MyPage.css에서는 필요 없습니다. BidHistory.css에서만 사용됩니다. */
+/* .mp-download-button-under-thumbnail { ... } */
+
 
 /* 아이템 상세 정보 (BidHistory.css의 bh-item-details와 유사) */
 .mp-item-details {
@@ -379,56 +396,53 @@ body {
    color: #aaaaaa;
 }
 
+/* ✅ 상태 및 버튼 컨테이너 (판매 목록용) */
+/* BidHistory.css와 동일하게 세로 정렬, 오른쪽 정렬 */
+.mp-item-status-container {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: flex-end; /* 오른쪽 정렬 */
+  gap: 8px; /* 상태와 버튼 간 간격 */
+  margin-left: 15px;
+  flex-shrink: 0; /* 축소 방지 */
+}
+
+
 /* 상태 표시 (BidHistory.css의 bh-item-status와 유사) */
 .mp-item-status {
-   position: static; /* flexbox 내에서 정상 배치 */
-   margin-left: 15px; /* 간격 조정 */
-   padding: 4px 10px; /* 패딩 조정 */
-   border-radius: 12px; /* 반지름 조정 */
-   font-size: 12px; /* 글자 크기 조정 */
+   position: static;
+   /* margin-left: 15px; 제거됨 */
+   padding: 4px 10px;
+   border-radius: 12px;
+   font-size: 12px;
    font-weight: bold;
    text-transform: uppercase;
    color: #1a1a1a;
-   background-color: #cccccc; /* 기본 상태 색상 (판매 중) */
+   background-color: #cccccc; /* 기본 상태색 (판매 중) */
    flex-shrink: 0;
 }
 
 .mp-item-status.sold { /* 판매 완료 상태 (BidHistory.css의 bh-item-status.won과 유사) */
-  background-color: #2ecc71; /* 녹색 */
+  background-color: #2ecc71;
   color: #ffffff;
 }
 
-/* 상태 및 버튼 컨테이너 (판매 완료 항목에 사용, BidHistory.css의 bh-item-status-container와 유사) */
-.mp-item-status-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0; /* 축소 방지 */
-  margin-left: 15px; /* 간격 조정 */
+.mp-item-status.failed { /* 유찰 상태 */
+  background-color: #e74c3c; /* 빨간색 계열 */
+  color: #ffffff;
 }
 
-/* 다운로드 버튼 스타일 (BidHistory.css의 bh-download-button과 유사) */
-.mp-download-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-size: 1.1em; /* 아이콘 크기 */
-  transition: transform 0.2s;
-  color: #f8c147; /* 강조 색상 */
-  display: flex;
-  align-items: center;
-}
 
-.mp-download-button:hover {
-  transform: scale(1.1);
-  color: #ffd700; /* 호버 색상 */
-}
+/* ✅ 결제하기 버튼 스타일 (판매 목록에서는 결제하기 버튼이 없으므로 필요 없음) */
+/* 이 스타일은 BidHistory.css에만 정의됩니다. */
+/* .mp-payment-button { ... } */
 
-.mp-download-button:active {
-  transform: scale(0.95);
-}
+
+/* ✅ 다운로드 버튼 스타일 (판매 목록 > 판매 완료 항목용) */
+/* MyPage에서는 판매 완료 항목의 다운로드 버튼을 제거했습니다. */
+/* 이 스타일은 BidHistory.css의 .bh-download-button-under-thumbnail로 대체됩니다. */
+/* .mp-download-button { ... } */
+
 
 /* 내용 없음 메시지 (BidHistory.css의 bh-no-bids와 유사) */
 .mp-no-bids {
@@ -439,7 +453,6 @@ body {
   background-color: #2a2a2a;
   border-radius: 8px;
 }
-
 
 /* 반응형 디자인 (BidHistory.css 참고) */
 @media (max-width: 768px) {
@@ -458,40 +471,59 @@ body {
     align-items: center;
   }
 
-  .mp-item-thumbnail {
-    margin-right: 15px; /* 간격 유지 */
-    margin-bottom: 0; /* 하단 마진 제거 */
-    width: 80px; /* 크기 유지 */
-    height: 80px; /* 크기 유지 */
-  }
-
-  .mp-item-details {
-    width: auto; /* 자동 너비 */
-    flex-grow: 1; /* 남은 공간 채우기 */
-  }
-
-  .mp-item-status {
-    position: static; /* flexbox 내에서 정상 배치 */
-    margin-left: 15px; /* 간격 유지 */
-    margin-top: 0;
-  }
-
-   .mp-item-status-container {
-     position: static; /* flexbox 내에서 정상 배치 */
-     margin-left: 15px; /* 간격 유지 */
-     margin-top: 0;
+  /* ✅ 모바일 반응형: 썸네일 wrapper 스타일 */
+  .mp-item-thumbnail-wrapper {
+     margin-right: 15px; /* 간격 유지 */
+     margin-bottom: 0; /* 하단 마진 제거 */
+     width: 80px; /* 크기 유지 */
+     align-items: center; /* 가운데 정렬 */
    }
 
+
+  .mp-item-thumbnail {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 80px;
+    height: 80px;
+  }
+
+   /* ✅ 썸네일 아래 다운로드 버튼 모바일 스타일 (MyPage에는 없으므로 영향 없음) */
+
+
+  .mp-item-details {
+    width: auto;
+    flex-grow: 1;
+  }
+
+   /* ✅ 상태 및 버튼 컨테이너 모바일 스타일 */
+  .mp-item-status-container {
+     position: static;
+     margin-left: 15px;
+     margin-top: 0;
+     flex-direction: row; /* 모바일에서 가로 정렬 */
+     justify-content: flex-start; /* 왼쪽 정렬 */
+     gap: 8px; /* 간격 유지 */
+   }
+
+
+  .mp-item-status {
+    position: static;
+    /* margin-left: 0; */
+  }
+
+   /* ✅ 결제하기 버튼 모바일 스타일 (MyPage에는 없으므로 영향 없음) */
+
+
   .mp-page-title h2 {
-    font-size: 22px; /* 모바일에서 약간 줄임 */
+    font-size: 22px;
   }
 
   .mp-sub-tab-nav {
-     gap: 5px; /* 모바일 탭 간격 줄임 */
+     gap: 5px;
   }
    .mp-sub-tab {
-     padding: 8px 10px; /* 모바일 탭 패딩 조정 */
-     font-size: 14px; /* 모바일 탭 글자 크기 조정 */
+     padding: 8px 10px;
+     font-size: 14px;
    }
 
     .mp-profile-section {
@@ -508,10 +540,12 @@ body {
         width: 100%;
     }
      .mp-button {
-        width: 100%; /* 버튼 너비 채우기 */
+        width: 100%;
         text-align: center;
      }
 }
+
+/* ... (기존 그리드 및 카드 스타일) */
 
 /* ✅ 기존 그리드 레이아웃에 영향 가지 않도록 mp-tab-content-grid 관련 스타일 분리 */
 /* mp-tab-content-grid, mp-card, mp-card-image-wrapper, mp-card-image, mp-card-body, mp-card-title, mp-like-button는 기존 스타일 유지 */

@@ -583,8 +583,16 @@ const ArtRegister = () => {
             imageFiles.map(imageFile => uploadImageFile(imageFile.file))
           );
 
-          const thumbnailImageFile = imageFiles.find(img => img.id === postData.selectedThumbnailId);
-          const thumbnailPictureDTO = uploadedPictureDTOs.find(pic => pic.uuid === (thumbnailImageFile?.id || (uploadedPictureDTOs.length > 0 ? uploadedPictureDTOs[0].uuid : "")));
+          const selectedImageFile = imageFiles.find(img => img.id === postData.selectedThumbnailId);
+          let thumbnailPictureDTO: PictureDTO | null = null;
+          if (selectedImageFile) {
+              const selectedIndex = imageFiles.indexOf(selectedImageFile);
+              if (selectedIndex !== -1 && selectedIndex < uploadedPictureDTOs.length) {
+                  thumbnailPictureDTO = uploadedPictureDTOs[selectedIndex];
+              }
+          } else if (uploadedPictureDTOs.length > 0) {
+              thumbnailPictureDTO = uploadedPictureDTOs[0];
+          }
 
           const currentStartTime = new Date();
 
@@ -597,14 +605,14 @@ const ArtRegister = () => {
               boardNo: postData.boardNo,
               views: 0,
               tag: postData.tag.join(','),
-              thumbnailImagePath: thumbnailPictureDTO ? thumbnailPictureDTO.uuid : null,
+              thumbnailImagePath: thumbnailPictureDTO && thumbnailPictureDTO.uuid ? thumbnailPictureDTO.uuid : null,
               followers: 0,
               downloads: 0,
               favoriteCnt: 0,
               replyCnt: 0,
               regDate: undefined,
               modDate: undefined,
-              fileName: thumbnailPictureDTO ? thumbnailPictureDTO.uuid : null,
+              fileName: (thumbnailPictureDTO && thumbnailPictureDTO.uuid) ? thumbnailPictureDTO.uuid : '',
               pictureDTOList: uploadedPictureDTOs,
               tradeDTO: undefined,
           };
@@ -796,7 +804,6 @@ const ArtRegister = () => {
                 onDragOver={!isReregister ? handleDragOver : undefined}
                 onDragLeave={!isReregister ? handleDragLeave : undefined}
                 onDrop={!isReregister ? handleDrop : undefined}
-                onClick={!isReregister ? () => fileInputRef.current?.click() : undefined}
                 style={{ cursor: !isReregister ? 'pointer' : 'not-allowed' }}
               >
                 <input
@@ -860,7 +867,6 @@ const ArtRegister = () => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
                 style={{ cursor: 'pointer' }}
               >
                 <input

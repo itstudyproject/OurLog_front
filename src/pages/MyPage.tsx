@@ -21,6 +21,9 @@ import AccountEdit from "./AccountEdit";
 import ProfileEdit from "./ProfileEdit";
 import AccountDelete from "./AccountDelete";
 import { PostDTO } from "../types/postTypes";
+// ✅ PictureDTO, TradeDTO 임포트 경로 수정
+import { PictureDTO } from "../types/pictureTypes";
+import { TradeDTO } from "../types/tradeTypes";
 import { getAuthHeaders, hasToken } from "../utils/auth"; // 인증 헤더 가져오기 함수 임포트
 
 interface MyPostItem extends PostDTO {
@@ -44,6 +47,8 @@ interface SaleEntry {
   bidderNickname?: string; // 현재 최고 입찰자 닉네임
   startBidTime?: string; // 경매 시작 시간
   sellerId: number; // 판매자 ID
+  buyerId?: number; // 낙찰 또는 즉시구매한 구매자 ID
+  buyerNickname?: string; // 낙찰 또는 즉시구매한 구매자 닉네임
 }
 
 
@@ -440,6 +445,78 @@ const MyPage: React.FC = () => {
     }
   };
 
+  // ✅ 낙찰된 경매 항목에서 '결제하기' 버튼 클릭 시 호출될 함수
+  // Payment 페이지로 이동하며 해당 거래 정보(tradeDTO 포함된 postData)를 넘겨줍니다.
+  const handlePaymentClick = (e: React.MouseEvent, item: SaleEntry) => {
+     e.stopPropagation(); // 부모 요소(카드)로의 클릭 이벤트 전파 방지
+     console.log("Attempting to navigate to payment with item:", item);
+
+     // ✅ 필요한 PostDTO 구조를 재구성하여 Payment 페이지로 전달
+     // SaleEntry 구조를 사용하여 PostDTO 형태로 Payment에 전달하기 위해 필요한 정보를 포함하는 객체 생성
+     // 특히 tradeDTO 필드를 SaleEntry 정보로 채워야 합니다.
+      const postDataForPayment: PostDTO = {
+          postId: item.postId,
+          // ✅ PostDTO 필수 속성 추가 (SaleEntry 정보 및 기본값 활용)
+          userId: item.sellerId || 0, // 판매자 ID를 userId로 사용 (원 게시글 작성자)
+          title: item.postTitle || "제목 없음",
+          content: "", // 마이페이지 목록에서는 설명을 가져오지 않으므로 빈 값
+          nickname: profile?.nickname || item.buyerNickname || item.bidderNickname || "알 수 없는 작가", // 작가 닉네임은 프로필 또는 거래 정보에서 가져옴
+          fileName: item.postImage || "", // 이미지 파일명을 postImage로 사용
+          boardNo: 5, // 아트 게시판
+          views: 0, // 정보 없음, 기본값 0
+          tag: "", // 정보 없음, 기본값 빈 문자열
+          thumbnailImagePath: item.postImage || null, // postImage를 썸네일 경로로 사용
+          resizedImagePath: item.postImage || undefined, // postImage를 리사이즈 경로로 사용
+          // ✅ originImagePath를 string[] 타입에 맞게 수정 및 타입 단언 추가
+          originImagePath: item.postImage ? [item.postImage] as string[] : [] as string[], // postImage를 원본 경로 목록으로 사용
+          followers: 0, // 정보 없음, 기본값 0
+          downloads: 0, // 정보 없음, 기본값 0
+          favoriteCnt: 0, // 정보 없음, 기본값 0
+           // ✅ tradeDTO 필드에 거래 정보 포함
+           // TradeDTO 인터페이스에 맞게 객체 구조 수정 (BidHistory와 동일)
+          tradeDTO: {
+             tradeId: item.tradeId,
+             postId: item.postId,
+             sellerId: item.sellerId || 0, // 정보 없으면 0
+             bidderId: item.bidderId || item.buyerId || null, // 입찰자 또는 구매자 ID
+             bidderNickname: item.bidderNickname || item.buyerNickname || null, // 입찰자 또는 구매자 닉네임
+             startPrice: item.startPrice || 0, // 정보 없으면 0
+             highestBid: item.highestBid || item.nowBuy || null, // 최고 입찰가 또는 구매가
+             bidAmount: null, // 정보 없음
+             nowBuy: item.nowBuy || 0, // 정보 없으면 0
+             tradeStatus: item.tradeStatus, // 거래 상태
+             startBidTime: null, // 정보 없음
+             lastBidTime: item.lastBidTime || null, // 마지막 입찰 시간 또는 종료 시간
+          } as TradeDTO,
+          // ✅ pictureDTOList 객체 구조를 PictureDTO 인터페이스에 맞게 수정 (BidHistory와 동일)
+          pictureDTOList: item.postImage ? [{
+              picId: 0, // 정보 없음, 기본값 0
+              uuid: item.postImage, // postImage를 uuid로 사용
+              picName: item.postTitle || "image", // 게시글 제목 또는 기본값으로 파일명 사용
+              path: item.postImage, // postImage를 path로 사용
+              picDescribe: null, // 정보 없음
+              downloads: 0, // 정보 없음, 기본값 0
+              tag: null, // 정보 없음
+              originImagePath: item.postImage || null, // postImage를 원본 경로로 사용
+              thumbnailImagePath: item.postImage || null, // postImage를 썸네일 경로로 사용
+              resizedImagePath: item.postImage || null, // postImage를 리사이즈 경로로 사용
+              ownerId: item.sellerId, // 판매자 ID를 ownerId로 사용
+              postId: item.postId, // 게시글 ID 사용
+          } as PictureDTO] : [], // pictureDTOList는 배열
+               profileImage: null, // 정보 없음, 기본값 null
+              replyCnt: 0, // 정보 없음, 기본값 0
+              regDate: null, // 정보 없음, 기본값 null
+              modDate: null, // 정보 없음, 기본값 null
+          };
+
+     if (item.tradeId) {
+        navigate(`/Art/payment`, { state: { post: postDataForPayment } });
+     } else {
+         alert("결제 정보를 찾을 수 없습니다. 거래 ID가 누락되었습니다.");
+     }
+  };
+
+
   // ✅ 남은 시간 계산 및 포맷팅 함수 (판매 목록용)
    const getRemainingTime = (endTimeString: string | undefined) => {
     if (!endTimeString) return "시간 정보 없음";
@@ -469,7 +546,7 @@ const MyPage: React.FC = () => {
   };
 
   // ✅ 원본 이미지 다운로드 함수 (판매 완료 항목용)
-   const handleDownloadOriginal = (e: React.MouseEvent, item: SaleEntry) => {
+   const handleDownloadOriginalSale = (e: React.MouseEvent, item: SaleEntry) => {
     e.stopPropagation(); // 클릭 이벤트 전파 방지
     if (!item.postImage) {
       alert("다운로드할 이미지가 없습니다.");
@@ -594,169 +671,171 @@ const MyPage: React.FC = () => {
   {location.pathname === '/mypage/account/delete' && userId && <AccountDelete />}
    {location.pathname === '/mypage/account/delete' && !userId && <p>로그인이 필요합니다.</p>}
 
-  {!hideMenu && !isProfileEditRoute && (
-    <>
-      {/* ✅ 구매/입찰 목록 탭 내용 - BidHistory 컴포넌트 사용 */}
-      {activeTab === 'purchase-bid' && userId && <BidHistory userId={userId} />}
-      {activeTab === 'purchase-bid' && !userId && <p>로그인이 필요합니다.</p>}
+  {/* ✅ 구매/입찰 목록 탭 내용 - BidHistory 컴포넌트 사용 */}
+  {/* userId prop 전달 */}
+  {activeTab === 'purchase-bid' && userId && <BidHistory userId={userId} />}
+  {activeTab === 'purchase-bid' && !userId && <p>로그인이 필요합니다.</p>}
 
-      {/* ✅ 판매목록/현황 탭 내용 */}
-      {activeTab === 'sale' && (
-        userId ? (
-          loadingSales ? (
-            <div className="mp-loading"><p>판매 목록을 불러오는 중...</p></div>
-          ) : sellingPosts.length === 0 && soldPosts.length === 0 ? (
-             <div className="mp-no-content"><p>판매 내역이 없습니다.</p></div>
-          ) : (
-            <div className="mp-sale-trade-lists-wrapper">
-              {/* 현재 진행 중인 경매 목록 */}
-              <div className="mp-list-section mp-current-sales-section">
-                <h3>현재 판매 중인 경매</h3>
-                <div className="mp-list">
-                  {sellingPosts.length > 0 ? (
-                    sellingPosts.map((item) => (
-                      <div
-                         key={item.tradeId}
-                         className="mp-item data"
-                         onClick={() => handleCardClick(item.postId)}
-                         style={{ cursor: "pointer" }}
-                      >
-                         <div className="mp-item-thumbnail">
-                           {item.postImage ? (
-                             <img
-                               src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
-                               alt={item.postTitle || "Artwork"}
-                             />
-                           ) : (
-                             <div className="mp-no-image-placeholder-small">🖼️</div>
-                           )}
-                         </div>
-                         <div className="mp-item-details">
-                           <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
-                           <div className="mp-item-price">현재 최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</div>
-                           <div className="mp-item-time">
-                             {getRemainingTime(item.lastBidTime)}
-                           </div>
-                         </div>
-                         <div className="mp-item-status">판매 중</div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="mp-no-bids">현재 판매 중인 경매가 없습니다.</div>
-                  )}
-                </div>
-              </div>
-
-              {/* 기간 만료된 경매 목록 */}
-              <div className="mp-list-section mp-expired-sales-section">
-                 <h3>기간 만료된 경매</h3>
-                 <div className="mp-list">
-                   {soldPosts.length > 0 ? (
-                     soldPosts.map((item) => (
-                       <div
-                         key={item.tradeId}
-                         className={`mp-item data ${item.bidderId ? 'sold' : 'failed'}`}
-                         onClick={() => handleCardClick(item.postId)}
-                         style={{ cursor: "pointer" }}
-                       >
-                          <div className="mp-item-thumbnail">
-                            {item.postImage ? (
-                              <img
-                                src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
-                                alt={item.postTitle || "Artwork"}
-                              />
-                            ) : (
-                              <div className="mp-no-image-placeholder-small">🖼️</div>
-                            )}
-                          </div>
-                          <div className="mp-item-details">
-                            <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
-                            <div className="mp-item-price">
-                              {item.bidderId ? (
-                                <>판매가: {item.highestBid != null ? item.highestBid.toLocaleString() : "가격 정보 없음"}원</>
-                              ) : (
-                                <>최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</>
-                              )}
-                            </div>
-                            <div className="mp-item-time">
-                              {item.bidderId ? (
-                                item.bidderNickname ? `구매자: ${item.bidderNickname}` : '구매자 정보 없음'
-                              ) : (
-                                item.lastBidTime
-                                  ? "경매 종료 시간: " + new Date(item.lastBidTime).toLocaleString()
-                                  : "시간 정보 없음"
-                              )}
-                            </div>
-                          </div>
-                           <div className="mp-item-status-container">
-                             <div className={`mp-item-status ${item.bidderId ? 'sold' : 'failed'}`}>
-                               {item.bidderId ? "판매 완료" : "유찰"}
-                             </div>
-                             {/* 판매자가 올린 글이므로 다운로드 버튼 제거 */}
-                           </div>
+  {/* ✅ 판매목록/현황 탭 내용 */}
+  {activeTab === 'sale' && (
+    userId ? (
+      loadingSales ? (
+        <div className="mp-loading"><p>판매 목록을 불러오는 중...</p></div>
+      ) : sellingPosts.length === 0 && soldPosts.length === 0 ? (
+         <div className="mp-no-content"><p>판매 내역이 없습니다.</p></div>
+      ) : (
+        <div className="mp-sale-trade-lists-wrapper">
+          {/* 현재 진행 중인 경매 목록 */}
+          <div className="mp-list-section mp-current-sales-section">
+            <h3>현재 판매 중인 경매</h3>
+            <div className="mp-list">
+              {sellingPosts.length > 0 ? (
+                sellingPosts.map((item) => (
+                  <div
+                     key={item.tradeId}
+                     className="mp-item data"
+                     onClick={() => handleCardClick(item.postId)}
+                     style={{ cursor: "pointer" }}
+                  >
+                     <div className="mp-item-thumbnail">
+                       {item.postImage ? (
+                         <img
+                           src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
+                           alt={item.postTitle || "Artwork"}
+                         />
+                       ) : (
+                         <div className="mp-no-image-placeholder-small">🖼️</div>
+                       )}
+                     </div>
+                     <div className="mp-item-details">
+                       <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
+                       <div className="mp-item-price">현재 최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</div>
+                       <div className="mp-item-time">
+                         {getRemainingTime(item.lastBidTime)}
                        </div>
-                     ))
-                   ) : (
-                     <div className="mp-no-bids">기간 만료된 경매가 없습니다.</div>
-                   )}
-                 </div>
-              </div>
+                     </div>
+                     <div className="mp-item-status">판매 중</div>
+                  </div>
+                ))
+              ) : (
+                <div className="mp-no-bids">현재 판매 중인 경매가 없습니다.</div>
+              )}
             </div>
-          )
-        ) : (
-           <p>로그인이 필요합니다.</p>
-        )
-      )}
-
-      {/* ✅ 내 글 목록 또는 관심목록 탭 내용 */}
-      {(activeTab === 'my-posts' || activeTab === 'bookmark') && (
-        userId ? ( // userId가 있을 때만 내용 표시
-        loadingList ? (
-          <div className="mp-loading"><p>목록을 불러오는 중...</p></div>
-        ) : (activeTab === 'my-posts' && myPosts.length === 0) || (activeTab === 'bookmark' && bookmarkedPosts.length === 0) ? (
-          <div className="mp-no-content"><p>{activeTab === 'my-posts' ? '작성한 글/아트가 없습니다.' : '관심목록한 글/아트가 없습니다.'}</p></div>
-        ) : (
-          // ✅ 기존 그리드 레이아웃 유지
-          <div className="mp-tab-content-grid worker-gallery"> {/* WorkerPage의 Grid 스타일 재활용 */}
-            {(activeTab === 'my-posts' ? myPosts : bookmarkedPosts).map(post => (
-               <div
-                key={post.postId}
-                className="mp-card worker-card" // WorkerPage의 카드 스타일 재활용
-                onClick={() => handleCardClick(post.postId)}
-                style={{ cursor: "pointer", position: "relative" }} // 필요한 인라인 스타일 유지
-              >
-                <figure className="mp-card-image-wrapper worker-card-image-wrapper"> {/* 이미지 wrapper 스타일 재활용 */}
-                  <img
-                    src={post.imageUrl || "/default-image.png"}
-                    alt={`작품 ${post.postId}`}
-                    className="mp-card-image worker-card-image" // 이미지 스타일 재활용
-                  />
-                  {/* ✅ 좋아요 버튼 추가 (WorkerPage 참고) */}
-                   {userId !== null && post?.postId !== undefined && post?.postId !== null && (
-                    <button
-                      className={`mp-like-button worker-like-button ${post.liked ? 'liked' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation(); // 부모 div의 클릭 이벤트 방지
-                        handleLikeToggle(post);
-                      }}
-                    >
-                      {post.liked ? "🧡" : "🤍"} <span>{post.favoriteCnt ?? 0}</span>
-                    </button>
-                   )}
-                </figure>
-                <div className="mp-card-body worker-card-body"> {/* 카드 바디 스타일 재활용 */}
-                  <h2 className="mp-card-title worker-card-title">{post.title || '제목 없음'}</h2>
-                </div>
-              </div>
-            ))}
           </div>
-        )
-        ) : ( // userId가 없을 때
-           <p>로그인이 필요합니다.</p>
-        )
-      )}
 
-    </>
+          {/* 기간 만료된 경매 목록 */}
+          <div className="mp-list-section mp-expired-sales-section">
+             <h3>기간 만료된 경매</h3>
+             <div className="mp-list">
+               {soldPosts.length > 0 ? (
+                 soldPosts.map((item) => (
+                   <div
+                     key={item.tradeId}
+                     // 판매 완료 또는 유찰 상태에 따라 클래스 추가
+                     className={`mp-item data ${item.bidderId ? 'sold' : 'failed'}`}
+                     onClick={() => handleCardClick(item.postId)}
+                     style={{ cursor: "pointer" }}
+                   >
+                      <div className="mp-item-thumbnail">
+                        {item.postImage ? (
+                          <img
+                            src={item.postImage.startsWith('/ourlog') ? `http://localhost:8080${item.postImage}` : `${imageBaseUrl}${item.postImage}`}
+                            alt={item.postTitle || "Artwork"}
+                          />
+                        ) : (
+                          <div className="mp-no-image-placeholder-small">🖼️</div>
+                        )}
+                      </div>
+                      <div className="mp-item-details">
+                        <div className="mp-item-title">{item.postTitle || "제목 없음"}</div>
+                        <div className="mp-item-price">
+                          {/* 판매 완료/유찰에 따라 가격 표시 */}
+                          {item.bidderId ? ( // 낙찰자가 있는 경우 (판매 완료)
+                            <>판매가: {item.highestBid != null ? item.highestBid.toLocaleString() : "가격 정보 없음"}원</>
+                          ) : ( // 낙찰자가 없는 경우 (유찰)
+                            <>최고 입찰가: {item.highestBid != null ? item.highestBid.toLocaleString() : "입찰 없음"}원</>
+                          )}
+                        </div>
+                        <div className="mp-item-time">
+                          {/* 구매자 닉네임 또는 종료 시간 표시 (✅ 구매자 닉네임 표시 제거) */}
+                          {/* item.bidderId ? ( // 낙찰자가 있는 경우
+                            item.bidderNickname ? `구매자: ${item.bidderNickname}` : '구매자 정보 없음'
+                          ) : ( // 유찰된 경우
+                            item.lastBidTime
+                              ? "경매 종료 시간: " + new Date(item.lastBidTime).toLocaleString()
+                              : "시간 정보 없음"
+                          )*/}
+                            {item.lastBidTime
+                              ? (item.bidderId ? "경매 종료 시간: " : "유찰 시간: ") + new Date(item.lastBidTime).toLocaleString()
+                              : "시간 정보 없음"}
+                        </div>
+                      </div>
+                       <div className="mp-item-status-container">
+                         {/* 판매자가 올린 글이므로 다운로드 버튼 제거 */}
+                         <div className={`mp-item-status ${item.bidderId ? 'sold' : 'failed'}`}>
+                           {item.bidderId ? "판매 완료" : "유찰"}
+                         </div>
+                       </div>
+                   </div>
+                 ))
+               ) : (
+                 <div className="mp-no-bids">기간 만료된 경매가 없습니다.</div>
+               )}
+             </div>
+          </div>
+        </div>
+      )
+    ) : (
+       <p>로그인이 필요합니다.</p>
+    )
+  )}
+
+  {/* ✅ 내 글 목록 또는 관심목록 탭 내용 */}
+  {(activeTab === 'my-posts' || activeTab === 'bookmark') && (
+    userId ? ( // userId가 있을 때만 내용 표시
+    loadingList ? (
+      <div className="mp-loading"><p>목록을 불러오는 중...</p></div>
+    ) : (activeTab === 'my-posts' && myPosts.length === 0) || (activeTab === 'bookmark' && bookmarkedPosts.length === 0) ? (
+      <div className="mp-no-content"><p>{activeTab === 'my-posts' ? '작성한 글/아트가 없습니다.' : '관심목록한 글/아트가 없습니다.'}</p></div>
+    ) : (
+      // ✅ 기존 그리드 레이아웃 유지
+      <div className="mp-tab-content-grid worker-gallery"> {/* WorkerPage의 Grid 스타일 재활용 */}
+        {(activeTab === 'my-posts' ? myPosts : bookmarkedPosts).map(post => (
+           <div
+            key={post.postId}
+            className="mp-card worker-card" // WorkerPage의 카드 스타일 재활용
+            onClick={() => handleCardClick(post.postId)} // 카드 클릭 시 상세 페이지 이동
+            style={{ cursor: "pointer", position: "relative" }} // 필요한 인라인 스타일 유지
+          >
+            <figure className="mp-card-image-wrapper worker-card-image-wrapper"> {/* 이미지 wrapper 스타일 재활용 */}
+              <img
+                src={post.imageUrl || "/default-image.png"}
+                alt={`작품 ${post.postId}`}
+                className="mp-card-image worker-card-image" // 이미지 스타일 재활용
+              />
+              {/* ✅ 좋아요 버튼 추가 (WorkerPage 참고) */}
+               {userId !== null && post?.postId !== undefined && post?.postId !== null && (
+                <button
+                  className={`mp-like-button worker-like-button ${post.liked ? 'liked' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // 부모 div의 클릭 이벤트 방지
+                    handleLikeToggle(post);
+                  }}
+                >
+                  {post.liked ? "🧡" : "🤍"} <span>{post.favoriteCnt ?? 0}</span>
+                </button>
+               )}
+            </figure>
+            <div className="mp-card-body worker-card-body"> {/* 카드 바디 스타일 재활용 */}
+              <h2 className="mp-card-title worker-card-title">{post.title || '제목 없음'}</h2>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+    ) : ( // userId가 없을 때
+       <p>로그인이 필요합니다.</p>
+    )
   )}
    {!userId && hideMenu && <p>로그인이 필요합니다.</p>} {/* 숨겨진 메뉴 상태에서도 로그인 필요 메시지 */}
 </div>
