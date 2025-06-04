@@ -78,8 +78,13 @@ const ArtList = () => {
       }
 
       try {
-        // 모든 요청에 대해 동일한 엔드포인트 사용
-        const url = `http://localhost:8080/ourlog/post/list/popular?${params.toString()}`;
+        // ✅ 정렬 타입에 따라 다른 백엔드 엔드포인트 사용
+        const baseUrl =
+          sortType === "latest"
+            ? `http://localhost:8080/ourlog/post/list/latest`
+            : `http://localhost:8080/ourlog/post/list/popular`;
+
+        const url = `${baseUrl}?${params.toString()}`;
 
         const headers = getAuthHeaders();
         console.log("Request headers:", headers);
@@ -104,15 +109,38 @@ const ArtList = () => {
 
         const data = await response.json();
         console.log("서버 응답 데이터:", data);
-        console.log("dtoList 예시:", data.dtoList && data.dtoList[0]);
 
-        const dtoList = data.dtoList || [];
-        const totalPage = data.totalPage || 1;
+        // ✅ 두 가지 응답 데이터 형식을 모두 처리하도록 수정
+        let dtoList = [];
+        let totalPage = 1;
+
+        if (data.pageResultDTO) {
+          // 최신순 (/latest) 응답 형식 처리
+          console.log("Handling /latest response format.");
+          dtoList = data.pageResultDTO.dtoList || [];
+          totalPage = data.pageResultDTO.totalPage || 1;
+        } else {
+          // 인기순 (/popular) 응답 형식 처리
+          console.log("Handling /popular response format.");
+          // ✅ 인기순 응답 데이터 디버깅 로그 추가
+          console.log("인기순 raw dtoList:", data.dtoList);
+          console.log("인기순 raw totalPage:", data.totalPage);
+
+          dtoList = data.dtoList || []; // 여기서 data.dtoList를 가져옴
+          totalPage = data.totalPage || 1;
+        }
+
+        console.log("dtoList 예시:", dtoList.length > 0 ? dtoList[0] : "empty");
 
         // 좋아요 개수와 liked 상태를 병렬로 fetch하는 부분을 아래처럼 분기
         const artworksWithLatestData = await Promise.all(
           dtoList.map(async (item: any) => {
             const postId = item.postId || item.id;
+            // ✅ 각 게시글의 초기 favoriteCnt 확인 로그 추가
+            console.log(
+              `Processing postId ${postId}: Initial favoriteCnt from list API is ${item.favoriteCnt}`
+            );
+
             let latestFavoriteCnt = item.favoriteCnt ?? item.likeCount ?? 0;
             let userLiked = false;
 
@@ -177,6 +205,8 @@ const ArtList = () => {
               regDate: item.regDate || item.createdAt || null,
               modDate: item.modDate || item.updatedAt || null,
               liked: userLiked,
+              userId: item.userId || null,
+              originImagePath: item.originImagePath || null,
             };
           })
         );
@@ -196,27 +226,9 @@ const ArtList = () => {
     fetchArtworks();
   }, [currentPage, searchTerm, navigate, loggedInUserId, sortType]);
 
-  // 정렬된 리스트
-  const sortedArtworks = useMemo(() => {
-    if (sortType === "popular") {
-      // 인기순은 백엔드에서 처리되므로 그대로 반환
-      return [...artworks];
-    }
-    // 최신순 정렬만 프론트엔드에서 처리
-    return [...artworks].sort((a, b) => {
-      const timeA = a.tradeDTO?.startBidTime
-        ? new Date(a.tradeDTO.startBidTime).getTime()
-        : 0;
-      const timeB = b.tradeDTO?.startBidTime
-        ? new Date(b.tradeDTO.startBidTime).getTime()
-        : 0;
-      return timeB - timeA;
-    });
-  }, [artworks, sortType]);
-
   // boardNo 5만 필터링
   const filteredArtworks = useMemo(() => {
-    const onlyArt = sortedArtworks.filter((art) => art.boardNo === 5);
+    const onlyArt = artworks.filter((art) => art.boardNo === 5);
     if (!searchTerm.trim()) return onlyArt;
     return onlyArt.filter(
       (art) =>
@@ -227,7 +239,7 @@ const ArtList = () => {
           art.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (art.tag && art.tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }, [sortedArtworks, searchTerm]);
+  }, [artworks, searchTerm]);
 
   // 페이지네이션 그룹 계산
   const pageGroup = Math.floor((currentPage - 1) / 10);
@@ -362,7 +374,13 @@ const ArtList = () => {
       }
 
       const data = await response.json();
-      const dtoList = data.dtoList || [];
+      // ✅ 두 가지 응답 데이터 형식을 모두 처리하도록 수정
+      let dtoList = [];
+      if (data.pageResultDTO) {
+        dtoList = data.pageResultDTO.dtoList || [];
+      } else {
+        dtoList = data.dtoList || [];
+      }
 
       // 좋아요 개수와 liked 상태를 병렬로 fetch
       const artworksWithLatestData = await Promise.all(
@@ -432,6 +450,8 @@ const ArtList = () => {
             regDate: item.regDate || item.createdAt || null,
             modDate: item.modDate || item.updatedAt || null,
             liked: userLiked,
+            userId: item.userId || null,
+            originImagePath: item.originImagePath || null,
           };
         })
       );
@@ -535,8 +555,8 @@ const ArtList = () => {
               : null
             : null;
 
-          console.log("Artwork TradeDTO:", artwork.tradeDTO);
-          console.log("Thumbnail info:", {
+          console.log("Artwork Info:", {
+            tradeDTO: artwork.tradeDTO,
             fileName: artwork.fileName,
             pictureDTOList: artwork.pictureDTOList,
             imageUrl,

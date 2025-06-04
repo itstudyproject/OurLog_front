@@ -62,6 +62,16 @@ interface ChatMessage {
   data?: string;
 }
 
+// ✅ 채팅 알림 인터페이스 추가
+interface ChatNotificationInfo {
+  senderId: string;
+  senderNickname: string;
+  senderProfileImage: string;
+  message: string;
+  channelUrl: string;
+  channelName: string;
+}
+
 const APP_ID = "C13DF699-49C2-474D-A2B4-341FBEB354EE";
 
 const ChatPage: React.FC = () => {
@@ -77,6 +87,11 @@ const ChatPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [cardNumber, setCardNumber] = useState<string>("");
   const [channels, setChannels] = useState<GroupChannel[]>([]);
+
+  // ✅ 채팅 알림 상태 추가
+  const [showChatNotification, setShowChatNotification] = useState(false);
+  const [chatNotification, setChatNotification] =
+    useState<ChatNotificationInfo | null>(null);
 
   // ✅ URL state에서 전달받은 targetUserId를 저장할 상태 추가
   const [initialTargetUserId, setInitialTargetUserId] = useState<string | null>(
@@ -128,17 +143,6 @@ const ChatPage: React.FC = () => {
     [userId: string]: UserProfileDTO;
   }>({});
 
-  // ✅ 인앱 알림 상태 추가
-  const [showChatNotification, setShowChatNotification] = useState(false);
-  const [chatNotification, setChatNotification] = useState<{
-    senderId: string;
-    senderNickname: string;
-    senderProfileImage: string;
-    message: string;
-    channelUrl: string;
-    channelName: string;
-  } | null>(null);
-
   const channelHandlerId = useRef<string>(
     `CHANNEL_HANDLER_ID_${Date.now()}`
   ).current;
@@ -148,6 +152,9 @@ const ChatPage: React.FC = () => {
   // MessageCollection 인스턴스를 관리할 useRef 추가 (채널별로 관리할 수도 있습니다)
   // 여기서는 현재 채널의 MessageCollection을 저장하도록 합니다.
   const messageCollectionRef = useRef<MessageCollection | null>(null); // Change type to MessageCollection
+
+  // ✅ 채팅 알림 자동 숨김 타이머 관리를 위한 useRef 추가
+  const chatNotificationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   if (typeof global === "undefined") {
     (window as any).global = window;
@@ -388,40 +395,6 @@ const ChatPage: React.FC = () => {
                   console.error("Failed to parse message data:", e);
                 }
 
-                // ✅ 새 메시지 수신 시 브라우저 알림 표시 로직 추가
-                // 현재 사용자가 보낸 메시지가 아니고, 알림 권한이 허용되었으며, 현재 채널이 수신된 메시지의 채널이 아닌 경우
-                // if (userMessage.sender?.userId !== currentUser?.userId && Notification.permission === 'granted' && currentChannel?.url !== groupChannel.url) {
-                //    const senderNickname = userProfiles[userMessage.sender?.userId || '']?.nickname || userMessage.sender?.nickname || userMessage.sender?.userId || '알 수 없는 사용자';
-                //    const notificationTitle = `${senderNickname} (${groupChannel.name || '새 메시지'})`;
-                //    const notificationBody = userMessage.message;
-
-                //    try {
-                //        const notification = new Notification(notificationTitle, {
-                //            body: notificationBody,
-                //            // icon: userProfiles[userMessage.sender?.userId || '']?.thumbnailImagePath || userMessage.sender?.profileUrl || '/profile-placeholder.jpg', // 상대방 프로필 이미지
-                //            // 클릭 시 해당 채널로 이동하는 로직은 추가 구현 필요
-                //        });
-
-                //        // 알림 클릭 시 이벤트 리스너 (선택 사항)
-                //        // notification.onclick = () => {
-                //        //   // TODO: 해당 채널로 이동하는 로직 구현
-                //        //   // window.focus(); // 브라우저 창 활성화
-                //        //   // navigate('/chat', { state: { channelUrl: groupChannel.url } }); // 예시: 채널 URL을 state로 전달하여 페이지 이동
-                //        // };
-
-                //    } catch (e) {
-                //        console.error("Failed to show browser notification:", e);
-                //    }
-                // } else {
-                //     console.log("Notification conditions not met:", {
-                //         isSenderCurrentUser: userMessage.sender?.userId === currentUser?.userId,
-                //         notificationPermission: Notification.permission,
-                //         isCurrentChannelSame: currentChannel?.url === groupChannel.url,
-                //         channelUrl: groupChannel.url,
-                //         currentChannelUrl: currentChannel?.url
-                //     });
-                // }
-
                 // ✅ 인앱 알림 표시 로직으로 대체
                 if (
                   userMessage.sender?.userId !== currentUser?.userId &&
@@ -436,6 +409,7 @@ const ChatPage: React.FC = () => {
                     "알 수 없는 사용자";
                   const channelName = groupChannel.name || "새 메시지";
 
+                  // ✅ 채팅 알림 상태 업데이트
                   setChatNotification({
                     senderId: userMessage.sender?.userId || "Unknown",
                     senderNickname: senderNickname,
@@ -447,12 +421,39 @@ const ChatPage: React.FC = () => {
                     channelUrl: groupChannel.url,
                     channelName: channelName,
                   });
-                  setShowChatNotification(true);
-
-                  // 5초 후 알림 숨기기
+                  setShowChatNotification(true); // ✅ 채팅 알림 표시 상태를 true로 설정
                   setTimeout(() => {
                     setShowChatNotification(false);
-                  }, 5000);
+                    setChatNotification(null); // 알림 숨김 시 상태 초기화
+                  }, 5000); // 5초 후 알림 숨김
+                }
+                // ✅ 현재 채널에 대한 메시지인지 확인하고 상태 업데이트
+                if (currentChannel?.url === groupChannel.url) {
+                  setMessagesByUser((prev) => {
+                    const currentChannelMessages = prev[groupChannel.url] || [];
+                    const messageExists = currentChannelMessages.some(
+                      (msg) => msg.messageId === formattedMessage.messageId
+                    );
+                    if (!messageExists) {
+                      // 새로운 메시지를 추가하고 시간 순서로 정렬
+                      const newMessages = [
+                        ...currentChannelMessages,
+                        formattedMessage,
+                      ].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                      console.log(
+                        `[${groupChannel.url}] messagesByUser 상태에 새 메시지 추가됨: ${formattedMessage.messageId}`,
+                        newMessages
+                      );
+                      return {
+                        ...prev,
+                        [groupChannel.url]: newMessages,
+                      };
+                    }
+                    console.log(
+                      `[${groupChannel.url}] Message ${formattedMessage.messageId} 이미 존재함. 중복 추가 스킵.`
+                    );
+                    return prev; // 이미 존재하는 메시지는 추가하지 않음
+                  });
                 }
               } else {
                 console.log(
@@ -635,6 +636,10 @@ const ChatPage: React.FC = () => {
       }
       // 컴포넌트 언마운트 시 document 이벤트 리스너 제거 (메뉴 닫기 핸들러)
       document.removeEventListener("click", handleDocumentClick);
+      // ✅ 채팅 알림 자동 숨김 타이머가 남아있을 수 있으므로 클리어
+      if (chatNotificationTimerRef.current) {
+        clearTimeout(chatNotificationTimerRef.current);
+      }
     };
   }, [navigate, location]);
 
@@ -828,16 +833,25 @@ const ChatPage: React.FC = () => {
                 return baseMessage;
               });
 
-              setMessagesByUser((prev) => ({
-                ...prev,
-                [channel.url]: [
-                  ...(prev[channel.url] || []),
-                  ...formattedMessages,
-                ].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)),
-              }));
+              // ✅ 기존 메시지와 합쳐서 중복 제거 및 시간 순 정렬
+              setMessagesByUser((prev) => {
+                const existingMessages = prev[channel.url] || [];
+                const allMessages = [...existingMessages, ...formattedMessages];
+                const uniqueMessages = Array.from(
+                  new Map(
+                    allMessages.map((item) => [item.messageId, item])
+                  ).values()
+                );
+                return {
+                  ...prev,
+                  [channel.url]: uniqueMessages.sort(
+                    (a, b) => (a.createdAt || 0) - (b.createdAt || 0)
+                  ),
+                };
+              });
+
               console.log(
-                `[${channel.url}] MessageCollection: messagesByUser 상태에 추가 완료.`,
-                messagesByUser
+                `[${channel.url}] MessageCollection: messagesByUser 상태에 새 메시지 추가/업데이트 및 정렬 완료.`
               );
             },
             onMessagesUpdated: (context, channel, messages) => {
@@ -845,53 +859,65 @@ const ChatPage: React.FC = () => {
                 `[${channel.url}] MessageCollection: Messages updated`,
                 messages
               );
-              const formattedMessages = messages.map((msg) => {
-                const baseMessage: ChatMessage = {
-                  sender: (msg as UserMessage).sender?.userId || "Unknown",
-                  message: (msg as UserMessage).message || "",
-                  messageId: msg.messageId,
-                  createdAt: msg.createdAt,
-                  messageType: msg.messageType,
-                  customType: msg.customType,
-                  data: msg.data,
-                };
-                try {
-                  if (msg.customType === "payment_request" && msg.data) {
-                    const customData = JSON.parse(msg.data);
-                    if (customData.paymentInfo) {
-                      baseMessage.paymentInfo = customData.paymentInfo;
+              // ✅ channel.isGroupChannel() 함수 호출 및 타입 가드 적용
+              if (channel.isGroupChannel()) {
+                const groupChannel = channel as GroupChannel;
+                const formattedMessages = messages.map((msg) => {
+                  // ✅ BaseMessage 타입을 확인하고 UserMessage로 캐스팅
+                  const userMessage = msg as UserMessage;
+                  const baseMessage: ChatMessage = {
+                    sender: userMessage.sender?.userId || "Unknown",
+                    message: userMessage.message || "",
+                    messageId: userMessage.messageId,
+                    createdAt: userMessage.createdAt,
+                    messageType: userMessage.messageType,
+                    customType: userMessage.customType,
+                    data: userMessage.data,
+                  };
+                  try {
+                    if (
+                      userMessage.customType === "payment_request" &&
+                      userMessage.data
+                    ) {
+                      const customData = JSON.parse(userMessage.data);
+                      if (customData.paymentInfo) {
+                        baseMessage.paymentInfo = customData.paymentInfo;
+                      }
+                      if (customData.isPaymentComplete !== undefined) {
+                        baseMessage.isPaymentComplete =
+                          customData.isPaymentComplete;
+                      }
+                      if (customData.isPaymentFormVisible !== undefined) {
+                        baseMessage.isPaymentFormVisible =
+                          customData.isPaymentFormVisible;
+                      }
                     }
-                    if (customData.isPaymentComplete !== undefined) {
-                      baseMessage.isPaymentComplete =
-                        customData.isPaymentComplete;
-                    }
-                    if (customData.isPaymentFormVisible !== undefined) {
-                      baseMessage.isPaymentFormVisible =
-                        customData.isPaymentFormVisible;
-                    }
+                  } catch (e) {
+                    console.error(
+                      "Failed to parse updated message data in collection handler:",
+                      e
+                    );
                   }
-                } catch (e) {
-                  console.error(
-                    "Failed to parse updated message data in collection handler:",
-                    e
-                  );
-                }
-                return baseMessage;
-              });
+                  return baseMessage;
+                });
 
-              setMessagesByUser((prev) => ({
-                ...prev,
-                [channel.url]: (prev[channel.url] || []).map((msg) => {
-                  const updatedMsg = formattedMessages.find(
-                    (updated) => updated.messageId === msg.messageId
-                  );
-                  return updatedMsg ? updatedMsg : msg;
-                }),
-              }));
-              console.log(
-                `[${channel.url}] MessageCollection: messagesByUser 상태 업데이트 완료.`,
-                messagesByUser
-              );
+                setMessagesByUser((prev) => ({
+                  ...prev,
+                  [groupChannel.url]: (prev[groupChannel.url] || []).map(
+                    (msg) => {
+                      // ✅ 업데이트된 메시지를 messageId로 찾아서 교체
+                      const updatedMsg = formattedMessages.find(
+                        (updated) => updated.messageId === msg.messageId
+                      );
+                      return updatedMsg ? updatedMsg : msg;
+                    }
+                  ),
+                }));
+                console.log(
+                  `[${groupChannel.url}] MessageCollection: messagesByUser 상태 업데이트 완료.`,
+                  messagesByUser
+                );
+              } // else { // non-group channel 처리는 필요에 따라 추가 }
             },
             onMessagesDeleted: (context, channel, messageIds) => {
               console.log(
@@ -1010,7 +1036,7 @@ const ChatPage: React.FC = () => {
                 error
               );
 
-              // ✅ 오류 판단 로직 개선: error가 실제 Sendbird 오류 객체 형태인지 확인.
+              // ✅ 오류 판단 로직 개선 및 메시지 처리 일관성 강화
               // Sendbird 오류 객체는 일반적으로 code(number)와 message(string) 속성을 가집니다.
               const isSendbirdError = (err: any): boolean => {
                 return (
@@ -1021,7 +1047,120 @@ const ChatPage: React.FC = () => {
                 );
               };
 
-              if (error && isSendbirdError(error)) {
+              let apiMessages: BaseMessage[] = []; // API 결과를 저장할 배열 초기화
+
+              if (Array.isArray(messages) && messages.length > 0) {
+                // 메시지 목록이 messages 매개변수에 정상적으로 전달된 경우
+                console.log(
+                  `[${channel.url}] MessageCollection: API loaded messages found in messages parameter.`,
+                  messages
+                );
+                // messages를 BaseMessage 배열로 타입 단언하여 사용
+                apiMessages = messages as BaseMessage[];
+              } else if (messages === null && Array.isArray(error)) {
+                // messages가 null이고 error가 배열인 경우 (Sendbird 버그 가능성)
+                // error가 메시지 목록일 가능성이 높다고 판단 (로그에서 확인된 패턴 기반)
+                // error 배열의 첫 번째 요소가 메시지 객체의 형태인지 추가 확인
+                const looksLikeMessage =
+                  error.length > 0 &&
+                  typeof (error[0] as any)?.messageId !== "undefined" &&
+                  typeof (error[0] as any)?.message !== "undefined";
+
+                if (looksLikeMessage) {
+                  console.log(
+                    `[${channel.url}] MessageCollection: API loaded messages found in error parameter. Using error as messages.`,
+                    error
+                  );
+                  // error를 BaseMessage 배열로 타입 단언하여 사용
+                  apiMessages = error as BaseMessage[];
+                } else if (error.length > 0) {
+                  // error가 배열이지만 메시지 형태가 아닌 다른 정보일 경우 (예: 사용자 목록)
+                  console.info(
+                    `[${channel.url}] MessageCollection: onApiResult received non-message array in error parameter. Ignoring as messages.`,
+                    error
+                  );
+                }
+              } else if (messages !== null && !Array.isArray(messages)) {
+                // messages 매개변수가 null도 아니고 배열도 아닌 경우 (예상치 못한 상황)
+                console.warn(
+                  `[${channel.url}] MessageCollection: Initial API load result messages parameter is not an array or null.`,
+                  messages
+                );
+              }
+              // messages 배열이 비어있는 경우는 apiMessages가 빈 배열로 유지됨.
+
+              // ✅ apiMessages 배열이 유효하다면 onMessagesAdded와 유사하게 상태 업데이트를 시도
+              if (
+                apiMessages.length > 0 ||
+                (Array.isArray(messages) && messages.length === 0) ||
+                (messages === null &&
+                  Array.isArray(error) &&
+                  error.length === 0)
+              ) {
+                // API 로드 메시지가 있거나, 결과가 빈 배열일 경우 상태 업데이트
+                console.log(
+                  `[${channel.url}] MessageCollection: Processing API loaded messages (${apiMessages.length} messages). Manually adding to state.`
+                );
+                const formattedMessages = apiMessages.map((msg) => {
+                  const baseMessage: ChatMessage = {
+                    sender: (msg as UserMessage).sender?.userId || "Unknown",
+                    message: (msg as UserMessage).message || "",
+                    messageId: msg.messageId,
+                    createdAt: msg.createdAt,
+                    messageType: msg.messageType,
+                    customType: msg.customType,
+                    data: msg.data,
+                  };
+                  try {
+                    if (msg.customType === "payment_request" && msg.data) {
+                      const customData = JSON.parse(msg.data);
+                      if (customData.paymentInfo) {
+                        baseMessage.paymentInfo = customData.paymentInfo;
+                      }
+                      if (customData.isPaymentComplete !== undefined) {
+                        baseMessage.isPaymentComplete =
+                          customData.isPaymentComplete;
+                      }
+                      if (customData.isPaymentFormVisible !== undefined) {
+                        baseMessage.isPaymentFormVisible =
+                          customData.isPaymentFormVisible;
+                      }
+                    } else if (msg.customType === "system_message") {
+                      // 시스템 메시지 처리 로직 추가 (필요하다면)
+                      console.log("Received system message:", msg.message);
+                    }
+                  } catch (e) {
+                    console.error(
+                      "Failed to parse API loaded message data:",
+                      e
+                    );
+                  }
+                  return baseMessage;
+                });
+
+                // 기존 메시지와 합쳐서 중복 제거 및 시간 순 정렬
+                setMessagesByUser((prev) => {
+                  const existingMessages = prev[channel.url] || [];
+                  const allMessages = [
+                    ...existingMessages,
+                    ...formattedMessages,
+                  ];
+                  const uniqueMessages = Array.from(
+                    new Map(
+                      allMessages.map((item) => [item.messageId, item])
+                    ).values()
+                  );
+                  return {
+                    ...prev,
+                    [channel.url]: uniqueMessages.sort(
+                      (a, b) => (a.createdAt || 0) - (b.createdAt || 0)
+                    ),
+                  };
+                });
+                console.log(
+                  `[${channel.url}] MessageCollection: messagesByUser 상태에 API 로드 메시지 추가/업데이트 및 정렬 완료.`
+                );
+              } else if (error && isSendbirdError(error)) {
                 // error가 존재하고 실제 Sendbird 오류 객체 형태인 경우
                 console.error(
                   `[${channel.url}] MessageCollection: Initial API load failed with Sendbird Error. Rejecting Promise.`,
@@ -1968,16 +2107,26 @@ const ChatPage: React.FC = () => {
     return !!channel?.isGroupChannel();
   };
 
+  // ✅ 채팅 알림 클릭 핸들러 추가
+  const handleChatNotificationClick = () => {
+    if (chatNotification) {
+      handleOpenChatModal(chatNotification.channelUrl);
+      // 알림 클릭 시 알림 숨김
+      setShowChatNotification(false);
+      setChatNotification(null);
+    }
+  };
+
   return (
     <div className="chat-page">
       {loading && <div className="loading">Sendbird 로딩 중...</div>}
       {error && <div className="error">오류: {error}</div>}
 
-      {/* ✅ 채팅 알림 UI */}
+      {/* ✅ 채팅 알림 컴포넌트 추가 */}
       {showChatNotification && chatNotification && (
         <div
           className="chat-notification"
-          onClick={() => handleOpenChatModal(chatNotification.channelUrl)}
+          onClick={handleChatNotificationClick}
         >
           <div className="notification-content">
             <img
@@ -1986,23 +2135,21 @@ const ChatPage: React.FC = () => {
               className="notification-profile"
             />
             <div className="notification-text">
-              <p className="notification-welcome">새 메시지 도착!</p>
-              <p className="notification-info">
-                <span className="notification-label">채널:</span>{" "}
-                {chatNotification.channelName}
+              <p className="notification-welcome">
+                {chatNotification.senderNickname} 님의 메시지
               </p>
               <p className="notification-info">
-                <span className="notification-label">
-                  {chatNotification.senderNickname}:
-                </span>{" "}
-                {chatNotification.message}
+                {chatNotification.message.length > 50
+                  ? chatNotification.message.substring(0, 50) + "..."
+                  : chatNotification.message}
               </p>
             </div>
             <button
               className="notification-close"
               onClick={(e) => {
-                e.stopPropagation(); // 클릭 이벤트가 부모로 전파되지 않도록 방지
+                e.stopPropagation(); // 클릭 이벤트 전파 방지
                 setShowChatNotification(false);
+                setChatNotification(null);
               }}
             >
               ✕
