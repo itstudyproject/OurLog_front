@@ -53,13 +53,13 @@ const SearchPage = () => {
         : item;
 
     if (picData.resizedImagePath) {
-      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.resizedImagePath}`;
     } else if (picData.thumbnailImagePath) {
-      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
     } else if (picData.originImagePath) {
-      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
+      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.originImagePath}`;
     } else if (picData.fileName) {
-      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
+      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.fileName}`;
     }
 
     return artworkImageSrc;
@@ -67,12 +67,8 @@ const SearchPage = () => {
 
   // 프로필이미지
   const getProfileImageUrl = (imgPath: string) => {
-    if (!imgPath) return "/images/avatar.png"; // 기본 아바타 이미지
-    if (imgPath.startsWith("http") || imgPath.startsWith("https")) {
-      return imgPath; // 절대경로는 그대로 반환
-    }
-    // 상대경로일 경우 서버 주소 붙여서 반환
-    return `http://localhost:8080/ourlog/picture/display/${imgPath}`;
+    if (!imgPath) return "/images/mypage.png"; // 기본 아바타 이미지
+    else return imgPath;
   };
 
   useEffect(() => {
@@ -85,7 +81,7 @@ const SearchPage = () => {
     setLoading(true);
 
     fetch(
-      `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&type=all&keyword=${encodeURIComponent(
+      `http://10.100.204.144:8080/ourlog/post/list?boardNo=${boardNo}&type=all&keyword=${encodeURIComponent(
         lowerQuery
       )}`
     )
@@ -99,7 +95,7 @@ const SearchPage = () => {
           id: item.postId,
           title: item.title,
           author: item.nickname || "알수없음",
-          artistProfileImg: item.userProfileDTO?.thumbnailImagePath || "",
+          artistProfileImg: item.profileImage || "",
           contents: item.content,
           highestBid:
             item.tradeDTO &&
@@ -115,6 +111,7 @@ const SearchPage = () => {
           userId: item.userId,
         }));
 
+        console.log("artistProfileImage", allPosts);
         // 중복 제거 및 필터링
         const communityPosts = allPosts.filter((post) => post.boardId !== 5);
         const uniqueCommunityPosts = Array.from(
