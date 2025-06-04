@@ -77,8 +77,8 @@ body {
 }
 
 .artist-avatar {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
   margin-right: 15px;
@@ -652,8 +652,8 @@ body {
 }
 
 .no-image-placeholder.thumbnail {
-   width: 80px;
-   height: 80px;
+  width: 80px;
+  height: 80px;
 }
 
 /* ✅ 좋아요 버튼 스타일 추가 */
@@ -743,19 +743,21 @@ body {
   justify-content: center;
   align-items: center;
   pointer-events: none;
-  font-family: 'NanumSquareNeo', sans-serif;
+  font-family: "NanumSquareNeo", sans-serif;
   font-weight: 800; /* ✅ 폰트 굵기 증가 */
   color: rgba(220, 220, 220, 0.5); /* ✅ 연한 회색 및 투명도 0.5 */
   user-select: none;
   z-index: 10;
 }
 
-.art-detail-watermark-overlay-main { /* 메인 이미지 워터마크 스타일 */
+.art-detail-watermark-overlay-main {
+  /* 메인 이미지 워터마크 스타일 */
   font-size: 5vw; /* ✅ 글자 크기 5vw로 감소 */
   letter-spacing: 2px;
 }
 
-.art-detail-watermark-overlay-thumbnail { /* 썸네일 워터마크 스타일 */
+.art-detail-watermark-overlay-thumbnail {
+  /* 썸네일 워터마크 스타일 */
   font-size: 2vw; /* ✅ 글자 크기 2vw로 감소 */
 }
 

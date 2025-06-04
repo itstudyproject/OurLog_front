@@ -7,6 +7,18 @@
   --highlight: #f8c147;
 }
 
+.chat-user-search {
+  flex-grow: 1;
+  min-width: 0;
+  margin-right: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  background-color: #1a1a1a;
+  color: var(--text-color);
+  font-size: 14px;
+  text-align: left;
+}
 .chat-page {
   background-color: var(--bg-main);
   color: var(--text-color);
@@ -347,7 +359,6 @@
   background-color: var(--border-color);
 }
 
-
 .search-user-btn,
 .start-chat-btn,
 .send-message-btn {
@@ -400,11 +411,11 @@
 
 /* 채널 생성 모달 버튼 스타일 */
 .create-channel-modal button {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .create-channel-submit-button {
@@ -494,11 +505,11 @@
 }
 
 .public-channels-section .channel-list li .channel-info {
-    /* channel-info 내부 정렬을 위해 flexbox 사용 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  /* channel-info 내부 정렬을 위해 flexbox 사용 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .channel-cover-image {
@@ -553,9 +564,8 @@
 
 /* ✅ menu-open 클래스가 있을 때만 표시 */
 .channel-side-menu.menu-open {
-    display: block;
+  display: block;
 }
-
 
 .channel-side-menu li {
   padding: 10px 15px;
@@ -577,28 +587,27 @@
 
 /* ✅ li에 menu-open 클래스가 필요 없어졌지만, 혹시 다른 용도로 쓰인다면 유지 */
 .chat-list li.menu-open {
-    /* background-color: #1f1f1f; */
-    /* border-radius: 6px 6px 0 0; */
+  /* background-color: #1f1f1f; */
+  /* border-radius: 6px 6px 0 0; */
 }
 
 .public-channels-section .channel-list li.joined {
-    opacity: 0.7;
-    cursor: default;
+  opacity: 0.7;
+  cursor: default;
 }
 
 .public-channels-section .channel-list li.joined .join-channel-btn {
-    background-color: #555;
-    color: #aaa;
-    cursor: not-allowed;
+  background-color: #555;
+  color: #aaa;
+  cursor: not-allowed;
 }
 
 .my-chat-list-section .chat-list li img.channel-cover-image {
-    margin-right: 12px;
-    margin-bottom: 0;
-    width: 42px;
-    height: 42px;
+  margin-right: 12px;
+  margin-bottom: 0;
+  width: 42px;
+  height: 42px;
 }
-
 
 /* ✅ 채팅 알림 스타일 (로그인 알림 참고) */
 .chat-notification {
@@ -756,4 +765,68 @@
 /* 보류 중인 작업 상태일 때 li 스타일 */
 .chat-list li.pending-action {
   /* 필요시 스타일 추가 */
+}
+
+/* ====== 섹션 구분선 및 경계선 추가 ====== */
+
+.chat-list-section {
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  background: #181818;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  padding: 24px 18px 18px 18px;
+  margin-bottom: 32px;
+}
+
+.new-chat-section {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #151515;
+  padding: 18px 14px 14px 14px;
+  margin-bottom: 24px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.new-chat-section .user-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.public-channels-section {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #151515;
+  padding: 18px 14px 14px 14px;
+  margin-bottom: 24px;
+  margin-top: 10px;
+}
+
+.my-chat-list-section {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #151515;
+  padding: 18px 14px 14px 14px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+/* 각 섹션 제목 아래 구분선 */
+.chat-list-header h2,
+.new-chat-section h3,
+.public-channels-section h3,
+.my-chat-list-section h3 {
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+
+/* 섹션 간 여백 조정 */
+.chat-list-section > .new-chat-section,
+.chat-list-section > .public-channels-section,
+.chat-list-section > .my-chat-list-section {
+  margin-top: 18px;
 }

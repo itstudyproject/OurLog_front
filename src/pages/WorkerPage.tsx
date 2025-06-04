@@ -91,13 +91,16 @@ const WorkerPage: React.FC = () => {
     const checkFollowingStatus = async () => {
       if (!isNaN(loggedInUserId) && loggedInUserId !== userId) {
         try {
-          const res = await fetch(`${baseUrl}/followers/status/isFollowing/${loggedInUserId}/${userId}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const res = await fetch(
+            `${baseUrl}/followers/status/isFollowing/${loggedInUserId}/${userId}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
           if (res.ok) {
             const data = await res.json();
             setIsFollowing(data);
@@ -128,16 +131,19 @@ const WorkerPage: React.FC = () => {
         if (!res.ok) throw new Error("게시글 불러오기 실패");
 
         const posts: Post[] = await res.json();
-        const artPosts = posts.filter(post => post.boardNo === 5);
+        const artPosts = posts.filter((post) => post.boardNo === 5);
 
-        const postsWithImageUrls = artPosts.map(post => {
-          const imagePath = post.pictureDTOList && post.pictureDTOList.length > 0
-            ? post.pictureDTOList[0].resizedImagePath ||
-              post.pictureDTOList[0].thumbnailImagePath ||
-              post.pictureDTOList[0].originImagePath
-            : null;
+        const postsWithImageUrls = artPosts.map((post) => {
+          const imagePath =
+            post.pictureDTOList && post.pictureDTOList.length > 0
+              ? post.pictureDTOList[0].resizedImagePath ||
+                post.pictureDTOList[0].thumbnailImagePath ||
+                post.pictureDTOList[0].originImagePath
+              : null;
 
-          const imageUrl = imagePath ? `${imageBaseUrl}${imagePath}` : "/default-image.png";
+          const imageUrl = imagePath
+            ? `${imageBaseUrl}${imagePath}`
+            : "/default-image.png";
 
           return {
             ...post,
@@ -250,7 +256,6 @@ const WorkerPage: React.FC = () => {
         setFollowingCnt(data.followingCnt);
 
       console.log(isNowFollowing ? "팔로우 성공" : "팔로우 취소 성공", data);
-
     } catch (err) {
       console.error("❌ 팔로우 토글 실패:", err);
     }
@@ -303,7 +308,10 @@ const WorkerPage: React.FC = () => {
 
       if (!result.ok) {
         const errorText = await result.text();
-        console.error(`❌ 좋아요 토글 서버 응답 오류 (${result.status}):`, errorText);
+        console.error(
+          `❌ 좋아요 토글 서버 응답 오류 (${result.status}):`,
+          errorText
+        );
         throw new Error(`서버 응답 오류: ${errorText || result.statusText}`);
       }
 
@@ -322,7 +330,10 @@ const WorkerPage: React.FC = () => {
           )
         );
       } else {
-        console.warn("❌ 좋아요 토글 API 응답에 favoriteCount가 없습니다.", data);
+        console.warn(
+          "❌ 좋아요 토글 API 응답에 favoriteCount가 없습니다.",
+          data
+        );
       }
     } catch (error) {
       console.error("좋아요 처리 실패", error);
@@ -350,16 +361,19 @@ const WorkerPage: React.FC = () => {
     <div className="worker-container">
       <div className="worker-header">
         <img
-          src={profile?.thumbnailImagePath
-               ? (profile.thumbnailImagePath.startsWith('/ourlog') ? `http://localhost:8080${profile.thumbnailImagePath}` : `${imageBaseUrl}${profile.thumbnailImagePath}`)
-               : "/default-profile.png"
+          src={
+            profile?.thumbnailImagePath
+              ? profile.thumbnailImagePath.startsWith("/ourlog")
+                ? `http://localhost:8080${profile.thumbnailImagePath}`
+                : `${imageBaseUrl}${profile.thumbnailImagePath}`
+              : "/mypage.png"
           }
           alt="프로필 이미지"
           className="worker-profile-img"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.onerror = null;
-            target.src = "/default-profile.png";
+            target.src = "/mypage.png";
           }}
         />
         <div className="worker-info">
@@ -380,7 +394,10 @@ const WorkerPage: React.FC = () => {
           </div>
           <div className="worker-buttons">
             {!isNaN(loggedInUserId) && loggedInUserId !== userId && (
-              <button onClick={handleFollowToggle} className={`btn ${isFollowing ? 'following' : ''}`}>
+              <button
+                onClick={handleFollowToggle}
+                className={`btn ${isFollowing ? "following" : ""}`}
+              >
                 {isFollowing ? "팔로잉" : "팔로우"}
               </button>
             )}
@@ -412,17 +429,23 @@ const WorkerPage: React.FC = () => {
                   target.src = "/default-image.png";
                 }}
               />
-              {!isNaN(loggedInUserId) && loggedInUserId !== 0 && card.postId !== undefined && card.postId !== null && (
-                <button
-                  className={`worker-like-button ${card.liked ? 'liked' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLikeToggle(card.postId);
-                  }}
-                >
-                  {card.liked ? "🧡" : "🤍"} <span>{card.favoriteCnt ?? 0}</span>
-                </button>
-              )}
+              {!isNaN(loggedInUserId) &&
+                loggedInUserId !== 0 &&
+                card.postId !== undefined &&
+                card.postId !== null && (
+                  <button
+                    className={`worker-like-button ${
+                      card.liked ? "liked" : ""
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLikeToggle(card.postId);
+                    }}
+                  >
+                    {card.liked ? "🧡" : "🤍"}{" "}
+                    <span>{card.favoriteCnt ?? 0}</span>
+                  </button>
+                )}
             </figure>
             <div className="card-body">
               <h2 className="card-title">{card.title}</h2>

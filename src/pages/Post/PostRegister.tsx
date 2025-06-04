@@ -77,13 +77,13 @@ const PostRegister = () => {
   const uploadImage = async (file: File) => {
     const fd = new FormData();
     fd.append("files", file);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8080/ourlog/picture/upload", {
       method: "POST",
       headers: {
-        'Authorization': token ? `Bearer ${token}` : ''
+        Authorization: token ? `Bearer ${token}` : "",
       },
-      body: fd
+      body: fd,
     });
     if (!res.ok) throw new Error("이미지 업로드 실패");
     const data = await res.json();
@@ -241,7 +241,7 @@ const PostRegister = () => {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("로그인이 필요합니다.");
         navigate("/login");
@@ -269,29 +269,32 @@ const PostRegister = () => {
           tag: null,
           originImagePath: `${img.path}/${img.uuid}_${img.picName}`,
           thumbnailImagePath: `${img.path}/s_${img.uuid}_${img.picName}`,
-          resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`
+          resizedImagePath: `${img.path}/r_${img.uuid}_${img.picName}`,
         })),
         userDTO: {
           userId: user.userId,
-          nickname: user.nickname || user.email || "익명"
+          nickname: user.nickname || user.email || "익명",
         },
-        tag: tags.join(','),
+        tag: tags.join(","),
         views: 0,
         followers: 0,
         downloads: 0,
-        replyCnt: 0
+        replyCnt: 0,
       };
 
       console.log("전송할 데이터:", postDTO);
 
-      const response = await fetch("http://localhost:8080/ourlog/post/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(postDTO),
-      });
+      const response = await fetch(
+        "http://localhost:8080/ourlog/post/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(postDTO),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -305,14 +308,22 @@ const PostRegister = () => {
       navigate("/post");
     } catch (error) {
       console.error("에러 발생:", error);
-      alert(error instanceof Error ? error.message : "게시물 등록에 실패했습니다. 다시 시도해주세요.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "게시물 등록에 실패했습니다. 다시 시도해주세요."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    if (window.confirm("작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?")) {
+    if (
+      window.confirm(
+        "작성 중인 내용이 저장되지 않습니다. 정말 취소하시겠습니까?"
+      )
+    ) {
       navigate("/post");
     }
   };
@@ -413,11 +424,13 @@ const PostRegister = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`post-image-item ${snapshot.isDragging ? "dragging" : ""
-                              } ${formData.fileName === image.id
+                            className={`post-image-item ${
+                              snapshot.isDragging ? "dragging" : ""
+                            } ${
+                              formData.fileName === image.id
                                 ? "post-thumbnail-selected"
                                 : ""
-                              }`}
+                            }`}
                           >
                             <img
                               src={image.preview}
@@ -435,7 +448,9 @@ const PostRegister = () => {
                                 ×
                               </button>
                               {formData.fileName === image.id ? (
-                                <span className="post-thumbnail-badge">썸네일</span>
+                                <span className="post-thumbnail-badge">
+                                  썸네일
+                                </span>
                               ) : (
                                 <button
                                   type="button"

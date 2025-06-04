@@ -21,7 +21,7 @@ interface Artwork {
   }> | null;
 }
 
-const VIEWS_API_URL = "http://localhost:8080/ourlog/ranking?type=views";
+const VIEWS_API_URL = "http://10.100.204.144:8080/ourlog/ranking?type=views";
 const FOLLOWERS_API_URL = "http://localhost:8080/ourlog/ranking?type=followers";
 
 const ArtworkSlider: React.FC = () => {

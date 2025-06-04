@@ -9,7 +9,7 @@ import { PictureDTO } from "../../types/pictureTypes";
 
 // ✅ 이미지 서빙을 위한 백엔드 베이스 URL 추가
 const imageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 예시 경로, 실제 백엔드 경로에 맞게 수정 필요
-const profileImageBaseUrl = `http://localhost:8080/ourlog/picture/display/`; // 프로필 이미지용 베이스 URL 추가
+const profileImageBaseUrl = `http://localhost:8080/ourlog/picture/display`; // 프로필 이미지용 베이스 URL 추가
 
 interface PostDetailWithLike extends PostDTO {
   liked?: boolean;
@@ -200,7 +200,9 @@ const ArtDetail = () => {
         navigate("/chat", { state: { targetUserId: String(post.userId) } });
       } else {
         alert("작가 정보를 찾을 수 없어 채팅을 시작할 수 없습니다.");
-        console.warn("🔴 Artist userId is null or undefined, cannot start chat.");
+        console.warn(
+          "🔴 Artist userId is null or undefined, cannot start chat."
+        );
         // window.location.href = "/chat"; // 또는 useNavigate 사용 시 navigate("/chat");
       }
     }
@@ -222,13 +224,16 @@ const ArtDetail = () => {
       post.userId === 0 || // 아티스트 ID 유효하지 않음
       currentUserId === post.userId // 본인 팔로우 방지
     ) {
-      console.warn("🔴 팔로우 조건 미충족", { loggedInUserId: currentUserId, userId: post?.userId });
+      console.warn("🔴 팔로우 조건 미충족", {
+        loggedInUserId: currentUserId,
+        userId: post?.userId,
+      });
       // 로그인 필요 또는 본인 팔로우 불가 등의 메시지를 사용자에게 보여줄 수 있습니다.
-       if (currentUserId === null || currentUserId === 0) {
-          alert("팔로우 기능을 사용하려면 로그인이 필요합니다.");
-       } else if (currentUserId === post?.userId) {
-          // 본인 팔로우 시도 시 메시지 (선택 사항)
-       }
+      if (currentUserId === null || currentUserId === 0) {
+        alert("팔로우 기능을 사용하려면 로그인이 필요합니다.");
+      } else if (currentUserId === post?.userId) {
+        // 본인 팔로우 시도 시 메시지 (선택 사항)
+      }
       return;
     }
 
@@ -257,19 +262,18 @@ const ArtDetail = () => {
         setIsFollowing(!isNowFollowing);
         const errorMsg = isNowFollowing ? "팔로우 실패" : "팔로우 취소 실패";
         try {
-           const errorText = await res.text();
-           console.error(`❌ ${errorMsg} 응답:`, errorText);
-           alert(`${errorMsg}: ${errorText || '서버 오류'}`);
+          const errorText = await res.text();
+          console.error(`❌ ${errorMsg} 응답:`, errorText);
+          alert(`${errorMsg}: ${errorText || "서버 오류"}`);
         } catch (e) {
-           console.error(`❌ ${errorMsg} 응답 처리 중 오류:`, e);
-           alert(`${errorMsg}: 서버 오류`);
+          console.error(`❌ ${errorMsg} 응답 처리 중 오류:`, e);
+          alert(`${errorMsg}: 서버 오류`);
         }
         throw new Error(`${errorMsg} (${res.status})`);
       }
 
       // 성공 시 추가 작업 (필요하다면)
       console.log(isNowFollowing ? "팔로우 성공" : "팔로우 취소 성공");
-
     } catch (err) {
       console.error("❌ 팔로우 API 요청 실패:", err);
       // setIsFollowing(!isNowFollowing); // 이미 위에서 롤백 처리
@@ -344,14 +348,15 @@ const ArtDetail = () => {
 
       const data = await response.json();
       const postData = data.postDTO;
-      
+
       // 프로필 이미지 관련 데이터 로깅
-      console.log('작품 상세 데이터:', {
+      console.log("작품 상세 데이터:", {
         postId: postData.postId,
         userId: postData.userId,
-        profileImage: postData.profileImage,
-        userProfile: postData.userProfile
+        profileImage: data.profileImage,
+        userProfile: postData.userProfile,
       });
+      console.log("작품 상세 데이터:", postData);
 
       // ✅ 로그인된 사용자의 좋아요 상태를 추가로 가져옴
       let userLiked = false;
@@ -386,7 +391,11 @@ const ArtDetail = () => {
 
       // ✅ 추가: 로그인된 사용자의 팔로우 상태를 추가로 가져옴
       let userFollowing = false;
-      if (currentUserId !== null && postData?.userId && currentUserId !== postData.userId) {
+      if (
+        currentUserId !== null &&
+        postData?.userId &&
+        currentUserId !== postData.userId
+      ) {
         try {
           const followStatusResponse = await fetch(
             `http://localhost:8080/ourlog/followers/status/isFollowing/${currentUserId}/${postData.userId}`,
@@ -412,33 +421,38 @@ const ArtDetail = () => {
 
       // ✅ 추가: 최신 좋아요 수를 다시 가져와 업데이트
       if (postData?.postId !== undefined && postData.postId !== null) {
-          try {
-              const countResponse = await fetch(
-                  `http://localhost:8080/ourlog/favorites/count/${postData.postId}`,
-                  {
-                      method: "GET",
-                      headers: getAuthHeaders(),
-                  }
-              );
-              if (countResponse.ok) {
-                  const countData = await countResponse.json();
-                  if (typeof countData === "number") {
-                      setPost(prevPost => {
-                          if (!prevPost || prevPost.postId !== postData.postId) return prevPost;
-                          return { ...prevPost, favoriteCnt: countData };
-                      });
-                  } else if (countData && typeof countData.count === "number") { // 응답 형태가 { count: number } 인 경우
-                       setPost(prevPost => {
-                          if (!prevPost || prevPost.postId !== postData.postId) return prevPost;
-                          return { ...prevPost, favoriteCnt: countData.count };
-                      });
-                  }
-              } else {
-                  console.warn(`❌ ArtDetail 좋아요 수 불러오기 실패 (${countResponse.status}) for postId ${postData.postId}`);
-              }
-          } catch (countError) {
-              console.error("❌ ArtDetail 좋아요 수 불러오기 오류:", countError);
+        try {
+          const countResponse = await fetch(
+            `http://localhost:8080/ourlog/favorites/count/${postData.postId}`,
+            {
+              method: "GET",
+              headers: getAuthHeaders(),
+            }
+          );
+          if (countResponse.ok) {
+            const countData = await countResponse.json();
+            if (typeof countData === "number") {
+              setPost((prevPost) => {
+                if (!prevPost || prevPost.postId !== postData.postId)
+                  return prevPost;
+                return { ...prevPost, favoriteCnt: countData };
+              });
+            } else if (countData && typeof countData.count === "number") {
+              // 응답 형태가 { count: number } 인 경우
+              setPost((prevPost) => {
+                if (!prevPost || prevPost.postId !== postData.postId)
+                  return prevPost;
+                return { ...prevPost, favoriteCnt: countData.count };
+              });
+            }
+          } else {
+            console.warn(
+              `❌ ArtDetail 좋아요 수 불러오기 실패 (${countResponse.status}) for postId ${postData.postId}`
+            );
           }
+        } catch (countError) {
+          console.error("❌ ArtDetail 좋아요 수 불러오기 오류:", countError);
+        }
       }
 
       setBidAmount(Number(postData?.tradeDTO?.highestBid || 0) + 1000);
@@ -446,7 +460,12 @@ const ArtDetail = () => {
 
       // ✅ 썸네일 이미지를 찾습니다. postData.fileName이 있으면 해당 uuid를 가진 이미지를 찾고, 없으면 첫 번째 이미지를 사용합니다.
       const thumbnailPicture = Array.isArray(postData?.pictureDTOList)
-        ? postData.pictureDTOList.find(pic => pic.uuid === postData?.fileName) || (postData.pictureDTOList.length > 0 ? postData.pictureDTOList[0] : null)
+        ? postData.pictureDTOList.find(
+            (pic) => pic.uuid === postData?.fileName
+          ) ||
+          (postData.pictureDTOList.length > 0
+            ? postData.pictureDTOList[0]
+            : null)
         : null;
 
       setMainImagePicture(thumbnailPicture);
@@ -582,7 +601,11 @@ const ArtDetail = () => {
     } else {
       setCountdown("경매 정보 없음");
     }
-  }, [post?.tradeDTO?.lastBidTime, post?.tradeDTO?.tradeStatus, post?.tradeDTO?.tradeId]);
+  }, [
+    post?.tradeDTO?.lastBidTime,
+    post?.tradeDTO?.tradeStatus,
+    post?.tradeDTO?.tradeId,
+  ]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -666,24 +689,31 @@ const ArtDetail = () => {
     });
 
     try {
-      const result = await fetch(`http://localhost:8080/ourlog/favorites/toggle`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: currentUserId,
-          postId: post.postId,
-        }),
-      });
+      const result = await fetch(
+        `http://localhost:8080/ourlog/favorites/toggle`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId: currentUserId,
+            postId: post.postId,
+          }),
+        }
+      );
 
       if (!result.ok) throw new Error("서버 응답 오류");
 
       const data = await result.json();
 
       // 백엔드 응답으로 최종 상태 업데이트
-      if (post.postId !== undefined && post.postId !== null && typeof data.favoriteCount === "number") {
+      if (
+        post.postId !== undefined &&
+        post.postId !== null &&
+        typeof data.favoriteCount === "number"
+      ) {
         setPost((prevPost) => {
           if (!prevPost || prevPost.postId !== post.postId) return prevPost;
           return {
@@ -693,7 +723,6 @@ const ArtDetail = () => {
           };
         });
       }
-
     } catch (error) {
       console.error(`좋아요 처리 실패: ${post.postId}`, error);
 
@@ -701,7 +730,8 @@ const ArtDetail = () => {
       setPost((prevPost) => {
         if (!prevPost) return null;
         const rolledBackLiked = !(prevPost.liked ?? false); // optimistic update 이전 상태
-        const rolledBackFavoriteCnt = (prevPost.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1); // optimistic update 이전 상태
+        const rolledBackFavoriteCnt =
+          (prevPost.favoriteCnt ?? 0) + (rolledBackLiked ? 1 : -1); // optimistic update 이전 상태
         return {
           ...prevPost,
           liked: rolledBackLiked,
@@ -714,7 +744,7 @@ const ArtDetail = () => {
 
   const handleRefreshPrice = async () => {
     if (!post?.postId) return;
-    
+
     setIsRefreshing(true);
     try {
       const response = await fetch(
@@ -732,11 +762,11 @@ const ArtDetail = () => {
       const data = await response.json();
       const postData = data.postDTO;
 
-      setPost(prevPost => {
+      setPost((prevPost) => {
         if (!prevPost) return null;
         return {
           ...prevPost,
-          tradeDTO: postData.tradeDTO
+          tradeDTO: postData.tradeDTO,
         };
       });
 
@@ -791,7 +821,9 @@ const ArtDetail = () => {
                 <div className="no-image-placeholder main">이미지 없음</div>
               )}
               {mainImagePicture && (
-                <div className="art-detail-watermark-overlay art-detail-watermark-overlay-main">OurLog</div>
+                <div className="art-detail-watermark-overlay art-detail-watermark-overlay-main">
+                  OurLog
+                </div>
               )}
             </div>
 
@@ -820,7 +852,9 @@ const ArtDetail = () => {
                           }`}
                           className="thumbnail-image"
                         />
-                        <div className="art-detail-watermark-overlay art-detail-watermark-overlay-thumbnail">OurLog</div>
+                        <div className="art-detail-watermark-overlay art-detail-watermark-overlay-thumbnail">
+                          OurLog
+                        </div>
                       </div>
                     );
                   })}
@@ -840,7 +874,11 @@ const ArtDetail = () => {
                   <span
                     key={tag}
                     className="tag-pill"
-                    onClick={() => navigate(`/Art?type=t&keyword=${encodeURIComponent(tag.trim())}`)}
+                    onClick={() =>
+                      navigate(
+                        `/Art?type=t&keyword=${encodeURIComponent(tag.trim())}`
+                      )
+                    }
                   >
                     #{tag.trim()}
                   </span>
@@ -860,34 +898,31 @@ const ArtDetail = () => {
               {post.profileImage ? (
                 <img
                   src={
-                    (() => {
-                      if (post.profileImage.startsWith('/ourlog')) {
-                        return `http://localhost:8080${post.profileImage}`;
-                      } else if (post.profileImage.startsWith('http')) {
-                        return post.profileImage;
-                      } else {
-                        return `${imageBaseUrl}${post.profileImage}`;
-                      }
-                    })()
+                    post.profileImage === "/images/mypage.png"
+                      ? "/images/mypage.png"
+                      : post.profileImage
                   }
                   alt={`${post.nickname || "알 수 없는 작가"} 프로필`}
                   className="artist-profile-image"
                   onLoad={(e) => {
-                    console.log('프로필 이미지 로드 성공:', e.currentTarget.src);
+                    console.log(
+                      "프로필 이미지 로드 성공:",
+                      e.currentTarget.src
+                    );
                   }}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    console.error('프로필 이미지 로드 실패:', {
+                    console.error("프로필 이미지 로드 실패:", {
                       attemptedUrl: target.src,
                       originalUrl: post.profileImage,
                       postData: {
                         postId: post.postId,
                         userId: post.userId,
-                        nickname: post.nickname
-                      }
+                        nickname: post.nickname,
+                      },
                     });
                     target.onerror = null;
-                    target.src = "/default-profile.png";
+                    target.src = "/images/mypage.png";
                   }}
                 />
               ) : (
@@ -903,14 +938,18 @@ const ArtDetail = () => {
               <p>일러스트레이터</p>
             </div>
             <div className="artist-buttons">
-              {currentUserId !== null && post?.userId !== undefined && currentUserId !== post.userId && (
-                <button
-                  onClick={handleFollow}
-                  className={`follow-button ${isFollowing ? 'following' : ''}`}
-                >
-                  {isFollowing ? "팔로잉" : "팔로우"}
-                </button>
-              )}
+              {currentUserId !== null &&
+                post?.userId !== undefined &&
+                currentUserId !== post.userId && (
+                  <button
+                    onClick={handleFollow}
+                    className={`follow-button ${
+                      isFollowing ? "following" : ""
+                    }`}
+                  >
+                    {isFollowing ? "팔로잉" : "팔로우"}
+                  </button>
+                )}
               <button onClick={handleOpenChat} className="share-button">
                 채팅
               </button>
@@ -920,14 +959,18 @@ const ArtDetail = () => {
           <div className="art-title">
             <h2>{post.title || "제목 없음"}</h2>
             {/* ✅ 좋아요 버튼 추가 */}
-            {currentUserId !== null && post?.postId !== undefined && post?.postId !== null && (
-              <button
-                className={`art-detail-like-button ${post.liked ? 'liked' : ''}`}
-                onClick={handleLikeToggle}
-              >
-                {post.liked ? '🧡' : '🤍'} {post.favoriteCnt ?? 0}
-              </button>
-            )}
+            {currentUserId !== null &&
+              post?.postId !== undefined &&
+              post?.postId !== null && (
+                <button
+                  className={`art-detail-like-button ${
+                    post.liked ? "liked" : ""
+                  }`}
+                  onClick={handleLikeToggle}
+                >
+                  {post.liked ? "🧡" : "🤍"} {post.favoriteCnt ?? 0}
+                </button>
+              )}
             <p className="art-date">
               등록일:{" "}
               {post?.tradeDTO?.startBidTime
@@ -940,8 +983,10 @@ const ArtDetail = () => {
             <>
               <div className="bid-info-header">
                 <h3>경매 정보</h3>
-                <button 
-                  className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`}
+                <button
+                  className={`refresh-button ${
+                    isRefreshing ? "refreshing" : ""
+                  }`}
                   onClick={handleRefreshPrice}
                   disabled={isRefreshing}
                 >
@@ -973,9 +1018,7 @@ const ArtDetail = () => {
                   <span>
                     {post.tradeDTO.tradeStatus ? "상태" : "남은 시간"}
                   </span>
-                  {post.tradeDTO
-                    .tradeStatus ? // 경매 종료 시 메시지 및 채팅 버튼
-                  null : (
+                  {post.tradeDTO.tradeStatus ? null : ( // 경매 종료 시 메시지 및 채팅 버튼
                     // 경매 진행 중 시 남은 시간
                     <p>{countdown}</p>
                   )}

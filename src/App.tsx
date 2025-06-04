@@ -21,7 +21,7 @@ import RankingPage from "./pages/Ranking/RankingPage";
 import RegisterPage from "./pages/RegisterPage";
 import SearchPage from "./pages/SearchPage";
 import TermsCondition from "./pages/TermsCondition";
-import SocialLoginHandler from './components/SocialLoginHandler';
+import SocialLoginHandler from "./components/SocialLoginHandler";
 
 function App() {
   return (
@@ -64,7 +64,6 @@ function App() {
       <Route path="/social-login-handler" element={<SocialLoginHandler />} />
 
       <Route path="/register" element={<RegisterPage />} />
-
     </Routes>
   );
 }
