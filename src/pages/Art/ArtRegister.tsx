@@ -804,7 +804,6 @@ const ArtRegister = () => {
                 onDragOver={!isReregister ? handleDragOver : undefined}
                 onDragLeave={!isReregister ? handleDragLeave : undefined}
                 onDrop={!isReregister ? handleDrop : undefined}
-                onClick={!isReregister ? () => fileInputRef.current?.click() : undefined}
                 style={{ cursor: !isReregister ? 'pointer' : 'not-allowed' }}
               >
                 <input
@@ -868,7 +867,6 @@ const ArtRegister = () => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
                 style={{ cursor: 'pointer' }}
               >
                 <input

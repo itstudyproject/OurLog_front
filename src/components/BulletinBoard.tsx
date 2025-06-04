@@ -76,13 +76,17 @@ const BulletinBoard: React.FC = () => {
               (item: any) => ({
                 id: item.postId || item.id,
                 title: item.title,
-                description: item.content || "설명 없음",
+                //description: item.content || "설명 없음",
                 date: formatDate(item),
                 category,
                 thumbnail: item.pictureDTOList?.find(
                   (pic: any) => pic.uuid === item.fileName
                 )?.originImagePath
-                  ? `http://localhost:8080/ourlog/picture/display/${item.pictureDTOList.find((pic: any) => pic.uuid === item.fileName).originImagePath}`
+                  ? `http://localhost:8080/ourlog/picture/display/${
+                      item.pictureDTOList.find(
+                        (pic: any) => pic.uuid === item.fileName
+                      ).originImagePath
+                    }`
                   : "",
               })
             );
@@ -137,8 +141,13 @@ const BulletinBoard: React.FC = () => {
           const typedKey = key as CategoryKey;
           return (
             <div key={typedKey}>
-              <Link to={`/post/${typedKey}`} className="bb-category-header-link">
-                <h3 className="bb-category-header">{categoryLabels[typedKey]}</h3>
+              <Link
+                to={`/post/${typedKey}`}
+                className="bb-category-header-link"
+              >
+                <h3 className="bb-category-header">
+                  {categoryLabels[typedKey]}
+                </h3>
               </Link>
               <ul className="bb-category-list">
                 {items.length === 0 ? (
