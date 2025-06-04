@@ -106,8 +106,13 @@ export const checkMobileExists = async (mobile: string): Promise<boolean> => {
   }
 };
 
+// 사용자 등록 성공 응답 타입
+export interface RegisterSuccessResponse {
+  userId: number;
+}
+
 // 사용자 등록 함수
-export const registerUser = async (userData: UserRegisterDTO): Promise<number> => {
+export const registerUser = async (userData: UserRegisterDTO): Promise<RegisterSuccessResponse> => {
   try {
     const registerResponse = await fetch('http://localhost:8080/ourlog/user/register', {
       method: 'POST',

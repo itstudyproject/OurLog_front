@@ -515,8 +515,9 @@ const RegisterPage: React.FC = () => {
         fromSocial: formData.fromSocial
       };
       
-      const userId = await registerUser(userData);
-      console.log("회원가입 성공 - 생성된 userId:", userId);
+      const userIdResult = await registerUser(userData);
+      console.log("회원가입 성공 - 생성된 userId:", userIdResult);
+      console.log("프로필에 사용할 userId 값:", userIdResult.userId, "타입:", typeof userIdResult.userId);
 
       // 3. 회원가입 성공 후 자동 로그인하여 토큰 획득
       try {
@@ -526,42 +527,45 @@ const RegisterPage: React.FC = () => {
         // 4. 프로필 정보 생성 시도 (인증 토큰이 있는 상태에서)
         try {
           const defaultProfile: UserProfileDTO = {
-            userId: userId,
+            userId: userIdResult.userId,
             nickname: formData.nickname,
             introduction: `안녕하세요, ${formData.nickname}입니다.`,
             email: formData.email,
             name: formData.name,
+            followCnt: 0,
+            followingCnt: 0,
             originImagePath: '/images/mypage.png',
             thumbnailImagePath: '/images/mypage.png',
           };
           
-          await createProfile(defaultProfile);
+          await createProfile(defaultProfile, token);
           console.log("기본 프로필 생성 완료");
+          
+          // 5. 자동 로그인 세션 제거 (사용자가 명시적으로 로그인하도록) - 프로필 생성 성공 후에 제거
+          localStorage.removeItem('token');
+          
         } catch (profileErr) {
           console.error("프로필 생성 중 오류:", profileErr);
           // 프로필 생성 실패해도 회원가입은 완료된 것으로 처리
         }
 
-        // 5. 자동 로그인 세션 제거 (사용자가 명시적으로 로그인하도록)
-        localStorage.removeItem('token');
+        // 회원가입 성공 후 메시지 표시하고 로그인 페이지로 즉시 이동
+        setSuccess('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+        
+        // 1초 후 로그인 페이지로 이동 (사용자가 성공 메시지를 볼 수 있도록 짧은 딜레이 적용)
+        setTimeout(() => {
+          navigate('/login', { 
+            state: { 
+              email: formData.email,
+              message: '회원가입이 완료되었습니다. 로그인해 주세요.' 
+            } 
+          });
+        }, 1000);
         
       } catch (loginErr) {
         console.error("자동 로그인 중 오류:", loginErr);
         // 로그인 실패해도 회원가입은 완료됨
       }
-      
-      // 회원가입 성공 후 메시지 표시하고 로그인 페이지로 즉시 이동
-      setSuccess('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
-      
-      // 1초 후 로그인 페이지로 이동 (사용자가 성공 메시지를 볼 수 있도록 짧은 딜레이 적용)
-      setTimeout(() => {
-        navigate('/login', { 
-          state: { 
-            email: formData.email,
-            message: '회원가입이 완료되었습니다. 로그인해 주세요.' 
-          } 
-        });
-      }, 1000);
       
     } catch (err) {
       console.error("회원가입 실패:", err);
