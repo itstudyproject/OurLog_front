@@ -584,7 +584,7 @@ const ArtRegister = () => {
           );
 
           const selectedImageFile = imageFiles.find(img => img.id === postData.selectedThumbnailId);
-          let thumbnailPictureDTO = null;
+          let thumbnailPictureDTO: PictureDTO | null = null;
           if (selectedImageFile) {
               const selectedIndex = imageFiles.indexOf(selectedImageFile);
               if (selectedIndex !== -1 && selectedIndex < uploadedPictureDTOs.length) {
@@ -605,14 +605,14 @@ const ArtRegister = () => {
               boardNo: postData.boardNo,
               views: 0,
               tag: postData.tag.join(','),
-              thumbnailImagePath: thumbnailPictureDTO ? thumbnailPictureDTO.uuid : null,
+              thumbnailImagePath: thumbnailPictureDTO && thumbnailPictureDTO.uuid ? thumbnailPictureDTO.uuid : null,
               followers: 0,
               downloads: 0,
               favoriteCnt: 0,
               replyCnt: 0,
               regDate: undefined,
               modDate: undefined,
-              fileName: thumbnailPictureDTO ? thumbnailPictureDTO.uuid : null,
+              fileName: (thumbnailPictureDTO && thumbnailPictureDTO.uuid) ? thumbnailPictureDTO.uuid : '',
               pictureDTOList: uploadedPictureDTOs,
               tradeDTO: undefined,
           };
