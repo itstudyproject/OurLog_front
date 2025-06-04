@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
   };
 
   // 새 프로필을 생성하는 함수
-  const createProfile = async (userId: number, email: string, token: string): Promise<number | null> => {
+  const createProfile = async (userId: number, nickname: string, token: string): Promise<number | null> => {
      try {
         const createResponse = await fetch(`http://localhost:8080/ourlog/profile/create`, {
           method: "POST",
@@ -56,8 +56,12 @@ const LoginPage: React.FC = () => {
           },
           body: JSON.stringify({
             userId: userId,
-            profileName: email.split('@')[0], // 이메일 앞 부분을 기본 프로필 이름으로 사용
-            profileImageUrl: "/images/mypage.png" // 기본 이미지 사용
+            nickname: nickname,
+            originImagePath: "/images/mypage.png",
+            thumbnailImagePath: "/images/mypage.png",
+            followCnt: 0,
+            followingCnt: 0,
+            introduction: `안녕하세요, ${nickname}입니다.`
           })
         });
 
@@ -69,7 +73,7 @@ const LoginPage: React.FC = () => {
 
         const newProfile = await createResponse.json();
         console.log("Created new profile:", newProfile);
-        return newProfile.profileId; // 새로 생성된 프로필 ID 반환
+        return newProfile.profileId;
 
      } catch (error) {
         console.error("Error creating profile:", error);
@@ -77,7 +81,7 @@ const LoginPage: React.FC = () => {
      }
   };
 
-  const checkAndCreateProfile = async (userId: number, email: string, token: string): Promise<number | null> => {
+  const checkAndCreateProfile = async (userId: number, userInfo: any, token: string): Promise<number | null> => {
       try {
           // 1. 프로필 조회
           const existingProfile = await fetchProfile(userId, token);
@@ -88,7 +92,8 @@ const LoginPage: React.FC = () => {
           } else {
               // 프로필이 없으면 생성
               console.log("Profile does not exist. Creating new profile...");
-              return await createProfile(userId, email, token);
+              const userNickname = userInfo.nickname || userInfo.email.split('@')[0];
+              return await createProfile(userId, userNickname, token);
           }
       } catch (error) {
           console.error("Error in checkAndCreateProfile:", error);
@@ -233,8 +238,8 @@ const LoginPage: React.FC = () => {
       // 4. 사용자 프로필 확인 및 없으면 생성 (추가된 로직)
       let profileId: number | null = null;
       if (userInfo.userId) {
-        // checkAndCreateProfile 함수 호출 시 email과 token 전달
-        profileId = await checkAndCreateProfile(userInfo.userId, email, token);
+        // checkAndCreateProfile 함수 호출 시 userInfo 객체와 token 전달
+        profileId = await checkAndCreateProfile(userInfo.userId, userInfo, token);
         if (profileId === null) {
              setError("프로필 정보를 처리하는 중 오류가 발생했습니다.");
              setToken(""); // 토큰 삭제
