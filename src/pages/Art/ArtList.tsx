@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import "../../styles/ArtList.css";
 import { getAuthHeaders, removeToken, hasToken } from "../../utils/auth";
-import { PostDTO } from '../../types/postTypes';
+import { PostDTO } from "../../types/postTypes";
 
 interface ArtworkWithLike extends PostDTO {
   liked?: boolean; // 현재 사용자가 좋아요를 눌렀는지 여부
@@ -15,7 +15,7 @@ const ArtList = () => {
   const [searchParams] = useSearchParams();
   const [artworks, setArtworks] = useState<ArtworkWithLike[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [sortType, setSortType] = useState<'popular' | 'latest'>('popular');
+  const [sortType, setSortType] = useState<"popular" | "latest">("popular");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchInput, setSearchInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -39,13 +39,13 @@ const ArtList = () => {
       console.warn("토큰이 없습니다. 로그인이 필요할 수 있습니다.");
     }
 
-    const savedPage = localStorage.getItem('artworkListPage');
+    const savedPage = localStorage.getItem("artworkListPage");
     if (savedPage) {
       const pageNumber = parseInt(savedPage, 10);
       if (!isNaN(pageNumber) && pageNumber >= 1) {
         setCurrentPage(pageNumber);
       }
-      localStorage.removeItem('artworkListPage');
+      localStorage.removeItem("artworkListPage");
     }
   }, []);
 
@@ -64,17 +64,17 @@ const ArtList = () => {
     const fetchArtworks = async () => {
       setLoading(true);
       const pageNumber = Math.max(1, currentPage);
-      
+
       const params = new URLSearchParams({
         page: String(pageNumber),
         size: String(artworksPerPage),
-        boardNo: "5"  // boardNo는 항상 포함
+        boardNo: "5", // boardNo는 항상 포함
       });
 
       // 검색어가 있는 경우에만 검색 파라미터 추가
       if (searchTerm) {
-        params.append('type', 't');
-        params.append('keyword', searchTerm);
+        params.append("type", "t");
+        params.append("keyword", searchTerm);
       }
 
       try {
@@ -82,17 +82,17 @@ const ArtList = () => {
         const url = `http://localhost:8080/ourlog/post/list/popular?${params.toString()}`;
 
         const headers = getAuthHeaders();
-        console.log('Request headers:', headers);
+        console.log("Request headers:", headers);
 
         const response = await fetch(url, {
-          method: 'GET',
+          method: "GET",
           headers: headers,
-          credentials: 'include'
+          credentials: "include",
         });
 
         if (response.status === 403) {
           removeToken();
-          navigate('/login');
+          navigate("/login");
           throw new Error("인증이 필요합니다.");
         }
 
@@ -103,63 +103,23 @@ const ArtList = () => {
         }
 
         const data = await response.json();
-        console.log('서버 응답 데이터:', data);
-        
+        console.log("서버 응답 데이터:", data);
+        console.log("dtoList 예시:", data.dtoList && data.dtoList[0]);
+
         const dtoList = data.dtoList || [];
         const totalPage = data.totalPage || 1;
-        
-        let initialArtworks: ArtworkWithLike[] = dtoList.map((item: any) => ({
-          postId: item.postId || item.id,
-          boardNo: item.boardNo || item.boardId,
-          title: item.title,
-          content: item.content || '',
-          nickname: item.nickname || item.userName || item.author || item.writer || '',
-          fileName: item.fileName,
-          views: item.views || item.viewCount || 0,
-          tag: item.tag,
-          thumbnailImagePath: item.thumbnailImagePath || null,
-          followers: item.followers || null,
-          downloads: item.downloads || null,
-          favoriteCnt: item.favoriteCnt || item.likeCount || 0,
-          tradeDTO: item.tradeDTO ? {
-            tradeId: item.tradeDTO.tradeId,
-            postId: item.tradeDTO.postId,
-            sellerId: item.tradeDTO.sellerId,
-            bidderId: item.tradeDTO.bidderId || null,
-            bidderNickname: item.tradeDTO.bidderNickname || null,
-            startPrice: item.tradeDTO.startPrice,
-            highestBid: item.tradeDTO.highestBid || null,
-            bidAmount: item.tradeDTO.bidAmount || null,
-            nowBuy: item.tradeDTO.nowBuy,
-            tradeStatus: item.tradeDTO.tradeStatus,
-            startBidTime: item.tradeDTO.startBidTime || null,
-            lastBidTime: item.tradeDTO.lastBidTime || null
-          } : null,
-          pictureDTOList: item.pictureDTOList || null,
-          profileImage: item.profileImage || item.userProfileImage || null,
-          replyCnt: item.replyCnt || null,
-          regDate: item.regDate || item.createdAt || null,
-          modDate: item.modDate || item.updatedAt || null,
-          liked: false,
-        }));
 
-        setTotalPages(totalPage);
-
-        // 각 게시글의 최신 좋아요 수와 사용자의 좋아요 상태를 병렬로 가져옵니다.
+        // 좋아요 개수와 liked 상태를 병렬로 fetch하는 부분을 아래처럼 분기
         const artworksWithLatestData = await Promise.all(
-          initialArtworks.map(async (artwork) => {
-            if (artwork.postId === undefined || artwork.postId === null) {
-              console.warn("❌ Artwork without postId:", artwork);
-              return artwork;
-            }
-
-            let latestFavoriteCnt = artwork.favoriteCnt;
+          dtoList.map(async (item: any) => {
+            const postId = item.postId || item.id;
+            let latestFavoriteCnt = item.favoriteCnt ?? item.likeCount ?? 0;
             let userLiked = false;
 
+            // 좋아요 개수 fetch (항상 최신값)
             try {
-              // 최신 좋아요 수 가져오기
               const countResponse = await fetch(
-                `http://localhost:8080/ourlog/favorites/count/${artwork.postId}`,
+                `http://localhost:8080/ourlog/favorites/count/${postId}`,
                 {
                   method: "GET",
                   headers: getAuthHeaders(),
@@ -172,45 +132,58 @@ const ArtList = () => {
                 } else if (countData && typeof countData.count === "number") {
                   latestFavoriteCnt = countData.count;
                 }
-              } else {
-                console.warn(
-                  `❌ 좋아요 수 불러오기 실패 (${countResponse.status}) for postId ${artwork.postId}`
-                );
               }
-            } catch (countError) {
-              console.error("❌ 좋아요 수 불러오기 오류:", countError);
-            }
+            } catch {}
 
-            // 사용자의 좋아요 상태 가져오기 (로그인된 경우)
+            // liked 상태 fetch
             if (loggedInUserId !== null && loggedInUserId > 0) {
               try {
                 const likeStatusResponse = await fetch(
-                  `http://localhost:8080/ourlog/favorites/${loggedInUserId}/${artwork.postId}`,
+                  `http://localhost:8080/ourlog/favorites/${loggedInUserId}/${postId}`,
                   {
                     method: "GET",
                     headers: getAuthHeaders(),
                   }
                 );
-
                 if (likeStatusResponse.ok) {
                   const statusData = await likeStatusResponse.json();
                   userLiked = statusData === true;
-                } else {
-                  console.warn(
-                    `❌ 사용자 좋아요 상태 불러오기 실패 (${likeStatusResponse.status}) for postId ${artwork.postId}`
-                  );
                 }
-              } catch (likeError) {
-                console.error("❌ 사용자 좋아요 상태 불러오기 오류:", likeError);
-              }
+              } catch {}
             }
 
-            return { ...artwork, favoriteCnt: latestFavoriteCnt, liked: userLiked };
+            return {
+              postId,
+              boardNo: item.boardNo || item.boardId,
+              title: item.title,
+              content: item.content || "",
+              nickname:
+                item.nickname ||
+                item.userName ||
+                item.author ||
+                item.writer ||
+                "",
+              fileName: item.fileName,
+              views: item.views || item.viewCount || 0,
+              tag: item.tag,
+              thumbnailImagePath: item.thumbnailImagePath || null,
+              followers: item.followers || null,
+              downloads: item.downloads || null,
+              favoriteCnt: latestFavoriteCnt,
+              tradeDTO: item.tradeDTO,
+              pictureDTOList: item.pictureDTOList || null,
+              profileImage: item.profileImage || item.userProfileImage || null,
+              replyCnt: item.replyCnt || null,
+              regDate: item.regDate || item.createdAt || null,
+              modDate: item.modDate || item.updatedAt || null,
+              liked: userLiked,
+            };
           })
         );
 
-        setArtworks(artworksWithLatestData);
+        setTotalPages(totalPage);
 
+        setArtworks(artworksWithLatestData);
       } catch (error) {
         console.error("작품을 불러오는 중 오류가 발생했습니다:", error);
         setArtworks([]);
@@ -225,27 +198,33 @@ const ArtList = () => {
 
   // 정렬된 리스트
   const sortedArtworks = useMemo(() => {
-    if (sortType === 'popular') {
+    if (sortType === "popular") {
       // 인기순은 백엔드에서 처리되므로 그대로 반환
       return [...artworks];
     }
     // 최신순 정렬만 프론트엔드에서 처리
     return [...artworks].sort((a, b) => {
-      const timeA = a.tradeDTO?.startBidTime ? new Date(a.tradeDTO.startBidTime).getTime() : 0;
-      const timeB = b.tradeDTO?.startBidTime ? new Date(b.tradeDTO.startBidTime).getTime() : 0;
+      const timeA = a.tradeDTO?.startBidTime
+        ? new Date(a.tradeDTO.startBidTime).getTime()
+        : 0;
+      const timeB = b.tradeDTO?.startBidTime
+        ? new Date(b.tradeDTO.startBidTime).getTime()
+        : 0;
       return timeB - timeA;
     });
   }, [artworks, sortType]);
 
   // boardNo 5만 필터링
   const filteredArtworks = useMemo(() => {
-    const onlyArt = sortedArtworks.filter(art => art.boardNo === 5);
+    const onlyArt = sortedArtworks.filter((art) => art.boardNo === 5);
     if (!searchTerm.trim()) return onlyArt;
     return onlyArt.filter(
-      art =>
+      (art) =>
         art.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (art.nickname && art.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (art.content && art.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (art.nickname &&
+          art.nickname.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (art.content &&
+          art.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (art.tag && art.tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [sortedArtworks, searchTerm]);
@@ -254,10 +233,13 @@ const ArtList = () => {
   const pageGroup = Math.floor((currentPage - 1) / 10);
   const startPage = pageGroup * 10 + 1;
   const endPage = Math.min(startPage + 9, totalPages);
-  const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  const pageNumbers = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, i) => startPage + i
+  );
 
   const handleArtworkClick = (artworkId: number) => {
-    localStorage.setItem('artworkListPage', String(currentPage));
+    localStorage.setItem("artworkListPage", String(currentPage));
     navigate(`/Art/${artworkId}`);
   };
 
@@ -273,12 +255,17 @@ const ArtList = () => {
   };
 
   const handleRegisterClick = () => {
-    navigate('/art/register');
+    navigate("/art/register");
   };
 
   // 경매 남은 시간 계산 함수 (최대 7일 제한)
-  function getTimeLeft(endTime: string | Date | null): { text: string, isEndingSoon: boolean, isEnded: boolean } {
-    if (!endTime) return { text: "마감 정보 없음", isEndingSoon: false, isEnded: false };
+  function getTimeLeft(endTime: string | Date | null): {
+    text: string;
+    isEndingSoon: boolean;
+    isEnded: boolean;
+  } {
+    if (!endTime)
+      return { text: "마감 정보 없음", isEndingSoon: false, isEnded: false };
     const end = new Date(endTime).getTime();
     const now = Date.now();
     const diff = end - now;
@@ -286,7 +273,8 @@ const ArtList = () => {
     const oneHourInMillis = 60 * oneMinuteInMillis;
     const oneDayInMillis = 24 * oneHourInMillis;
 
-    if (isNaN(end) || diff <= 0) return { text: "경매 종료", isEndingSoon: false, isEnded: true };
+    if (isNaN(end) || diff <= 0)
+      return { text: "경매 종료", isEndingSoon: false, isEnded: true };
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -324,7 +312,8 @@ const ArtList = () => {
       prev.map((artwork) => {
         if (artwork.postId === artworkId) {
           const newLiked = !(artwork.liked ?? false);
-          const newFavoriteCnt = (artwork.favoriteCnt ?? 0) + (newLiked ? 1 : -1);
+          const newFavoriteCnt =
+            (artwork.favoriteCnt ?? 0) + (newLiked ? 1 : -1);
           return {
             ...artwork,
             liked: newLiked,
@@ -336,17 +325,20 @@ const ArtList = () => {
     );
 
     try {
-      const result = await fetch(`http://localhost:8080/ourlog/favorites/toggle`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: loggedInUserId,
-          postId: artworkId,
-        }),
-      });
+      const result = await fetch(
+        `http://localhost:8080/ourlog/favorites/toggle`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId: loggedInUserId,
+            postId: artworkId,
+          }),
+        }
+      );
 
       if (!result.ok) throw new Error("서버 응답 오류");
 
@@ -354,15 +346,15 @@ const ArtList = () => {
       const params = new URLSearchParams({
         page: String(currentPage),
         size: String(artworksPerPage),
-        boardNo: "5"
+        boardNo: "5",
       });
 
       const url = `http://localhost:8080/ourlog/post/list/popular?${params.toString()}`;
 
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: getAuthHeaders(),
-        credentials: 'include'
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -371,30 +363,80 @@ const ArtList = () => {
 
       const data = await response.json();
       const dtoList = data.dtoList || [];
-      
-      // 새로운 데이터로 상태 업데이트
-      setArtworks(dtoList.map((item: any) => ({
-        postId: item.postId || item.id,
-        boardNo: item.boardNo || item.boardId,
-        title: item.title,
-        content: item.content || '',
-        nickname: item.nickname || item.userName || item.author || item.writer || '',
-        fileName: item.fileName,
-        views: item.views || item.viewCount || 0,
-        tag: item.tag,
-        thumbnailImagePath: item.thumbnailImagePath || null,
-        followers: item.followers || null,
-        downloads: item.downloads || null,
-        favoriteCnt: item.favoriteCnt || item.likeCount || 0,
-        tradeDTO: item.tradeDTO,
-        pictureDTOList: item.pictureDTOList || null,
-        profileImage: item.profileImage || item.userProfileImage || null,
-        replyCnt: item.replyCnt || null,
-        regDate: item.regDate || item.createdAt || null,
-        modDate: item.modDate || item.updatedAt || null,
-        liked: false,
-      })));
 
+      // 좋아요 개수와 liked 상태를 병렬로 fetch
+      const artworksWithLatestData = await Promise.all(
+        dtoList.map(async (item: any) => {
+          const postId = item.postId || item.id;
+          let latestFavoriteCnt = item.favoriteCnt ?? item.likeCount ?? 0;
+          let userLiked = false;
+
+          // 좋아요 개수 fetch (항상 최신값)
+          try {
+            const countResponse = await fetch(
+              `http://localhost:8080/ourlog/favorites/count/${postId}`,
+              {
+                method: "GET",
+                headers: getAuthHeaders(),
+              }
+            );
+            if (countResponse.ok) {
+              const countData = await countResponse.json();
+              if (typeof countData === "number") {
+                latestFavoriteCnt = countData;
+              } else if (countData && typeof countData.count === "number") {
+                latestFavoriteCnt = countData.count;
+              }
+            }
+          } catch {}
+
+          // liked 상태 fetch
+          if (loggedInUserId !== null && loggedInUserId > 0) {
+            try {
+              const likeStatusResponse = await fetch(
+                `http://localhost:8080/ourlog/favorites/${loggedInUserId}/${postId}`,
+                {
+                  method: "GET",
+                  headers: getAuthHeaders(),
+                }
+              );
+              if (likeStatusResponse.ok) {
+                const statusData = await likeStatusResponse.json();
+                userLiked = statusData === true;
+              }
+            } catch {}
+          }
+
+          return {
+            postId,
+            boardNo: item.boardNo || item.boardId,
+            title: item.title,
+            content: item.content || "",
+            nickname:
+              item.nickname ||
+              item.userName ||
+              item.author ||
+              item.writer ||
+              "",
+            fileName: item.fileName,
+            views: item.views || item.viewCount || 0,
+            tag: item.tag,
+            thumbnailImagePath: item.thumbnailImagePath || null,
+            followers: item.followers || null,
+            downloads: item.downloads || null,
+            favoriteCnt: latestFavoriteCnt,
+            tradeDTO: item.tradeDTO,
+            pictureDTOList: item.pictureDTOList || null,
+            profileImage: item.profileImage || item.userProfileImage || null,
+            replyCnt: item.replyCnt || null,
+            regDate: item.regDate || item.createdAt || null,
+            modDate: item.modDate || item.updatedAt || null,
+            liked: userLiked,
+          };
+        })
+      );
+
+      setArtworks(artworksWithLatestData);
     } catch (error) {
       console.error(`좋아요 처리 실패: ${artworkId}`, error);
       alert("좋아요 처리에 실패했습니다. 다시 시도해주세요.");
@@ -425,14 +467,24 @@ const ArtList = () => {
         <div className="art-list-left-section">
           <div className="art-list-sort-tabs">
             <button
-              className={`art-list-sort-btn${sortType === 'popular' ? ' art-list-sort-active' : ''}`}
-              onClick={() => { setSortType('popular'); setCurrentPage(1); }}
+              className={`art-list-sort-btn${
+                sortType === "popular" ? " art-list-sort-active" : ""
+              }`}
+              onClick={() => {
+                setSortType("popular");
+                setCurrentPage(1);
+              }}
             >
               인기순
             </button>
             <button
-              className={`art-list-sort-btn${sortType === 'latest' ? ' art-list-sort-active' : ''}`}
-              onClick={() => { setSortType('latest'); setCurrentPage(1); }}
+              className={`art-list-sort-btn${
+                sortType === "latest" ? " art-list-sort-active" : ""
+              }`}
+              onClick={() => {
+                setSortType("latest");
+                setCurrentPage(1);
+              }}
             >
               최신순
             </button>
@@ -458,7 +510,10 @@ const ArtList = () => {
               />
             </button>
           </form>
-          <button onClick={handleRegisterClick} className="art-list-register-btn">
+          <button
+            onClick={handleRegisterClick}
+            className="art-list-register-btn"
+          >
             아트 등록
           </button>
         </div>
@@ -467,18 +522,24 @@ const ArtList = () => {
       <div className="art-list-grid">
         {filteredArtworks.map((artwork) => {
           const imageUrl = artwork.pictureDTOList
-            ? artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName)?.originImagePath 
-              ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList.find(pic => pic.uuid === artwork.fileName)?.originImagePath}`
-              : artwork.pictureDTOList[0]?.originImagePath 
-                ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}`
-                : null
+            ? artwork.pictureDTOList.find(
+                (pic) => pic.uuid === artwork.fileName
+              )?.originImagePath
+              ? `http://localhost:8080/ourlog/picture/display/${
+                  artwork.pictureDTOList.find(
+                    (pic) => pic.uuid === artwork.fileName
+                  )?.originImagePath
+                }`
+              : artwork.pictureDTOList[0]?.originImagePath
+              ? `http://localhost:8080/ourlog/picture/display/${artwork.pictureDTOList[0].originImagePath}`
+              : null
             : null;
 
           console.log("Artwork TradeDTO:", artwork.tradeDTO);
           console.log("Thumbnail info:", {
             fileName: artwork.fileName,
             pictureDTOList: artwork.pictureDTOList,
-            imageUrl
+            imageUrl,
           });
 
           const timeInfo = getTimeLeft(artwork.tradeDTO?.lastBidTime || null);
@@ -500,13 +561,15 @@ const ArtList = () => {
                   <div className="art-list-item-no-image">이미지 없음</div>
                 )}
                 <div
-                  className={`art-list-like-button ${artwork.liked ? 'liked' : ''}`}
+                  className={`art-list-like-button ${
+                    artwork.liked ? "liked" : ""
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleLikeToggle(artwork.postId);
                   }}
                 >
-                  {artwork.liked ? '🧡' : '🤍'} {artwork.favoriteCnt ?? 0}
+                  {artwork.liked ? "🧡" : "🤍"} {artwork.favoriteCnt ?? 0}
                 </div>
               </div>
               <div className="art-list-item-info">
@@ -514,17 +577,27 @@ const ArtList = () => {
                 <p className="art-list-item-author">{artwork.nickname}</p>
                 <p className="art-list-item-price">
                   {artwork.tradeDTO
-                    ? `현재가: ${(artwork.tradeDTO.highestBid ?? artwork.tradeDTO.startPrice)?.toLocaleString()}원`
+                    ? `현재가: ${(
+                        artwork.tradeDTO.highestBid ??
+                        artwork.tradeDTO.startPrice
+                      )?.toLocaleString()}원`
                     : "경매 정보 없음"}
                 </p>
                 {artwork.tradeDTO ? (
                   artwork.tradeDTO.tradeStatus ? (
-                    <span className="auction-time-left" style={{ color: 'red' }}>경매 종료</span>
+                    <span
+                      className="auction-time-left"
+                      style={{ color: "red" }}
+                    >
+                      경매 종료
+                    </span>
                   ) : (
                     artwork.tradeDTO.lastBidTime && (
                       <span
                         className="auction-time-left"
-                        style={{ color: timeInfo.isEndingSoon ? 'red' : 'inherit' }}
+                        style={{
+                          color: timeInfo.isEndingSoon ? "red" : "inherit",
+                        }}
                       >
                         {timeInfo.text}
                         {timeInfo.isEndingSoon && " (종료 임박)"}
@@ -559,13 +632,17 @@ const ArtList = () => {
           <button
             key={number}
             onClick={() => handlePageClick(number)}
-            className={`art-list-page-btn${currentPage === number ? ' art-list-page-active' : ''}`}
+            className={`art-list-page-btn${
+              currentPage === number ? " art-list-page-active" : ""
+            }`}
           >
             {number}
           </button>
         ))}
         <button
-          onClick={() => currentPage < totalPages && handlePageClick(currentPage + 1)}
+          onClick={() =>
+            currentPage < totalPages && handlePageClick(currentPage + 1)
+          }
           disabled={currentPage === totalPages}
           className="art-list-page-btn art-list-arrow-btn"
         >
