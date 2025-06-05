@@ -53,13 +53,13 @@ const SearchPage = () => {
         : item;
 
     if (picData.resizedImagePath) {
-      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.resizedImagePath}`;
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.resizedImagePath}`;
     } else if (picData.thumbnailImagePath) {
-      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.thumbnailImagePath}`;
     } else if (picData.originImagePath) {
-      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.originImagePath}`;
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.originImagePath}`;
     } else if (picData.fileName) {
-      artworkImageSrc = `http://10.100.204.144:8080/ourlog/picture/display/${picData.fileName}`;
+      artworkImageSrc = `http://localhost:8080/ourlog/picture/display/${picData.fileName}`;
     }
 
     return artworkImageSrc;
@@ -81,7 +81,7 @@ const SearchPage = () => {
     setLoading(true);
 
     fetch(
-      `http://10.100.204.144:8080/ourlog/post/list?boardNo=${boardNo}&type=all&keyword=${encodeURIComponent(
+      `http://localhost:8080/ourlog/post/list?boardNo=${boardNo}&type=all&keyword=${encodeURIComponent(
         lowerQuery
       )}`
     )

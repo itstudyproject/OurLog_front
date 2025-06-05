@@ -37,7 +37,7 @@ const SocialLoginHandler: React.FC = () => {
       // 3. 사용자 프로필 확인 및 없으면 생성 (기존 로직 재사용)
       let profileId: number | null = null;
       if (userInfo.userId) {
-        profileId = await checkAndCreateProfile(userInfo.userId, userInfo);
+        profileId = await checkAndCreateProfile(userInfo.userId, userInfo, token);
       }
 
       // 4. 사용자 정보 저장 및 로그인 처리 (기존 로직 재사용)
@@ -59,7 +59,7 @@ const SocialLoginHandler: React.FC = () => {
   };
 
   // 사용자 프로필 확인 및 생성 (기존 함수 유지)
-  const checkAndCreateProfile = async (userId: number, userInfo: any): Promise<number | null> => {
+  const checkAndCreateProfile = async (userId: number, userInfo: any, token: string): Promise<number | null> => {
     try {
       // 프로필 조회 시도
       const profileData = await fetchProfile(userId);
@@ -83,7 +83,7 @@ const SocialLoginHandler: React.FC = () => {
           isFollowing: false,
         };
 
-        const newProfile = await createProfile(defaultProfile);
+        const newProfile = await createProfile(defaultProfile, token);
         console.log("기본 프로필 생성 완료:", newProfile);
         return newProfile.profileId || null;
       } catch (profileErr) {
