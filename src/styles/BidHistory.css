@@ -1,0 +1,398 @@
+/* 기본 설정 */
+body {
+  background-color: #1a1a1a;
+  color: #ccc;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 가운데 정렬된 컨테이너 */
+.bh-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 헤더 */
+
+/* 입찰 목록 타이틀 */
+.bh-page-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+.bh-page-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bid-date {
+  color: #999;
+  font-size: 14px;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+
+/* 입찰 목록 */
+.bh-trade-lists-wrapper {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.bh-list-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.bh-list-section h3 {
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f8c147;
+  padding-bottom: 5px;
+}
+
+/* ✅ 완료된 거래 섹션 제목 스타일 (낙찰/구매 완료) */
+.bh-completed-trades-section h3 {
+  font-size: 20px;
+  color: #fff;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f8c147; /* 강조선 유지 */
+  padding-bottom: 5px;
+}
+
+/* 입찰 목록 아이템 */
+.bh-item.data {
+  display: flex;
+  align-items: center;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.bh-item.data:hover {
+  background-color: #333333;
+}
+
+/* ✅ 썸네일과 다운로드 버튼을 감싸는 컨테이너 추가 */
+.bh-item-thumbnail-wrapper {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: center;
+  margin-right: 20px;
+  flex-shrink: 0;
+  width: 100px; /* 썸네일 크기에 맞춤 */
+}
+
+.bh-item-thumbnail {
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+  /* margin-right: 20px; 제거됨 */
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #3a3a3a;
+}
+
+.bh-item-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bh-no-image-placeholder-small {
+  font-size: 40px;
+  color: #cccccc;
+}
+
+/* ✅ 썸네일 아래 다운로드 버튼 스타일 */
+.bh-download-button-under-thumbnail {
+  background: none;
+  border: 1px solid #f8c147; /* 테두리 추가 */
+  color: #f8c147; /* 글자색 강조 */
+  cursor: pointer;
+  padding: 4px 8px; /* 패딩 조정 */
+  font-size: 12px; /* 글자 크기 조정 */
+  border-radius: 4px; /* 모서리 둥글게 */
+  margin-top: 8px; /* 썸네일과의 간격 */
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px; /* 아이콘과 텍스트 간 간격 */
+}
+
+.bh-download-button-under-thumbnail:hover {
+  background-color: #f8c147; /* 호버 시 배경색 반전 */
+  color: #1a1a1a; /* 호버 시 글자색 반전 */
+}
+
+.bh-download-button-under-thumbnail:active {
+  transform: scale(0.98);
+}
+
+.bh-item-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bh-item-title {
+  font-size: 17px;
+  color: #ffffff;
+  margin-bottom: 5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.bh-item-price {
+  font-size: 15px;
+  color: #f8c147;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.bh-item-time {
+  font-size: 14px;
+  color: #aaaaaa;
+}
+
+/* 상태 및 버튼 컨테이너 */
+.bh-item-status-container {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: flex-end; /* 오른쪽 정렬 */
+  gap: 8px; /* 상태와 버튼 간 간격 */
+  margin-left: 20px;
+  flex-shrink: 0;
+}
+
+.bh-item-status {
+  position: static; /* flexbox 내에서 정상 배치 */
+  /* margin-left: 20px; 제거됨 */
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  background-color: #cccccc; /* 기본 상태색 (입찰 중) */
+  flex-shrink: 0;
+}
+
+.bh-item-status.won { /* 낙찰 상태 */
+  background-color: #2ecc71; /* 녹색 */
+  color: #ffffff;
+}
+
+.bh-item-status.purchased { /* 구매 완료 상태 */
+  background-color: #3498db; /* 파란색 계열 */
+  color: #ffffff;
+}
+
+.bh-item-status.data {
+  /* .bh-item.data의 자식이므로 .bh-item-status는 이 스타일을 상속 */
+}
+
+/* ✅ 결제하기 버튼 스타일 */
+.bh-payment-button {
+  background-color: #f8c147; /* 강조 색상 */
+  color: #1a1a1a; /* 배경색에 어울리는 글자색 */
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  flex-shrink: 0;
+}
+
+.bh-payment-button:hover {
+  background-color: #ffdb58; /* 호버 시 밝게 */
+}
+
+.bh-payment-button:active {
+  transform: scale(0.98);
+}
+
+/* 목록이 없을 때 메시지 */
+.bh-no-bids {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.bh-no-data-container {
+  text-align: center;
+  padding: 50px 20px;
+  color: #999;
+}
+
+.bh-no-data-container button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.bh-no-data-container button:hover {
+  background-color: #444;
+}
+
+/* 푸터 */
+.bh-history-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.bh-back-button {
+  padding: 12px 25px;
+  background-color: #555;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 16px;
+}
+
+.bh-back-button:hover {
+  background-color: #666;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .bh-trade-lists-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .bh-list-section {
+    flex: none;
+    width: 100%;
+  }
+
+  .bh-item.data {
+    flex-direction: column; /* 모바일에서 세로 정렬 */
+    align-items: flex-start;
+  }
+
+   /* ✅ 모바일 반응형: 썸네일 wrapper 전체 너비, 하단 마진 추가 */
+  .bh-item-thumbnail-wrapper {
+     margin-right: 0; /* 오른쪽 마진 제거 */
+     margin-bottom: 15px; /* 하단 마진 추가 */
+     width: 100%; /* 전체 너비 사용 */
+     align-items: flex-start; /* 왼쪽 정렬 */
+   }
+
+  .bh-item-thumbnail {
+    margin-right: 0; /* 오른쪽 마진 제거 */
+    margin-bottom: 0; /* 하단 마진 제거 */
+    width: 100%; /* 너비 채우기 */
+    height: 150px; /* 높이 조정 */
+  }
+
+  /* ✅ 썸네일 아래 다운로드 버튼 모바일 스타일 */
+   .bh-download-button-under-thumbnail {
+     margin-top: 8px; /* 썸네일 아래 간격 */
+     /* width: 100%; 전체 너비 사용 가능 */
+     justify-content: center; /* 가운데 정렬 */
+   }
+
+
+  .bh-item-details {
+    width: 100%; /* 전체 너비 사용 */
+     margin-bottom: 15px; /* 상태 컨테이너와의 간격 */
+  }
+
+   /* ✅ 상태 및 버튼 컨테이너 모바일 스타일 */
+  .bh-item-status-container {
+     position: static; /* flexbox 내에서 정상 배치 */
+     margin-left: 0; /* 마진 제거 */
+     width: 100%; /* 전체 너비 사용 */
+     flex-direction: row; /* 모바일에서 가로 정렬 */
+     justify-content: flex-start; /* 왼쪽 정렬 */
+     gap: 8px; /* 간격 유지 */
+   }
+
+
+  .bh-item-status {
+    position: static;
+    /* margin-left: 0; */ /* flex container에서 gap으로 처리 */
+  }
+
+  /* ✅ 결제하기 버튼 모바일 스타일 */
+   .bh-payment-button {
+     /* flex container에서 gap으로 처리 */
+   }
+
+
+  .bh-page-title h2 {
+    font-size: 24px;
+  }
+}
+
+/* 로딩 화면 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+}
+
+.loading p {
+  color: #ccc;
+  font-size: 18px;
+}
+
+.bh-main-button {
+  padding: 10px 20px;
+  background-color: #2a2a2a;
+  color: #f8c147;
+  border: 1px solid #f8c147;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.bh-main-button:hover {
+  background-color: #f8c147;
+  color: #1a1a1a;
+}
+
+.bh-main-button:active {
+  background-color: #e6b03f;
+  color: #1a1a1a;
+}
+
+/* 기존 bh-back-button 스타일은 유지하되 사용하지 않음 */

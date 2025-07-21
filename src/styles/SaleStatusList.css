@@ -1,0 +1,69 @@
+/* styles/SaleStatusList.css */
+.sale-status-list {
+    padding: 16px;
+  }
+  
+  .filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .filter-row select,
+  .filter-row .date-filter {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    background-color: #fff;
+  }
+  
+  .item-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .item-info {
+    flex: 1;
+  }
+  
+  .sale-status-title {
+    font-weight: bold;
+    font-size: 17.6px;
+    margin-bottom: 4.8px;
+  }
+  
+  .artist {
+    color: #666;
+    font-size: 14.4px;
+    margin-bottom: 8px;
+  }
+  
+  .status {
+    font-weight: bold;
+    color: green;
+  }
+  
+  .pagination {
+    text-align: center;
+    margin-top: 32px;
+  }
+  

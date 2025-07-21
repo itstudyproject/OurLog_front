@@ -1,0 +1,76 @@
+.sidebar {
+  padding: 16px; /* p-4 (1rem -> 16px) */
+  width: 288px; /* w-72 (18rem -> 288px) */
+  background-color: hsl(var(--b1) / var(--tw-bg-opacity, 1)); /* bg-base-100 */
+  color: hsl(var(--bc) / var(--tw-text-opacity, 1)); /* text-base-content */
+}
+
+.sidebar-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px; /* mb-6 (1.5rem -> 24px) */
+}
+
+.profile-image {
+  width: 96px; /* w-24 (6rem -> 96px) */
+  height: 96px; /* h-24 (6rem -> 96px) */
+  border-radius: 9999px; /* rounded-full */
+  margin-bottom: 8px; /* mb-2 (0.5rem -> 8px) */
+}
+
+.profile-name {
+  font-size: 20px; /* text-xl (1.25rem -> 20px) */
+  font-weight: 600; /* font-semibold */
+}
+
+.profile-email {
+  font-size: 14px; /* text-sm (0.875rem -> 14px) */
+}
+
+.profile-stats {
+  margin-top: 8px; /* mt-2 (0.5rem -> 8px) */
+  font-size: 14px; /* text-sm (0.875rem -> 14px) */
+}
+
+.profile-stats span {
+  margin-left: 8px; /* space-x-2 (0.5rem -> 8px) */
+  margin-right: 8px; /* (0.5rem -> 8px) */
+}
+
+.menu-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu-item a {
+  display: block;
+  padding: 8px; /* (0.5rem -> 8px) */
+}
+
+.menu-item-error a {
+  color: hsl(var(--er)); /* text-error */
+}
+
+.register-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  border-radius: var(--rounded-btn, 8px); /* (0.5rem -> 8px) */
+  border-width: var(--border-btn, 1px);
+  border-color: currentColor;
+  padding-left: 16px; /* (1rem -> 16px) */
+  padding-right: 16px; /* (1rem -> 16px) */
+  text-align: center;
+  font-weight: 600;
+  height: 48px; /* (3rem -> 48px) */
+  min-height: 48px; /* (3rem -> 48px) */
+  line-height: 1;
+  font-size: 14px; /* (0.875rem -> 14px) */
+  margin-top: 16px; /* mt-4 (1rem -> 16px) */
+  background-color: transparent;
+  color: currentColor;
+  width: 100%;
+} 

@@ -1,0 +1,96 @@
+/* 인기 작품 추천 제목 */
+.slider-title {
+  margin-top: 100px;
+  font-size: 50px;
+  font-weight: bold;
+  margin-bottom: 70px;
+  color: white; /* 글자 색상 흰색 */
+  background-color: black; /* 배경색 검정색 */
+  text-align: center;
+  padding: 10px 0;
+}
+.slider-subtitle {
+  font-size: 20px;
+  color: #fff;
+  text-align: center;
+  margin-top: -30px; /* 제목과 간격 조정 필요 시 수정 */
+  margin-bottom: 100px;
+}
+
+/* 그림을 감싸는 wrapper */
+.slider-wrapper {
+  display: flex;
+  justify-content: center; /* 수평 가운데 정렬 */
+  gap: 40px; /* 간격 40px으로 증가 */
+  flex-wrap: wrap; /* 여러 줄로 나누어 표시 */
+  margin: 0 auto; /* 가운데 정렬 */
+  padding: 0 10px; /* 좌우 여백 추가 */
+}
+
+/* 각 그림 카드 */
+.artworkslider-card {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  border: 14px solid #fff;
+  box-shadow: 0 0 20px 3px rgba(255, 255, 255, 0.6); /* 흰색 그림자 */
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  margin-bottom: 150px;
+}
+
+.artworkslider-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.artworkslider-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정 배경 */
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+}
+
+.artworkslider-card:hover {
+  transform: scale(1.05);
+}
+
+.artworkslider-card:hover .artworkslider-overlay {
+  opacity: 1;
+}
+
+.artworkslider-title {
+  font-size: 20px; /* 제목 글자 크기 조정 */
+  font-weight: bold;
+}
+
+.artworkslider-artist {
+  font-size: 18px; /* 작가 이름 글자 크기 조정 */
+  margin: 5px 0;
+}
+
+.artworkslider-price {
+  font-size: 16px; /* 가격 글자 크기 조정 */
+}
+
+.artworkslider-empty {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #777;
+  margin-bottom: 70px;
+}

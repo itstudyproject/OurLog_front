@@ -1,0 +1,66 @@
+/* src/styles/Footer.css */
+
+.footer {
+  background-color: #111827; /* bg-gray-900 */
+  color: #e5e7eb; /* text-gray-200 */
+  padding-top: 48px; /* py-12 */
+  padding-bottom: 48px;
+}
+
+.footer-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  grid-template-columns: repeat(1, 1fr); /* 기본적으로 1열로 설정 */
+  gap: 32px; /* 각 항목 간 간격을 늘림 */
+}
+
+@media (min-width: 768px) {
+  .footer-container {
+    grid-template-columns: repeat(
+      4,
+      1fr
+    ); /* 화면 크기 768px 이상에서 3열로 변경 */
+  }
+}
+
+.footer-symbol {
+  width: 125px;
+  height: 125px;
+  vertical-align: middle;
+}
+
+.footer-heading {
+  font-size: 20px; /* text-xl */
+  font-weight: 600; /* font-semibold */
+  margin-bottom: 12px; /* mb-3 */
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* space-y-1 */
+  font-size: 14px; /* text-sm */
+}
+
+.footer-link {
+  transition: color 0.15s ease-in-out;
+  color: #ffffff;
+}
+
+.footer-link:hover {
+  color: #cc2efa; /* hover:text-white */
+}
+
+.footer-text {
+  font-size: 14px; /* text-sm */
+}
+
+.footer-bottom {
+  margin-top: 40px; /* mt-10 */
+  border-top: 1px solid #1f2937; /* border-t border-gray-800 */
+  text-align: center; /* text-center */
+  font-size: 12px; /* text-xs */
+  color: #6b7280; /* text-gray-500 */
+}

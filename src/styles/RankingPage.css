@@ -1,0 +1,196 @@
+/* TOP RANKING 배너 */
+.ranking-banner {
+  margin-top: 40px;
+  margin-bottom: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ranking-banner img {
+  height: 150px;
+}
+
+/* 정렬 기준 탭 버튼 영역 */
+.ranking-type-tab {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+.ranking-type-button {
+  border: none;
+  border-radius: 16px;
+  padding: 8px 32px;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ranking-type-button.active {
+  background: #f8c147;
+  color: #222;
+  box-shadow: 0 2px 8px #f8c14755;
+}
+.ranking-type-button.inactive {
+  background: #222;
+  color: #fff;
+}
+
+/* podium(1~3등) 영역 */
+.ranking-podium-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 48px;
+  margin-bottom: 60px;
+}
+.ranking-podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ranking-podium-card.first {
+  margin-top: -30px;
+}
+.ranking-podium-card.second,
+.ranking-podium-card.third {
+  margin-top: 40px;
+}
+.ranking-podium-image-card {
+  width: 350px;
+  height: 262.5px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  background: #222;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+/* 이미지 */
+.podium-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ranking-list-image-full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* 뱃지 */
+.ranking-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  border-radius: 18px;
+  padding: 5px 14px;
+  font-weight: 800;
+  font-size: 20px;
+  box-shadow: 0 2px 10px #0002;
+  min-width: 32px;
+  text-align: center;
+  line-height: 1.2;
+}
+.ranking-badge,
+.ranking-list-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 20px;
+  font-weight: 800;
+  box-shadow: 0 2px 10px #0002;
+  text-align: center;
+}
+.ranking-list-badge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+  background: #333;
+  color: #fff;
+  opacity: 0.92;
+}
+
+/* 작성자 정보 */
+.ranking-author-info {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  z-index: 2;
+}
+.ranking-author-info.small {
+  bottom: 18px;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0 20px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+}
+.ranking-author-info.large {
+  bottom: 22px;
+  width: 100%;
+  font-size: 20px;
+  justify-content: space-between;
+  padding: 0 30px;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+}
+.ranking-list-author {
+  color: #fff;
+  margin-left: 10px;
+  font-weight: 700;
+}
+
+/* 4등 이하 리스트 */
+.ranking-list-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+.ranking-list-card {
+  position: relative;
+  width: 300px;
+  height: 225px;
+  border-radius: 20px;
+  background: #222;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+}
+
+.ranking-list-avatar {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  object-fit: cover;
+}
+
+.podium-avatar {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  z-index: 3;
+  object-fit: cover;
+}

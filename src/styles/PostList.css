@@ -1,0 +1,362 @@
+/* 기본 설정 */
+body {
+  background-color: #1a1a1a;
+  color: #ccc;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 가운데 정렬된 컨테이너 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 탭 메뉴 */
+.tab-menu {
+  display: flex;
+  border-bottom: 1px solid #333;
+  margin-bottom: 20px;
+}
+
+.tab-menu div {
+  padding: 10px 20px;
+  cursor: pointer;
+  color: #ccc;
+  transition: background-color 0.2s;
+}
+
+.tab-menu div:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.tab-menu .active {
+  background-color: #333;
+  color: #fff;
+}
+
+/* 게시판 헤더 */
+.board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+  padding: 10px 0;
+}
+
+.board-header h2 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* 검색 영역 */
+.search-bar {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar form {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  padding: 6px 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: #ccc;
+}
+
+.search-bar input::placeholder {
+  color: #777;
+}
+
+.search-bar button {
+  margin-left: 8px;
+  background-color: #2a2a2a;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.search-bar button:hover {
+  color: #fff;
+}
+
+.search-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 게시글 등록 버튼 */
+.register-button {
+  margin-left: 12px;
+  padding: 6px 12px;
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background-color: #005bb5;
+}
+
+/* 테이블 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+thead {
+  background-color: #2a2a2a;
+}
+
+thead th {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid #444;
+  color: #fff;
+}
+
+tbody tr {
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+  background-color: #2f2f2f;
+}
+
+tbody td {
+  padding: 12px 8px;
+  color: #ccc;
+  text-align: center;
+}
+
+tbody td:nth-child(2) {
+  text-align: left;
+}
+
+/* 썸네일 */
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.search-select {
+  margin-right: 20px;
+  font-size: 20px;
+}
+
+/* 썸네일 텍스트 fallback */
+.thumbnail:empty {
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  color: #777;
+  font-size: 12px;
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 6px 10px;
+  background-color: #2a2a2a;
+  color: #ccc;
+  border: 1px solid #444;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.pagination button:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.pagination .active {
+  background-color: #0066cc;
+  color: #fff;
+  border: none;
+}
+
+/* 로딩 화면 */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #1a1a1a;
+}
+
+.loading p {
+  color: #ccc;
+}
+
+.post-list-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 40px 0 20px;
+}
+
+.post-list-page-btn {
+  margin: 0 5px;
+  padding: 8px 12px;
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.post-list-page-btn:hover:not(:disabled) {
+  background-color: #333;
+  color: #fff;
+}
+
+.post-list-page-btn.post-list-page-active {
+  background-color: #f8c147;
+  color: #222;
+  border-color: #f8c147;
+}
+
+.post-list-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.post-list-arrow-btn {
+  font-weight: bold;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .post-list-pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .post-list-page-btn {
+    margin: 0;
+  }
+  /* 테이블 셀 중앙 정렬 */
+  .postlist-table th,
+  .postlist-table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* 제목 셀 넓게, 중앙 정렬 */
+  .postlist-table th.title,
+  .postlist-table td.title {
+    width: 40%;
+    text-align: center;
+  }
+
+  /* 썸네일 셀 */
+  .postlist-table th.thumbnail,
+  .postlist-table td.thumbnail {
+    width: 100px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* 썸네일 이미지 */
+  .postlist-thumbnail-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* 썸네일 없음 텍스트 */
+  .postlist-thumbnail-none {
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    background: #222;
+    color: #bbb;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  /* 작성일자 칸 */
+  .postlist-table th.date,
+  .postlist-table td.date {
+    width: 120px;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  /* 작성자 칸 */
+  .postlist-table th.author,
+  .postlist-table td.author {
+    width: 120px;
+    text-align: center;
+  }
+}
+
+/* 제목 셀 가운데 정렬 */
+th.title,
+td.title {
+  text-align: center;
+}
+
+/* 썸네일 셀: 이미지와 '없음' div를 중앙 정렬 */
+td.thumbnail {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 썸네일 이미지와 '없음' div의 공통 스타일 */
+td.thumbnail img.thumbnail,
+td.thumbnail div.thumbnail {
+  width: 48px;
+  height: 48px;
+  object-fit: cover; /* 이미지는 커버 유지 */
+  display: inline-block; /* 또는 block; margin: 0 auto; */
+  vertical-align: middle;
+  border-radius: 4px; /* 이미지/없음 박스 모서리 둥글게 */
+}
+
+/* '없음' div에만 적용될 스타일 */
+td.thumbnail div.thumbnail {
+  line-height: 48px; /* 세로 중앙 정렬 */
+  background-color: #2a2a2a; /* 배경색 */
+  border: 1px solid #555; /* 테두리 */
+  color: #777; /* 글씨색 */
+  font-size: 12px;
+  box-sizing: border-box; /* 테두리 포함 크기 계산 */
+}
