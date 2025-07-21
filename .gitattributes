@@ -1,4 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+* linguist-vendored
 demo/** linguist-documentation=false
 demo/** linguist-vendored=false
